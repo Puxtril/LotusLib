@@ -32,7 +32,7 @@ int main()
     PackageCollection<CachePairReader> collection("C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows", true);
 
     // Get the file entry for Excalibur's model
-    const FileEntries::FileNode* excal = collection["Misc"][PackageTrioType::H]->getFileEntry("/Lotus/Characters/Tenno/Excalibur_body.fbx");
+    const FileEntries::FileNode* excal = collection["Misc"][PackageTrioType::H]->getFileEntry("/Lotus/Characters/Tenno/Excalibur/ExcaliburBody_skel.fbx");
     
     // Get a total file count
     // Variables are extra verbose for clarity
