@@ -12,12 +12,12 @@ LotusLib::Compression::decompressLz(char* inputData, uint32_t inputLen, char* ou
 	if (inputLen == outputLen)
 		outputData = inputData;
 	else
-		LotusLib::Compression::decompressLzBlock(inputData, inputLen, outputData, outputLen);
+		LotusLib::Compression::decompressLzBlock(reinterpret_cast<unsigned char*>(inputData), inputLen, reinterpret_cast<unsigned char*>(outputData), outputLen);
 
 }
 
 void
-LotusLib::Compression::decompressLzBlock(const char* inputData, uint32_t inputLen, char* outputData, uint32_t outputLen)
+LotusLib::Compression::decompressLzBlock(const unsigned char* inputData, uint32_t inputLen, unsigned char* outputData, uint32_t outputLen)
 {
 	uint32_t inputPos = 0;
 	uint32_t outputPos = 0;
@@ -25,13 +25,15 @@ LotusLib::Compression::decompressLzBlock(const char* inputData, uint32_t inputLe
 	while (outputPos < outputLen)
 	{
 		// Get block lengths, little endian
-		int blockLen = (inputData[inputPos] << 8) | inputData[inputPos+1];
-		int decompLen = (inputData[inputPos+2] << 8) | inputData[inputPos+3];
+		int blockLen = (inputData[inputPos] << 8) | inputData[inputPos + 1];
+		int decompLen = (inputData[inputPos + 2] << 8) | inputData[inputPos + 3];
+		char firstFour[4];
+		memcpy(&firstFour[0], inputData, 4);
 		inputPos += 4;
 
 		if (blockLen != decompLen)
 		{
-			LotusLib::Compression::decompressLzBlockHelper((char*)&(inputData[inputPos]), blockLen, &outputData[outputPos], decompLen);
+			LotusLib::Compression::decompressLzBlockHelper((unsigned char*)&(inputData[inputPos]), blockLen, &outputData[outputPos], decompLen);
 		}
 		else
 		{
@@ -44,7 +46,7 @@ LotusLib::Compression::decompressLzBlock(const char* inputData, uint32_t inputLe
 }
 
 void
-LotusLib::Compression::decompressLzBlockHelper(const char* compressedData, uint32_t compressedDataLen, char* decompressedData, uint32_t decompressedDataLen)
+LotusLib::Compression::decompressLzBlockHelper(const unsigned char* compressedData, int32_t compressedDataLen, unsigned char* decompressedData, int32_t decompressedDataLen)
 {
 	uint32_t compPos = 0;
 	uint32_t decompPos = 0;

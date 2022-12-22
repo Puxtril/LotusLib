@@ -35,7 +35,7 @@ namespace LotusLib {
 		static void decompressLz(char* inputData, uint32_t inputLen, char* outputData, uint32_t outputLen);
 
 	private:
-		static void decompressLzBlock(const char* inputData, uint32_t inputLen, char* outputData, uint32_t outputLen);
-		static void decompressLzBlockHelper(const char* compressedData, uint32_t compressedDataLen, char* decompressedData, uint32_t decompressedDataLen);
+		static void decompressLzBlock(const unsigned char* inputData, uint32_t inputLen, unsigned char* outputData, uint32_t outputLen);
+		static void decompressLzBlockHelper(const unsigned char* compressedData, int32_t compressedDataLen, unsigned char* decompressedData, int32_t decompressedDataLen);
 	};
 }
