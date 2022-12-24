@@ -20,9 +20,9 @@ namespace LotusLib
 		CachePairReader(const CachePairReader&) = delete;
 		CachePairReader& operator=(CachePairReader&) = delete;
 
-		int getData(const LotusPath& internalPath, char* data) const;
+		int getData(const LotusPath& internalPath, char*& data) const;
 		char* getData(const FileEntries::FileNode* entry) const;
-		int getDataAndDecompress(const LotusPath& internalPath, char* outData) const;
+		int getDataAndDecompress(const LotusPath& internalPath, char*& outData) const;
 		char* getDataAndDecompress(const FileEntries::FileNode* entry) const;
 	};
 }

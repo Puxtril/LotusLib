@@ -8,7 +8,7 @@ CachePairReader::CachePairReader(std::filesystem::path tocPath, std::filesystem:
 }
 
 int
-CachePairReader::getData(const LotusPath& internalPath, char* data) const
+CachePairReader::getData(const LotusPath& internalPath, char*& data) const
 {
 	const FileEntries::FileNode* entry = m_dirTree.getFileEntry(internalPath);
 	data = this->getData(entry);
@@ -26,9 +26,9 @@ CachePairReader::getData(const FileEntries::FileNode* entry) const
 }
 
 int
-CachePairReader::getDataAndDecompress(const LotusPath& internalPath, char* outData) const
+CachePairReader::getDataAndDecompress(const LotusPath& internalPath, char*& outData) const
 {
-	auto entry = m_dirTree.getFileEntry(internalPath);
+	const FileNode* entry = m_dirTree.getFileEntry(internalPath);
 	outData = getDataAndDecompress(entry);
 	return entry->getLen();
 }
