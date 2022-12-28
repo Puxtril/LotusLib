@@ -75,5 +75,13 @@ namespace LotusLib
 		{
 			return *this;
 		}
+
+		std::filesystem::path
+		getPreferredPath()
+		{
+			std::filesystem::path newPath = *this;
+			newPath.make_preferred();
+			return newPath;
+		}
 	};
 }
