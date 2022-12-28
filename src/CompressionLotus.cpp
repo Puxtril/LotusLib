@@ -5,8 +5,15 @@ using namespace LotusLib;
 char*
 CompressionLotus::getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader)
 {
-	static char* compressedBuffer = new char[0x40000];
 	char* decompressedData = new char[entry->getLen()];
+	getDataAndDecompressPost(entry, cacheReader, decompressedData);
+	return decompressedData;
+}
+
+void
+CompressionLotus::getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader, char* outData)
+{
+	static char* compressedBuffer = new char[0x40000];
 	int32_t decompPos = 0;
 	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
 	
@@ -36,22 +43,28 @@ CompressionLotus::getDataAndDecompressPost(const FileEntries::FileNode* entry, s
 
 		if (isOodle)
 		{
-			Compression::decompressOodle(compressedBuffer, std::get<0>(blockLens), &decompressedData[decompPos], std::get<1>(blockLens));
+			Compression::decompressOodle(compressedBuffer, std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
 			oodleBlockCount++;
 		}
 		else
 		{
-			Compression::decompressLz(compressedBuffer, std::get<0>(blockLens), &decompressedData[decompPos], std::get<1>(blockLens));
+			Compression::decompressLz(compressedBuffer, std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
 			lzBlockCount++;
 		}
 		decompPos += std::get<1>(blockLens);
 	}
-
-	return decompressedData;
 }
 
 char*
 CompressionLotus::getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader)
+{
+	char* data = new char[entry->getLen()];
+	getDataAndDecompressPre(entry, cacheReader, data);
+	return data;
+}
+
+void
+CompressionLotus::getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader, char* outData)
 {
 	char* decompressedData = new char[entry->getLen()];
 
@@ -62,7 +75,6 @@ CompressionLotus::getDataAndDecompressPre(const FileEntries::FileNode* entry, st
 	Compression::decompressLz(compressedData, entry->getCompLen(), decompressedData, entry->getLen());
 
 	delete[] compressedData;
-	return decompressedData;
 }
 
 bool
