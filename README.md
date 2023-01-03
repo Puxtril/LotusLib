@@ -13,7 +13,9 @@ This will allow you to access files stored within the .toc and .cache files. Tha
 * Adding this project as a Git submodule is the easiest integration method for a project. `git submodule add https://github.com/Puxtril/LotusLib.git`
 * The only required dependency is __spdlog__. To download it, execute `git submodule update --init --recursive`
 * This builds using CMake. Ensure CMake is installed on your platform, then add these directives to CMakeLists.txt: `add_subdirectory(path/to/LotusLib)` and `include_directory(path/to/LotusLib/include)`. To compile into an executable, you will also need the `find_library()` directive for Oodle (see below).
-* This library uses [Oodle for decompression.](www.radgametools.com/oodle.html) While it's possible to use a dynamic library, this utilizes a static Oodle library. To avoid copyright issues, the static library is not included in this repository. The easiest way to obtain the library is from Unreal Engine: download the engine via Epic Games Launcher and browse to _<InstallFolder>/Engine/Source/Runtime/OodleDataCompression/Sdks/2.9.5/lib_
+* This library uses [Oodle for decompression.](www.radgametools.com/oodle.html). To avoid copyright issues, the static library is not included in this repository. The easiest way to obtain Oodle is from Unreal Engine: download Unreal via the Epic Games Launcher and browse to _<InstallFolder>/Engine/Source/Runtime/OodleDataCompression/Sdks/2.9.5/lib_
+
+As a reminder: You do not need the static Oodle library to compile as a library, only to compile as an executable.
 
 # Documentation
 
@@ -21,11 +23,10 @@ Documentation can be found on [lotuslib.puxtril.com](https://lotuslib.puxtril.co
 
 ## How to use
 
-1. Once you have everything installed, you need to create a PackageCollection to start reading files. You have 2 options for the CachePairs: _CachePairReader_ and _CachePairMeta_.
-* If you want to read file data, use _CachePairReader_. This requires .cache files to be present.
-* If you only have the .toc files, use _CachePairMeta_. 
-* If you have other needs, subclass _CachePair_ and create your own interface.
-
+1. Once you have everything installed, you need to create a PackageCollection to start reading files. You currently have 2 options for the CachePairs: _CachePairReader_ and _CachePairMeta_.
+ * If you want to read file data, use _CachePairReader_. This requires cache files to be present.
+ * If you only have the .toc files, use _CachePairMeta_. 
+ * If you have other needs, subclass _CachePair_ and create your own interface.
 1. Determine the filepath of your _Cache.Windows_ folder. If you installed through Steam, it's most likely in "C:\Steam\steamapps\common\Warframe\Cache.Windows".
 1. Determine if your installation is pre/post Ensmallening. This is pretty easy - [if the installation was updated after September 9th, 2020; it's post](https://forums.warframe.com/topic/1223735-the-great-ensmallening/).
 
@@ -53,7 +54,7 @@ int main()
 
 ## Iterating over files
 
-Each interface has an std::vector iterator, making iteration very easy. 
+Each interface has a linear iterator, making iteration very easy. 
 
 Here's an example that counts every file in the archives:
 ```cpp
@@ -67,9 +68,7 @@ using namespace LotusLib;
 int main()
 {
     PackageCollection<CachePairReader> collection("C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows", true);
-
-    
-    // Get a total file count
+ 
     // Variables are extra verbose for clarity
     size_t fileCount = 0;
     for (Package<CachePairReader>& pkg : collection)
@@ -85,22 +84,38 @@ int main()
 }
 ```
 
-# Design
+## Great! What can I do with these files?
+
+That's up to you! Within the cache files are 3D models, Textures, Audio files, Maps, AI scripts, Shaders, Animations, and much more. While you may see common file extensions like .fbx, .png, and .wav, they are certianly not stored in that format. Likely they are stored on the original servers in this format, but once packaged into the cache files, they are converted to something else. __Most__ files are stored in a custom format, so no existing program (like Blender) can read the data. You will need to write a converter to a standard format. This is not an easy task, and falls under the general term of "Reverse Engineering". Crack open your hex editor and have fun!
+
+The folks on Xentax have already done some of this work. Personally I have written an extractor for 3D Models (some errors) and Textures (fully functional). I have not released this code, but plan on releasing in another open-source project. If you would like to assist, or would simply like the file definitions for these, please contact me on Discord or Email. I also have partial definitions for Animations and Maps.
+
+Other than Reverse Engineering, you can simply collect metadata on the current cache. You can take snapshots, look at historical versions of Warframe and see how the data has changed. Warframe has gone undergone many revisions, so plenty to analyze there!
+
+# Design of Warframe, and design of LotusLib
 
 So you're not left wondering "Why the hell was it designed like this"
 
 ## Cache files
 
-Looking at the Warframe cache folder, we see a bunch of .toc and .cache files. In this library, the organization of these two files is abstracted into a _CachePair_; _Packages_ which represent the grouping of the 3 pairs F, B, and H; and a _PackageCollection_ represents the entire directory of _Package_s.
+Looking at the Warframe cache folder, we see a bunch of .toc and .cache files. Toc files only contain a tree-heirarchy of files/folders. They contain file sizes and offsets of the binary data in the matching cache file. These files should always be paired together, so they are abstracted into the _CachePair_ class. Since there are multiple ways to interface with these files, _CachePair_ is a base class. For reading data in the cache file, use _CachePairReader_ and if you only have the toc file, use _CachePairMeta_. _CachePairMeta_ is slightly misleading because it doesn't require cache files.
 
-Let's take an example file name. This is straight from the Cache.Windows folder: `H.Texture.toc`
+_CachePair_s are the lowest interface the user should interact with, but to make accessing easier, containers are built on top of the _CachePair_ for easy, logical access. _Package_ represent the triple pairs of H, F, and B. Within a package, the triples share a name. _PackageCollection_ is a collection of _Package_s, indexed by their names.
 
+Let's take an example file name. This is straight from the Cache.Windows folder:
 
-_PackageCollection_ is a dictionary indexed by strings, which are the package names. In the above example, "Texture" is the package name. Example: `packageCol["Texture"];`
-_Package_ is an array, indexed by the grouping H, F, and B. The enumeration is found in 'Package.h'. In the above example, the PackageTrioType is `H`. Example: `package[LotusLib::PackageTrioType::H];`
-_CachePair_ is not indexable, it represents the direct interface for the cache files. Thus, this is the most important class. To separate uses, _CachePair_ is a base class, so typical usage would be to use _CachePairReader_ or _CachePairMeta_. If you wanted to add another interface, it would be trivial.
+H.Texture.toc
+\- \-\-\-\-\-\-\- \-\-\-
+|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
+|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|\-Table of Contents file. There will always be a matching .cache file.
+|&nbsp;&nbsp;&nbsp;&nbsp;|
+|&nbsp;&nbsp;&nbsp;&nbsp;|\-Package name. There is no defined limit of these.
+|
+|\-PackageTrioType. Always an H, usually a matching B and F, but both not required.
 
-The above classes _PackageCollection_ and _Package_ are templates, meant to be instanciated by a _CachePair_ subclass. The idea is to choose the apprpriate _CachePair_ subclass, then create _PackageCollection_ to provide an easy interface to access all files in a cache directory. Like so: `LotusLib::CachePairCollection<LotusLib::CachePairReader>`
+## Common Header
+
+Most files in the H PackagePair will start with a CommonHeader struct. Within this struct is an enumeration that defines the content of the files definition in H, F, and B. 
 
 ## Decompression
 
