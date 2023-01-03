@@ -104,14 +104,16 @@ _CachePair_s are the lowest interface the user should interact with, but to make
 
 Let's take an example file name. This is straight from the Cache.Windows folder:
 
+```
 H.Texture.toc
-\- \-\-\-\-\-\-\- \-\-\-
-|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|
-|&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|\-Table of Contents file. There will always be a matching .cache file.
-|&nbsp;&nbsp;&nbsp;&nbsp;|
-|&nbsp;&nbsp;&nbsp;&nbsp;|\-Package name. There is no defined limit of these.
+- ------- ---
+|    |     |
+|    |     |-Table of Contents file. There will always be a matching .cache file.
+|    |
+|    |-Package name. There is no defined limit of these.
 |
-|\-PackageTrioType. Always an H, usually a matching B and F, but both not required.
+|-PackageTrioType. Always an H, usually a matching B and F, but both not required.
+```
 
 ## Common Header
 
