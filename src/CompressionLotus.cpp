@@ -66,13 +66,11 @@ CompressionLotus::getDataAndDecompressPre(const FileEntries::FileNode* entry, st
 void
 CompressionLotus::getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader, char* outData)
 {
-	char* decompressedData = new char[entry->getLen()];
-
 	char* compressedData = new char[entry->getCompLen()];
 	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
 	cacheReader.read(compressedData, entry->getCompLen());
 
-	Compression::decompressLz(compressedData, entry->getCompLen(), decompressedData, entry->getLen());
+	Compression::decompressLz(compressedData, entry->getCompLen(), outData, entry->getLen());
 
 	delete[] compressedData;
 }
