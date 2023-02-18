@@ -70,14 +70,14 @@ namespace LotusLib
 		}
 
 		template <bool _Const = Const>
-		std::enable_if_t< !_Const, reference>
+		std::enable_if_t< !_Const, value_type>
 		operator*()
 		{
 			return m_ptr->getChildFile(m_filePosition);
 		}
 
 		template <bool _Const = Const>
-		std::enable_if_t< _Const, reference>
+		std::enable_if_t< _Const, value_type>
 		operator*() const
 		{
 			return m_ptr->getChildFile(m_filePosition);
