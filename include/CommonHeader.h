@@ -23,8 +23,8 @@ namespace LotusLib
 	class CommonHeaderReader
 	{
 	public:
-		static int findHeaderLen(char* file);
-		static int readHeader(char* file, CommonHeader& header);
-		static CommonHeader readHeader(char* file);
+		static int findHeaderLen(const char* file);
+		static int readHeader(const char* file, CommonHeader& header);
+		static CommonHeader readHeader(const char* file);
 	};
 }
