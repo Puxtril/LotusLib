@@ -77,7 +77,7 @@ namespace LotusLib
 		}
 
 		std::filesystem::path
-		getPreferredPath()
+		getPreferredPath() const
 		{
 			std::filesystem::path newPath = *this;
 			newPath.make_preferred();
