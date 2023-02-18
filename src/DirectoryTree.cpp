@@ -9,7 +9,7 @@ DirectoryTree::DirectoryTree(std::filesystem::path tocPath)
 	m_files(std::vector<FileNode>()),
 	m_rootNode(nullptr),
 	m_hasRead(false),
-	m_dupeCount(0)
+	m_dupeCount(-1)
 {
 }
 
