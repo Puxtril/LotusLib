@@ -166,11 +166,12 @@ namespace LotusLib
 			return { tocPath, cachePath };
 		}
 	};
-
+	 
 	////////////////////////////////////////////////////
 	// Specializations
 	
 	template<>
+	inline
 	void
 	Package<CachePairMeta>::_loadPkgPairs()
 	{
