@@ -87,7 +87,7 @@ namespace LotusLib
 			m_pkgMap.emplace(
 				std::piecewise_construct,
 				std::forward_as_tuple(pkgName),
-				std::forward_as_tuple(m_pkgs.size())
+				std::forward_as_tuple(static_cast<int>(m_pkgs.size()))
 			);
 			m_pkgs.emplace_back(m_packageDir, pkgName, m_isPostEnsmallening);
 		} 
