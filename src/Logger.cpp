@@ -15,10 +15,10 @@ Logger::Logger()
 }
 
 void
-Logger::setLogProperties(std::string loggerName, const std::filesystem::path& logPath, spdlog::level::level_enum logLevel)
+Logger::setLogProperties(std::string loggerName, const std::filesystem::path& logPath, spdlog::level logLevel)
 {
 	auto sinkFile = std::make_shared<spdlog::sinks::basic_file_sink_st>(logPath.string(), true);
-	sinkFile->set_level(static_cast<spdlog::level::level_enum>(logLevel));
+	sinkFile->set_level(static_cast<spdlog::level>(logLevel));
 	sinkFile->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
 
 	auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_st>();
