@@ -90,12 +90,12 @@ CachePair::isValid(std::ifstream& tocReader) const
 
 	if (magicNumber != m_magicNumber)
 	{
-		m_logger.error(spdlog::fmt_lib::format("Invalid magic number: {} != {}", magicNumber, m_magicNumber));
+		m_logger.error(spdlog::fmt_lib::format("Invalid magic number: {}", magicNumber));
 		return false;
 	}
 	if (archiveVersion != m_archiveVersion)
 	{
-		m_logger.error(spdlog::fmt_lib::format("Invalid archive version: {} != {}", archiveVersion, m_archiveVersion));
+		m_logger.error(spdlog::fmt_lib::format("Invalid archive version: {}", archiveVersion));
 		return false;
 	}
 
