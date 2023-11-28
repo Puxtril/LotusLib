@@ -5,7 +5,6 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/fwd.h"
 
 namespace LotusLib
 {
@@ -18,7 +17,7 @@ namespace LotusLib
 	public:
 		//! Creates a new logger
 		//! Does not throw exception if called multiple times
-		static void setLogProperties(std::string loggerName, const std::filesystem::path& logPath, spdlog::level logLevel);
+		static void setLogProperties(std::string loggerName, const std::filesystem::path& logPath, spdlog::level::level_enum logLevel);
 		//! Used to pull an existing logger
 		static void setLogProperties(std::string loggerName);
 		
