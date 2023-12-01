@@ -7,6 +7,7 @@
 #include "RawEntry.h"
 #include "ForwardRecursiveFileIterator.h"
 
+#include <stdexcept>
 #include <filesystem>
 #include <vector>
 #include <fstream>

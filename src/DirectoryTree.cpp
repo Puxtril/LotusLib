@@ -153,6 +153,7 @@ DirectoryTree::getFileEntry(const LotusPath& lotusPath) const
 	std::string lotusPathStr(lotusPath.string());
 
 	const DirNode* dirPos = m_rootNode;
+	const DirNode* nextDirPos;
 	size_t curStart = 0, curEnd = 0;
 
 	if (lotusPathStr[0] == '/')
@@ -166,11 +167,12 @@ DirectoryTree::getFileEntry(const LotusPath& lotusPath) const
 			const FileNode* fNode = dirPos->findChildFile(lotusPathStr, curStart, curEnd);
 			if (fNode != nullptr)
 				return fNode;
-			throw std::filesystem::filesystem_error(lotusPathStr, std::make_error_code(std::errc::no_such_file_or_directory));
+			throw std::runtime_error("\"" + dirPos->getFullPath() + "\" doesn't contain file \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
 		}
-		dirPos = dirPos->findChildDir(lotusPathStr, curStart, curEnd - curStart);
-		if (dirPos == nullptr)
-			throw std::filesystem::filesystem_error(lotusPathStr, std::make_error_code(std::errc::no_such_file_or_directory));
+		nextDirPos = dirPos->findChildDir(lotusPathStr, curStart, curEnd - curStart);
+		if (nextDirPos == nullptr)
+			throw std::runtime_error("\"" + dirPos->getFullPath() + "\" doesn't contain directory \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
+		dirPos = nextDirPos;
 		curStart = curEnd + 1;
 	}
 
@@ -183,6 +185,7 @@ DirectoryTree::getDirEntry(const LotusPath& lotusPath) const
 	std::string lotusPathStr(lotusPath.string());
 
 	const DirNode* dirPos = m_rootNode;
+	const DirNode* nextDirPos;
 	size_t curStart = 0, curEnd = 0;
 
 	if (lotusPathStr.length() == 1 && lotusPathStr[0] == '/')
@@ -194,11 +197,12 @@ DirectoryTree::getDirEntry(const LotusPath& lotusPath) const
 	while (true)
 	{
 		curEnd = lotusPathStr.find('/', curStart);
-		dirPos = dirPos->findChildDir(lotusPathStr, curStart, curEnd - curStart);
-		if (dirPos == nullptr)
-			throw std::filesystem::filesystem_error(lotusPathStr, std::make_error_code(std::errc::no_such_file_or_directory));
+		nextDirPos = dirPos->findChildDir(lotusPathStr, curStart, curEnd - curStart);
+		if (nextDirPos == nullptr)
+			throw std::runtime_error("\"" + dirPos->getFullPath() + "\" doesn't contain directory \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
 		if (curEnd == std::string::npos)
-			return dirPos;
+			return nextDirPos;
+		dirPos = nextDirPos;
 		curStart = curEnd + 1;
 	}
 
