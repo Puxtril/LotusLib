@@ -3,7 +3,7 @@
 using namespace LotusLib;
 		
 int
-CommonHeaderReader::findHeaderLen(const char* file)
+CommonHeaderReader::findHeaderLen(const std::vector<uint8_t>& file)
 {
 	size_t filePos = 0;
 
@@ -30,7 +30,7 @@ CommonHeaderReader::findHeaderLen(const char* file)
 }
 
 int
-CommonHeaderReader::readHeader(const char* file, CommonHeader& header)
+CommonHeaderReader::readHeader(const std::vector<uint8_t>& file, CommonHeader& header)
 {
 	size_t filePos = 0;
 
@@ -50,14 +50,16 @@ CommonHeaderReader::readHeader(const char* file, CommonHeader& header)
 		if (curLen > 200)
 			throw LotusException("Source path length in Common Header was too large: " + std::to_string(curLen));
 		
-		header.paths.push_back(std::string(&file[filePos], curLen));
+		char* pathsPtr = (char*)&file[filePos];
+		header.paths.push_back(std::string(pathsPtr, curLen));
 		filePos += curLen;
 	}
 
 	uint32_t attributeLen = *reinterpret_cast<const uint32_t*>(&file[filePos]);
 	filePos += 4;
 
-	header.attributes = std::string(&file[filePos], attributeLen);
+	char* attrPtr = (char*)&file[filePos];
+	header.attributes = std::string(attrPtr, attributeLen);
 	filePos += attributeLen;
 
 	if (attributeLen > 0)
@@ -70,7 +72,7 @@ CommonHeaderReader::readHeader(const char* file, CommonHeader& header)
 }
 
 CommonHeader
-CommonHeaderReader::readHeader(const char* file)
+CommonHeaderReader::readHeader(const std::vector<uint8_t>& file)
 {
 	CommonHeader header;
 	readHeader(file, header);

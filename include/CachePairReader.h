@@ -8,7 +8,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <memory>
 
 namespace LotusLib
 {
@@ -21,11 +20,9 @@ namespace LotusLib
 		CachePairReader(const CachePairReader&) = delete;
 		CachePairReader& operator=(CachePairReader&) = delete;
 		
-		//! This will not check if enough space has been allocated
-		int getData(const LotusPath& internalPath, char* data) const;
-		//! This will not check if enough space has been allocated
-		int getDataAndDecompress(const LotusPath& internalPath, char* outData) const;
-		std::unique_ptr<char[]> getData(const FileEntries::FileNode* entry) const;
-		std::unique_ptr<char[]> getDataAndDecompress(const FileEntries::FileNode* entry) const;
+		std::vector<uint8_t> getData(const LotusPath& internalPath) const;
+		std::vector<uint8_t> getDataAndDecompress(const LotusPath& internalPath) const;
+		std::vector<uint8_t> getData(const FileEntries::FileNode* entry) const;
+		std::vector<uint8_t> getDataAndDecompress(const FileEntries::FileNode* entry) const;
 	};
 }

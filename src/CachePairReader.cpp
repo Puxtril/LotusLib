@@ -7,56 +7,39 @@ CachePairReader::CachePairReader(std::filesystem::path tocPath, std::filesystem:
 {
 }
 
-int
-CachePairReader::getData(const LotusPath& internalPath, char* outData) const
+std::vector<uint8_t>
+CachePairReader::getData(const LotusPath& internalPath) const
 {
 	const FileEntries::FileNode* entry = m_dirTree.getFileEntry(internalPath);
-	std::ifstream cacheReader(m_cachePath, std::ios::in | std::ios::binary);
-	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
-	cacheReader.read(outData, entry->getCompLen());
-	return entry->getLen();
+	return getData(entry);
 }
 
-std::unique_ptr<char[]>
+std::vector<uint8_t>
 CachePairReader::getData(const FileEntries::FileNode* entry) const
 {
 	std::ifstream cacheReader(m_cachePath, std::ios::in | std::ios::binary);
 	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
-	std::unique_ptr<char[]> data(new char[entry->getLen()]);
-	cacheReader.read(&data[0], entry->getCompLen());
+	std::vector<uint8_t> data(entry->getCompLen());
+	cacheReader.read((char*)data.data(), entry->getCompLen());
 	return data;
 }
 
-int
-CachePairReader::getDataAndDecompress(const LotusPath& internalPath, char* outData) const
+std::vector<uint8_t>
+CachePairReader::getDataAndDecompress(const LotusPath& internalPath) const
 {
 	const FileNode* entry = m_dirTree.getFileEntry(internalPath);
-	
-	if (entry->getCompLen() == entry->getLen())
-		return getData(internalPath, outData);
-
-	std::ifstream cacheReader(m_cachePath, std::ios::in | std::ios::binary);
-	if (m_isPostEnsmallening)
-		CompressionLotus::getDataAndDecompressPost(entry, cacheReader, outData);
-	else
-		CompressionLotus::getDataAndDecompressPre(entry, cacheReader, outData);
-	
-	return entry->getLen();
+	return getDataAndDecompress(entry);
 }
 
-std::unique_ptr<char[]>
+std::vector<uint8_t>
 CachePairReader::getDataAndDecompress(const FileEntries::FileNode* entry) const
 {
 	if (entry->getCompLen() == entry->getLen())
 		return getData(entry);
 
-	char* rawData;
 	std::ifstream cacheReader(m_cachePath, std::ios::in | std::ios::binary);
 	if (m_isPostEnsmallening)
-		rawData = CompressionLotus::getDataAndDecompressPost(entry, cacheReader);
+		return CompressionLotus::getDataAndDecompressPost(entry, cacheReader);
 	else
-		rawData = CompressionLotus::getDataAndDecompressPre(entry, cacheReader);
-
-	std::unique_ptr<char[]> data(rawData);
-	return data;
+		return CompressionLotus::getDataAndDecompressPre(entry, cacheReader);
 }

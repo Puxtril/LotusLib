@@ -22,12 +22,12 @@ namespace LotusLib {
 		//!		 will contain the compressed and decompressed block length.
 		//!		The block data may be oodle-compressed or LZ compressed.
 		//		Multiple blocks may need to be concatonated to build the final file.
-		static char* getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader);
-		static void getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader, char* outData);
+		static std::vector<uint8_t> getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader);
+		static void getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader, uint8_t* outData);
 		//! Pre-Ensmallening:
 		//!		The data is always LZ compressed, always 1 block in length.
-		static char* getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader);
-		static void getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader, char* outData);
+		static std::vector<uint8_t> getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader);
+		static void getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader, uint8_t* outData);
 
 	private:
 		static bool isOodleBlock(std::ifstream& cacheReader);

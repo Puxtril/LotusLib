@@ -23,8 +23,8 @@ namespace LotusLib
 	class CommonHeaderReader
 	{
 	public:
-		static int findHeaderLen(const char* file);
-		static int readHeader(const char* file, CommonHeader& header);
-		static CommonHeader readHeader(const char* file);
+		static int findHeaderLen(const std::vector<uint8_t>& file);
+		static int readHeader(const std::vector<uint8_t>& file, CommonHeader& header);
+		static CommonHeader readHeader(const std::vector<uint8_t>& file);
 	};
 }

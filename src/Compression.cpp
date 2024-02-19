@@ -1,13 +1,13 @@
 #include "Compression.h"
 
 void
-LotusLib::Compression::decompressOodle(char* inputData, size_t inputLen, char* outputData, size_t outputLen)
+LotusLib::Compression::decompressOodle(uint8_t* inputData, size_t inputLen, uint8_t* outputData, size_t outputLen)
 {
 	OodleLZ_Decompress(inputData, inputLen, outputData, outputLen, OodleLZ_FuzzSafe_No, OodleLZ_CheckCRC_No, OodleLZ_Verbosity_None, 0, 0, 0, 0, 0, 0, OodleLZ_Decode_ThreadPhaseAll);
 }
 
 void
-LotusLib::Compression::decompressLz(char* inputData, uint32_t inputLen, char* outputData, uint32_t outputLen)
+LotusLib::Compression::decompressLz(uint8_t* inputData, uint32_t inputLen, uint8_t* outputData, uint32_t outputLen)
 {
 	if (inputLen == outputLen)
 		outputData = inputData;
@@ -17,7 +17,7 @@ LotusLib::Compression::decompressLz(char* inputData, uint32_t inputLen, char* ou
 }
 
 void
-LotusLib::Compression::decompressLzBlock(const unsigned char* inputData, uint32_t inputLen, unsigned char* outputData, uint32_t outputLen)
+LotusLib::Compression::decompressLzBlock(const uint8_t* inputData, uint32_t inputLen, uint8_t* outputData, uint32_t outputLen)
 {
 	uint32_t inputPos = 0;
 	uint32_t outputPos = 0;

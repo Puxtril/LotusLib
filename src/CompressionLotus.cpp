@@ -2,18 +2,18 @@
 
 using namespace LotusLib;
 
-char*
+std::vector<uint8_t>
 CompressionLotus::getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader)
 {
-	char* decompressedData = new char[entry->getLen()];
-	getDataAndDecompressPost(entry, cacheReader, decompressedData);
+	std::vector<uint8_t> decompressedData(entry->getLen());
+	getDataAndDecompressPost(entry, cacheReader, decompressedData.data());
 	return decompressedData;
 }
 
 void
-CompressionLotus::getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader, char* outData)
+CompressionLotus::getDataAndDecompressPost(const FileEntries::FileNode* entry, std::ifstream& cacheReader, uint8_t* outData)
 {
-	static char* compressedBuffer = new char[0x40000];
+	static uint8_t* compressedBuffer = new uint8_t[0x40000];
 	int32_t decompPos = 0;
 	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
 	
@@ -39,7 +39,7 @@ CompressionLotus::getDataAndDecompressPost(const FileEntries::FileNode* entry, s
 		}
 
 		bool isOodle = isOodleBlock(cacheReader);
-		cacheReader.read(compressedBuffer, std::get<0>(blockLens));
+		cacheReader.read((char*)compressedBuffer, std::get<0>(blockLens));
 
 		if (isOodle)
 		{
@@ -55,24 +55,22 @@ CompressionLotus::getDataAndDecompressPost(const FileEntries::FileNode* entry, s
 	}
 }
 
-char*
+std::vector<uint8_t>
 CompressionLotus::getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader)
 {
-	char* data = new char[entry->getLen()];
-	getDataAndDecompressPre(entry, cacheReader, data);
+	std::vector<uint8_t> data(entry->getLen());
+	getDataAndDecompressPre(entry, cacheReader, data.data());
 	return data;
 }
 
 void
-CompressionLotus::getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader, char* outData)
+CompressionLotus::getDataAndDecompressPre(const FileEntries::FileNode* entry, std::ifstream& cacheReader, uint8_t* outData)
 {
-	char* compressedData = new char[entry->getCompLen()];
+	std::vector<uint8_t> compressedData(entry->getCompLen());
 	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
-	cacheReader.read(compressedData, entry->getCompLen());
+	cacheReader.read((char*)compressedData.data(), entry->getCompLen());
 
-	Compression::decompressLz(compressedData, entry->getCompLen(), outData, entry->getLen());
-
-	delete[] compressedData;
+	Compression::decompressLz(compressedData.data(), entry->getCompLen(), outData, entry->getLen());
 }
 
 bool
