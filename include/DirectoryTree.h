@@ -13,6 +13,7 @@
 #include <fstream>
 #include <iostream>
 #include <time.h>
+#include <chrono>
 
 #ifdef WIN32
 // gmtime() warning supression
@@ -38,6 +39,7 @@ namespace LotusLib
 		std::filesystem::path m_tocPath;
 		std::vector<DirNode> m_dirs;
 		std::vector<FileNode> m_files;
+		std::vector<FileNode> m_filesDupes;
 		DirNode* m_rootNode;
 		bool m_hasRead;
 		int m_dupeCount;
@@ -52,8 +54,6 @@ namespace LotusLib
 
 		void readTocFile();
 		void unReadTocFile();
-		//! See "Warframe's use of file duplicates"
-		int findDuplicates();
 
 		FileIterator begin();
 		FileIterator end();

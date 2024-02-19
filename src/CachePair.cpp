@@ -26,7 +26,6 @@ CachePair::readToc()
 	tocReader.close();
 
 	m_dirTree.readTocFile();
-	m_dirTree.findDuplicates();
 	m_hasReadToc = true;
 }
 

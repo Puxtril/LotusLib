@@ -107,9 +107,12 @@ DirNode::addChildDir(DirNode* node)
 }
 
 void
-DirNode::addChildFile(FileNode* node)
+DirNode::addChildFile(FileNode* node, bool isDupe)
 {
-	m_childFiles.push_back(node);
+	if (isDupe)
+		m_childFileDupes.push_back(node);
+	else
+		m_childFiles.push_back(node);
 }
 
 const DirNode*
@@ -154,39 +157,6 @@ DirNode::findChildFile(const std::string& path, size_t start, size_t len) const
 			return curNode;
 	}
 	return nullptr;
-}
-
-int
-DirNode::findDupesRecursive()
-{
-	int* buffer = new int[4000];
-	int dupeCount = this->findDupesRecursiveHelper(buffer);
-	delete[] buffer;
-	return dupeCount;
-}
-
-int
-DirNode::findDupesRecursiveHelper(int* indiciesBuffer)
-{
-	int dupeIndex = 0;
-	for (int x = 0; x < (int)m_childFiles.size() - 1; x++)
-	{
-		if (m_childFiles[x]->getTimeStamp() == 0)
-			indiciesBuffer[dupeIndex++] = x;
-	}
-
-	for (int x = 0; x < dupeIndex; x++)
-	{
-		int index = indiciesBuffer[x] - x;
-		m_childFileDupes.push_back(m_childFiles[index]);
-		m_childFiles.erase(m_childFiles.begin() + index);
-	}
-
-	int totalDupes = 0;
-	for (auto x : m_childDirs)
-		totalDupes += x->findDupesRecursiveHelper(indiciesBuffer);
-
-	return dupeIndex + totalDupes;
 }
 
 void

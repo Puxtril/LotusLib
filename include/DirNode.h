@@ -40,11 +40,9 @@ namespace LotusLib {
 			const FileNode* findChildFile(const std::string& path, size_t start, size_t len) const;
 
 			void addChildDir(DirNode* node);
-			void addChildFile(FileNode* node);
-			int findDupesRecursive();
+			void addChildFile(FileNode* node, bool isDupe = false);
 
 		private:
-			int findDupesRecursiveHelper(int* indiciesBuffer);
 			void getPathRecursive(std::stringstream& stream) const;
 		};
 	}

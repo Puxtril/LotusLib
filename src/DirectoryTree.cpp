@@ -26,14 +26,17 @@ DirectoryTree::readTocFile()
 	tocReader.seekg(8, std::ios_base::beg);
 
 	RawTOCEntry entryBuffer;
+
+	m_filesDupes.resize(entryCount);
 	m_files.resize(entryCount);
 	m_dirs.resize(entryCount);
-	int realFileCount = 0;
-	int realDirCount = 1;
+
+	int realFileDupeCount = 0, realFileCount = 0, realDirCount = 1;
 
 	for (int i = 0; i < entryCount; i++)
 	{
 		tocReader.read((char*)&entryBuffer, TOC_ENTRY_LEN);
+
 		if (entryBuffer.cacheOffset == -1)
 		{
 			m_dirs[realDirCount].setData(
@@ -46,25 +49,48 @@ DirectoryTree::readTocFile()
 		}
 		else
 		{
-			m_files[realFileCount].setData(
-				std::string(entryBuffer.name),
-				&m_dirs[entryBuffer.parentDirIndex],
-				entryBuffer.cacheOffset,
-				entryBuffer.timeStamp,
-				entryBuffer.compressedLen,
-				entryBuffer.length,
-				i
-			);
-			m_dirs[entryBuffer.parentDirIndex].addChildFile(&m_files[realFileCount]);
-			realFileCount++;
+			// Duplicate
+			if (entryBuffer.timeStamp == 0)
+			{
+				m_filesDupes[realFileDupeCount].setData(
+					std::string(entryBuffer.name),
+					&m_dirs[entryBuffer.parentDirIndex],
+					entryBuffer.cacheOffset,
+					entryBuffer.timeStamp,
+					entryBuffer.compressedLen,
+					entryBuffer.length,
+					i
+				);
+				m_dirs[entryBuffer.parentDirIndex].addChildFile(&m_filesDupes[realFileDupeCount], true);
+				realFileDupeCount++;
+			}
+
+			else
+			{
+				m_files[realFileCount].setData(
+					std::string(entryBuffer.name),
+					&m_dirs[entryBuffer.parentDirIndex],
+					entryBuffer.cacheOffset,
+					entryBuffer.timeStamp,
+					entryBuffer.compressedLen,
+					entryBuffer.length,
+					i
+				);
+				m_dirs[entryBuffer.parentDirIndex].addChildFile(&m_files[realFileCount]);
+				realFileCount++;
+			}
 		}
 	}
+
+	m_filesDupes.resize(realFileDupeCount);
 	m_files.resize(realFileCount);
 	m_dirs.resize(realDirCount);
 	m_rootNode = &m_dirs[0];
 
+	m_dupeCount = realFileDupeCount;
+
 	m_hasRead = true;
-	m_log.info(spdlog::fmt_lib::format("{} files, {} dirs", realFileCount, realDirCount));
+	m_log.info(spdlog::fmt_lib::format("{} files, {} dirs, {} deleted", realFileCount, realDirCount, realFileDupeCount));
 }
 
 void
@@ -75,16 +101,6 @@ DirectoryTree::unReadTocFile()
 	m_rootNode = nullptr;
 	m_dupeCount = -1;
 	m_hasRead = false;
-}
-
-int
-DirectoryTree::findDuplicates()
-{
-	if (m_dupeCount != -1)
-		return m_dupeCount;
-	m_dupeCount = m_rootNode->findDupesRecursive();
-	m_log.info(spdlog::fmt_lib::format("Found {} duplicates", m_dupeCount));
-	return m_dupeCount;
 }
 
 DirectoryTree::FileIterator
