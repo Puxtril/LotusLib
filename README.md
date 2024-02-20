@@ -17,10 +17,6 @@ This will allow you to access files stored within the .toc and .cache files. Tha
 
 As a reminder: You do not need the static Oodle library to compile as a library, only to compile as an executable.
 
-# Documentation
-
-Documentation can be found on [lotuslib.puxtril.com](https://lotuslib.puxtril.com)
-
 ## How to use
 
 1. Once you have everything installed, you need to create a PackageCollection to start reading files. You currently have 2 options for the CachePairs: _CachePairReader_ and _CachePairMeta_.
@@ -32,23 +28,38 @@ Documentation can be found on [lotuslib.puxtril.com](https://lotuslib.puxtril.co
 
 Now you can create a collection like so:
 ```cpp
-#include "PackageCollection.h"
-#include "Package.h"
-#include "CachePairReader.h"
-
-using namespace LotusLib;
+#include "LotusLib.h"
 
 int main()
 {
-    PackageCollection<CachePairReader> collection("C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows", true);
+    // "Cache.Windows" is located in the installation directory
+    LotusLib::PackagesReader dir("C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows");
+    // This loads the package "Misc" from the "Cache.Windows" directory
+    LotusLib::PackageReader pkg = dir.getPackage("Misc");
 
-    // Get the file entry for Excalibur's model
-    const FileEntries::FileNode* excal = collection["Misc"][PackageTrioType::H]->getFileEntry("/Lotus/Characters/Tenno/Excalibur/ExcaliburBody_skel.fbx");
-    
-    // Get the header and body data for Excalibur's model.
-    // Note the different _PackageTrioType_
-    std::unique_ptr<char[]> rawHeadData = collection["Misc"][PackageTrioType::H]->getDataAndDecompress("/Lotus/Characters/Tenno/Excalibur/ExcaliburBody_skel.fbx");
-    std::unique_ptr<char[]> rawBodyData = collection["Misc"][PackageTrioType::B]->getDataAndDecompress("/Lotus/Characters/Tenno/Excalibur/ExcaliburBody_skel.fbx");
+    // This returns all relevant data for this particular file
+    /*
+    struct FileEntry
+    {
+        CommonHeader commonHeader;
+        LotusPath internalPath;
+        BinaryReader headerData;
+        BinaryReader bData;
+        BinaryReader fData;
+    };
+
+    struct CommonHeader
+	{
+		std::array<uint8_t, 16> hash;
+		std::vector<std::string> paths;
+		std::string attributes;
+		uint32_t type;
+    }
+
+    - The CommonHeader gives you the Type (Model/Texture/Material/etc...)
+    - The contents of the 3 BinaryReaders all depend on the file type.
+    */
+    LotusLib::FileEntry entry = pkg.getFile("/Lotus/Characters/Tenno/Excalibur/Excalibur_skel.fbx");
 }
 ```
 
@@ -58,27 +69,19 @@ Each interface has a linear iterator, making iteration very easy.
 
 Here's an example that counts every file in the archives:
 ```cpp
-#include "PackageCollection.h"
-#include "Package.h"
-#include "CachePairReader.h"
-#include "FileNode.h"
+#include "LotusLib.h"
 
 using namespace LotusLib;
 
 int main()
 {
-    PackageCollection<CachePairReader> collection("C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows", true);
- 
-    // Variables are extra verbose for clarity
-    size_t fileCount = 0;
-    for (Package<CachePairReader>& pkg : collection)
+    LotusLib::PackagesReader dir("C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows");
+    for (auto& x : dir)
     {
-        for (std::shared_ptr<CachePairReader>& pair : pkg)
+        LotusLib::PackageReader easyReader(x);
+        for (auto& file : easyReader)
         {
-            for (const FileEntries::FileNode file : *pair)
-            {
-                fileCount++;
-            }
+            LotusLib::FileEntry entry = easyReader.getFile(file);
         }
     }
 }
