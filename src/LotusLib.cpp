@@ -1,6 +1,4 @@
 #include "LotusLib.h"
-#include "FileNode.h"
-#include "Package.h"
 
 using namespace LotusLib;
 
@@ -20,6 +18,7 @@ PackageReader::getFile(const FileNode& fileRef)
     entry.internalPath = fileRef.getFullPath();
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
     splitH->readToc();
+    entry.metadata = FileMeta(splitH->getFileEntry(fileRef.getFullPath()));
 
     std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(&fileRef);
     entry.headerData = BinaryReader(std::move(dataHeader));

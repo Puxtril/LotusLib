@@ -16,21 +16,13 @@ namespace LotusLib
 
     using BinaryReader = BinaryReader::BinaryReaderBuffered;
 
-    struct FileEntry
-    {
-        CommonHeader commonHeader;
-        LotusPath internalPath;
-        BinaryReader headerData;
-        BinaryReader bData;
-        BinaryReader fData;
-    };
-
     struct FileMeta
     {
     private:
         FileEntries::FileNode* fileNode;
     public:
         FileMeta(FileEntries::FileNode* fileNode) : fileNode(fileNode) {}
+        FileMeta() {}
         
         const std::string& getName() const { return fileNode->getName(); }
         int32_t getLen() const { return fileNode->getLen(); }
@@ -38,6 +30,16 @@ namespace LotusLib
         int64_t getOffset() const { return fileNode->getOffset(); }
         int64_t getTimeStamp() const { return fileNode->getTimeStamp(); }
         std::string getFullPath() const { return fileNode->getFullPath(); }
+    };
+
+    struct FileEntry
+    {
+        CommonHeader commonHeader;
+        LotusPath internalPath;
+        FileMeta metadata;
+        BinaryReader headerData;
+        BinaryReader bData;
+        BinaryReader fData;
     };
 
     class PackageReader
