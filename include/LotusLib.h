@@ -38,6 +38,10 @@ namespace LotusLib
         DirectoryTree::ConstFileIterator begin() const;
 		DirectoryTree::ConstFileIterator end() const;
 
+        const std::filesystem::path& getDirectory() const;
+		const std::string& getName() const;
+		bool isPostEnsmallening() const;
+
         void lsDir(const LotusPath& internalPath) const;
     };
 

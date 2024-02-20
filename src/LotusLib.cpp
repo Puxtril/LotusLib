@@ -68,6 +68,24 @@ PackageReader::end() const
     return splitH->end();
 }
 
+const std::filesystem::path&
+PackageReader::getDirectory() const
+{
+    return m_pkg.getDirectory();
+}
+
+const std::string&
+PackageReader::getName() const
+{
+    return m_pkg.getName();
+}
+
+bool
+PackageReader::isPostEnsmallening() const
+{
+    return m_pkg.isPostEnsmallening();
+}
+
 void
 PackageReader::lsDir(const LotusPath& internalPath) const
 {
