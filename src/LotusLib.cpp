@@ -1,4 +1,5 @@
 #include "LotusLib.h"
+#include "FileNode.h"
 #include "Package.h"
 
 using namespace LotusLib;
@@ -51,6 +52,15 @@ PackageReader::getFile(const FileNode& fileRef)
     }
 
     return entry;
+}
+
+FileMeta
+PackageReader::getFileMeta(LotusPath internalPath)
+{
+    PackageSplitReader split = m_pkg[PackageTrioType::H];
+    split->readToc();
+    LotusLib::FileEntries::FileNode* fileRef = split->getFileEntry(internalPath);
+    return FileMeta(fileRef);
 }
 
 DirectoryTree::ConstFileIterator

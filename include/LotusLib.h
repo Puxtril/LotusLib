@@ -25,6 +25,21 @@ namespace LotusLib
         BinaryReader fData;
     };
 
+    struct FileMeta
+    {
+    private:
+        FileEntries::FileNode* fileNode;
+    public:
+        FileMeta(FileEntries::FileNode* fileNode) : fileNode(fileNode) {}
+        
+        const std::string& getName() const { return fileNode->getName(); }
+        int32_t getLen() const { return fileNode->getLen(); }
+        int32_t getCompLen() const { return fileNode->getCompLen(); }
+        int64_t getOffset() const { return fileNode->getOffset(); }
+        int64_t getTimeStamp() const { return fileNode->getTimeStamp(); }
+        std::string getFullPath() const { return fileNode->getFullPath(); }
+    };
+
     class PackageReader
     {
         Package<CachePairReader>& m_pkg;
@@ -34,6 +49,8 @@ namespace LotusLib
 
         FileEntry getFile(LotusPath internalPath);
         FileEntry getFile(const FileNode& fileRef);
+
+        FileMeta getFileMeta(LotusPath internalPath);
 
         DirectoryTree::ConstFileIterator begin() const;
 		DirectoryTree::ConstFileIterator end() const;
