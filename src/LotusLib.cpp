@@ -1,4 +1,5 @@
 #include "LotusLib.h"
+#include "Package.h"
 
 using namespace LotusLib;
 
@@ -66,6 +67,22 @@ PackageReader::end() const
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
     splitH->readToc();
     return splitH->end();
+}
+
+DirectoryTree::ConstFileIteratorTree
+PackageReader::getIter(LotusLib::LotusPath startingPath) const
+{
+    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    splitH->readToc();
+    return splitH->getIter(startingPath);
+}
+
+DirectoryTree::ConstFileIteratorTree
+PackageReader::getIter() const
+{
+    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    splitH->readToc();
+    return splitH->getIter();
 }
 
 const std::filesystem::path&
