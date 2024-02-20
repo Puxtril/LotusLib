@@ -9,40 +9,21 @@ namespace LotusLib
 {
     class LotusException : public std::runtime_error {
     public:
-        LotusException(std::string msg);
-        virtual const char* what() const throw();
-
-    private:
-        std::string _msg;
+        LotusException(const std::string& msg);
     };
 
     class InvalidDataException : public LotusException {
     public:
-
-        InvalidDataException(std::string msg);
-        virtual const char* what() const throw();
-
-    private:
-        std::string _msg;
+        InvalidDataException(const std::string& msg);
     };
 
     class DecompressionException : public LotusException {
     public:
-
-        DecompressionException(std::string msg);
-        virtual const char* what() const throw();
-
-    private:
-        std::string _msg;
+        DecompressionException(const std::string& msg);
     };
 
     class InvalidLotusPath : public LotusException {
     public:
-
-        InvalidLotusPath(std::string msg);
-        virtual const char* what() const throw();
-
-    private:
-        std::string _msg;
+        InvalidLotusPath(const std::string& msg);
     };
 }

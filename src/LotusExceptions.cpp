@@ -2,39 +2,19 @@
 
 using namespace LotusLib;
 
-LotusException::LotusException(std::string msg)
+LotusException::LotusException(const std::string& msg)
     : runtime_error(msg)
 {
 }
 
-const char* LotusException::what() const throw()
-{
-    return _msg.c_str();
-}
-
-InvalidDataException::InvalidDataException(std::string msg)
+InvalidDataException::InvalidDataException(const std::string& msg)
     : LotusException(msg)
 {}
 
-const char* InvalidDataException::what() const throw()
-{
-    return _msg.c_str();
-}
-
-DecompressionException::DecompressionException(std::string msg)
+DecompressionException::DecompressionException(const std::string& msg)
     : LotusException(msg)
 {}
 
-const char* DecompressionException::what() const throw()
-{
-    return _msg.c_str();
-}
-
-InvalidLotusPath::InvalidLotusPath(std::string msg)
+InvalidLotusPath::InvalidLotusPath(const std::string& msg)
     : LotusException(msg)
 {}
-
-const char* InvalidLotusPath::what() const throw()
-{
-    return _msg.c_str();
-}
