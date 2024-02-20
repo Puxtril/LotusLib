@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LotusExceptions.h"
+#include "BinaryReaderBuffered.h"
 
 #include <array>
 #include <string>
@@ -12,7 +13,7 @@ namespace LotusLib
 {
 	struct CommonHeader
 	{
-		std::array<unsigned char, 16> hash;
+		std::array<uint8_t, 16> hash;
 		std::vector<std::string> paths;
 		std::string attributes;
 		uint32_t type;
@@ -20,11 +21,7 @@ namespace LotusLib
 		CommonHeader() : hash(), paths(), attributes(), type(0) {}
 	};
 
-	class CommonHeaderReader
-	{
-	public:
-		static int findHeaderLen(const std::vector<uint8_t>& file);
-		static int readHeader(const std::vector<uint8_t>& file, CommonHeader& header);
-		static CommonHeader readHeader(const std::vector<uint8_t>& file);
-	};
+	int CHFindLen(BinaryReader::BinaryReaderBuffered& reader);
+	int CHRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header);
+	CommonHeader CHRead(BinaryReader::BinaryReaderBuffered& reader);
 }

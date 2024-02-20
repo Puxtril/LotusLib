@@ -1,81 +1,62 @@
 #include "CommonHeader.h"
 
-using namespace LotusLib;
-		
 int
-CommonHeaderReader::findHeaderLen(const std::vector<uint8_t>& file)
+CHFindLen(BinaryReader::BinaryReaderBuffered& reader)
 {
-	size_t filePos = 0;
+	uint32_t length = 0;
 
-	uint32_t sourcePathCount = *reinterpret_cast<const uint32_t*>(&file[filePos]);
-	filePos += 4;
+	uint32_t sourcePathCount = reader.readUInt32();
 	if (sourcePathCount > 1500)
-		throw LotusException("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
+		throw LotusLib::LotusException("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
+	length += 4;
 
 	for (uint32_t x = 0; x < sourcePathCount; x++)
-	{
-		uint32_t curLen = *reinterpret_cast<const uint32_t*>(&file[filePos]);
-		filePos += 4 + curLen;
-	}
+		length += 4 + reader.readUInt32();
 
-	uint32_t attributeLen = *reinterpret_cast<const uint32_t*>(&file[filePos]);
-	filePos += 4 + attributeLen;
+	uint32_t attributeLen = reader.readUInt32();
+	length += 4 + attributeLen;
 
 	if (attributeLen > 0)
-		filePos += 1;
+		length += 1;
 	
-	filePos += 4;
+	length += 4;
 
-	return filePos;
+	return length;
 }
 
 int
-CommonHeaderReader::readHeader(const std::vector<uint8_t>& file, CommonHeader& header)
+LotusLib::CHRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header)
 {
-	size_t filePos = 0;
+	reader.readUInt8Array(&header.hash[0], 16);
 
-	std::memcpy(&header.hash[0], &file[0], 16);
-	filePos += 16;
-
-	uint32_t sourcePathCount = *reinterpret_cast<const uint32_t*>(&file[filePos]);
-	filePos += 4;
+	uint32_t sourcePathCount = reader.readUInt32();
 	if (sourcePathCount > 1500)
 		throw LotusException("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
 
-	header.paths.clear();
 	for (uint32_t x = 0; x < sourcePathCount; x++)
 	{
-		uint32_t curLen = *reinterpret_cast<const uint32_t*>(&file[filePos]);
-		filePos += 4;
+		uint32_t curLen = reader.readUInt32();
 		if (curLen > 200)
 			throw LotusException("Source path length in Common Header was too large: " + std::to_string(curLen));
 		
-		char* pathsPtr = (char*)&file[filePos];
-		header.paths.push_back(std::string(pathsPtr, curLen));
-		filePos += curLen;
+		header.paths.push_back(reader.readAsciiString(curLen));
 	}
 
-	uint32_t attributeLen = *reinterpret_cast<const uint32_t*>(&file[filePos]);
-	filePos += 4;
-
-	char* attrPtr = (char*)&file[filePos];
-	header.attributes = std::string(attrPtr, attributeLen);
-	filePos += attributeLen;
+	uint32_t attributeLen = reader.readUInt32();
+	header.attributes = reader.readAsciiString(attributeLen);
 
 	if (attributeLen > 0)
-		filePos += 1;
+		reader.seek(1, std::ios::cur);
 
-	header.type = *reinterpret_cast<const uint32_t*>(&file[filePos]);
-	filePos += 4;
+	header.type = reader.readUInt32();
 
-	return filePos;
+	return reader.tell();
 }
 
-CommonHeader
-CommonHeaderReader::readHeader(const std::vector<uint8_t>& file)
+LotusLib::CommonHeader
+LotusLib::CHRead(BinaryReader::BinaryReaderBuffered& reader)
 {
 	CommonHeader header;
-	readHeader(file, header);
+	LotusLib::CHRead(reader, header);
 	return header;
 }
-

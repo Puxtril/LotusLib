@@ -1,3 +1,6 @@
 [submodule "lib/spdlog"]
 	path = lib/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "lib/Binary-Reader"]
+	path = lib/Binary-Reader
+	url = https://github.com/Puxtril/Binary-Reader.git
