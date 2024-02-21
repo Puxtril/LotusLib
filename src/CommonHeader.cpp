@@ -1,7 +1,7 @@
 #include "CommonHeader.h"
 
 int
-CHFindLen(BinaryReader::BinaryReaderBuffered& reader)
+LotusLib::CHFindLen(BinaryReader::BinaryReaderBuffered& reader)
 {
 	uint32_t length = 0;
 
