@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CachePairReader.h"
+#include "DirNode.h"
 #include "FileNode.h"
 #include "LotusPath.h"
 #include "Package.h"
@@ -16,20 +17,49 @@ namespace LotusLib
 
     using BinaryReader = BinaryReader::BinaryReaderBuffered;
 
-    struct FileMeta
+    enum FileEntryReaderFlags : int
     {
-    private:
-        FileEntries::FileNode* fileNode;
+        READ_COMMON_HEADER = 1,
+        READ_H_CACHE = 2,
+        READ_B_CACHE = 4,
+        READ_F_CACHE = 8
+    };
+
+    class FileMeta
+    {
+        const FileEntries::FileNode* fileNode;
+
     public:
-        FileMeta(FileEntries::FileNode* fileNode) : fileNode(fileNode) {}
-        FileMeta() {}
+        FileMeta(const FileEntries::FileNode* fileNode);
+        FileMeta();
         
-        const std::string& getName() const { return fileNode->getName(); }
-        int32_t getLen() const { return fileNode->getLen(); }
-        int32_t getCompLen() const { return fileNode->getCompLen(); }
-        int64_t getOffset() const { return fileNode->getOffset(); }
-        int64_t getTimeStamp() const { return fileNode->getTimeStamp(); }
-        std::string getFullPath() const { return fileNode->getFullPath(); }
+        const std::string& getName() const;
+        int32_t getLen() const;
+        int32_t getCompLen() const;
+        int64_t getOffset() const;
+        int64_t getTimeStamp() const;
+        std::string getFullPath() const;
+    };
+
+    class DirMeta
+    {
+        const FileEntries::DirNode* dirNode;
+
+    public:
+        DirMeta(const FileEntries::DirNode* dirNode);
+        DirMeta();
+
+        const std::string& getName() const;
+        const DirMeta getParent() const;
+        int getTocOffset() const;
+        size_t getDirCount() const;
+        size_t getFileCount() const;
+        std::string getFullPath() const;
+
+        const DirMeta getChildDir(int index) const;
+        const DirMeta getChildDir(const std::string& name) const;
+        const FileMeta getChildFile(int index) const;
+        const FileMeta getChildFile(const std::string& name) const;
     };
 
     struct FileEntry
@@ -49,10 +79,18 @@ namespace LotusLib
     public:
         PackageReader(Package<CachePairReader>& package) : m_pkg(package) {}
 
+        CommonHeader getCommonHeader(LotusPath internalPath);
+        // Assumes this is inside the H package
+        // The iterator for this class is compatable with this method
+        CommonHeader getCommonHeader(const FileNode& fileRef);
+
         FileEntry getFile(LotusPath internalPath);
+        FileEntry getFile(LotusPath internalPath, int fileEntryReaderFlags);
         FileEntry getFile(const FileNode& fileRef);
+        FileEntry getFile(const FileNode& fileRef, int fileEntryReaderFlags);
 
         FileMeta getFileMeta(LotusPath internalPath);
+        DirMeta getDirMeta(LotusPath internalPath);
 
         DirectoryTree::ConstFileIterator begin() const;
 		DirectoryTree::ConstFileIterator end() const;
