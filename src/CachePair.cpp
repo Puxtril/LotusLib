@@ -125,6 +125,24 @@ CachePair::getFileEntry(const LotusPath& lotusPath) const
 	return m_dirTree.getFileEntry(lotusPath);
 }
 
+size_t
+CachePair::dirCount() const
+{
+	return m_dirTree.dirCount();
+}
+
+size_t
+CachePair::fileCount() const
+{
+	return m_dirTree.fileCount();
+}
+
+size_t
+CachePair::fileDupeCount() const
+{
+	return m_dirTree.fileDupeCount();
+}
+
 void
 CachePair::lsDir(const LotusPath& internalPath) const
 {

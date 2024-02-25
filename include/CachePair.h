@@ -51,6 +51,10 @@ namespace LotusLib
 		const FileNode* getFileEntry(const LotusPath& lotusPath) const;
 		const DirNode* getDirEntry(const LotusPath& lotusPath) const;
 
+		size_t dirCount() const;
+		size_t fileCount() const;
+		size_t fileDupeCount() const;
+
 		void lsDir(const LotusPath& internalPath) const;
 
 	private:

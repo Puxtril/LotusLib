@@ -225,6 +225,24 @@ DirectoryTree::getDirEntry(const LotusPath& lotusPath) const
 	return nullptr;
 }
 
+size_t
+DirectoryTree::dirCount() const
+{
+	return m_dirs.size();
+}
+
+size_t
+DirectoryTree::fileCount() const
+{
+	return m_files.size();
+}
+
+size_t
+DirectoryTree::fileDupeCount() const
+{
+	return m_filesDupes.size();
+}
+
 void
 DirectoryTree::lsDir(const LotusPath& internalPath) const
 {
