@@ -109,8 +109,10 @@ namespace LotusLib
         PackageCollection<CachePairReader> m_packgesDir;
 
     public:
+        PackagesReader() : m_packgesDir() {}
         PackagesReader(std::filesystem::path pkgDir) : m_packgesDir(pkgDir, true) { }
         
+        void setData(std::filesystem::path pkgDir) { m_packgesDir.setData(pkgDir, true); }
         PackageReader getPackage(std::string name);
 
         std::vector<Package<CachePairReader>>::iterator begin() { return m_packgesDir.begin(); }

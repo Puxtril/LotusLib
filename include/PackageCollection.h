@@ -25,10 +25,23 @@ namespace LotusLib
 		Logger& m_log;
 
 	public:
+		PackageCollection()
+			: m_log(Logger::getInstance())
+		{}
+
 		PackageCollection(std::filesystem::path pkgDir, bool isPostEnsmallening)
 			: m_packageDir(pkgDir), m_isPostEnsmallening(isPostEnsmallening), m_log(Logger::getInstance())
 		{
 			static_assert(std::is_base_of<CachePair, T>::value, "PackageCollection type must be child class of CachePair");
+			_loadPackages();
+		}
+
+		void
+		setData(std::filesystem::path pkgDir, bool isPostEnsmallening)
+		{
+			static_assert(std::is_base_of<CachePair, T>::value, "PackageCollection type must be child class of CachePair");
+			m_packageDir = pkgDir;
+			m_isPostEnsmallening = isPostEnsmallening;
 			_loadPackages();
 		}
 
