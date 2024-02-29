@@ -33,6 +33,7 @@ namespace LotusLib
         FileMeta(const FileEntries::FileNode* fileNode);
         FileMeta();
         
+        bool isEmpty() const;
         const std::string& getName() const;
         int32_t getLen() const;
         int32_t getCompLen() const;
@@ -49,6 +50,7 @@ namespace LotusLib
         DirMeta(const FileEntries::DirNode* dirNode);
         DirMeta();
 
+        bool isEmpty() const;
         const std::string& getName() const;
         const DirMeta getParent() const;
         int getTocOffset() const;

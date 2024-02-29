@@ -12,6 +12,12 @@ FileMeta::FileMeta(const FileEntries::FileNode* fileNode)
 FileMeta::FileMeta()
 { }
 
+bool
+FileMeta::isEmpty() const
+{
+    return fileNode == nullptr;
+}
+
 const std::string&
 FileMeta::getName() const
 {
@@ -57,6 +63,12 @@ DirMeta::DirMeta(const FileEntries::DirNode* dirNode)
 
 DirMeta::DirMeta()
 { }
+
+bool
+DirMeta::isEmpty() const
+{
+    return dirNode == nullptr;
+}
 
 const std::string&
 DirMeta::getName() const
