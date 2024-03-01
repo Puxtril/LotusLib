@@ -10,6 +10,7 @@ FileMeta::FileMeta(const FileEntries::FileNode* fileNode)
 { }
 
 FileMeta::FileMeta()
+: fileNode(nullptr)
 { }
 
 bool
@@ -62,6 +63,7 @@ DirMeta::DirMeta(const FileEntries::DirNode* dirNode)
 { }
 
 DirMeta::DirMeta()
+  : dirNode(nullptr)
 { }
 
 bool
