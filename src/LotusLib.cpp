@@ -161,7 +161,7 @@ PackageReader::getFile(LotusPath internalPath)
     PackageSplitReader split = m_pkg[PackageTrioType::H];
     split->readToc();
     FileRef fileRef = split->getFileEntry(internalPath);
-    return getFile(*fileRef);
+    return getFile(fileRef);
 }
 
 FileEntry
@@ -170,34 +170,34 @@ PackageReader::getFile(LotusPath internalPath, int fileEntryReaderFlags)
     PackageSplitReader split = m_pkg[PackageTrioType::H];
     split->readToc();
     FileRef fileRef = split->getFileEntry(internalPath);
-    return getFile(*fileRef, fileEntryReaderFlags);
+    return getFile(fileRef, fileEntryReaderFlags);
 }
 
 FileEntry
-PackageReader::getFile(const FileNode& fileRef)
+PackageReader::getFile(const FileNode* fileRef)
 {
     return getFile(fileRef, READ_COMMON_HEADER | READ_H_CACHE | READ_B_CACHE | READ_F_CACHE);
 }
 
 FileEntry
-PackageReader::getFile(const FileNode& fileRef, int fileEntryReaderFlags)
+PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
 {
     FileEntry entry;
 
-    entry.internalPath = fileRef.getFullPath();
+    entry.internalPath = fileRef->getFullPath();
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
     splitH->readToc();
-    entry.metadata = FileMeta(splitH->getFileEntry(fileRef.getFullPath()));
+    entry.metadata = FileMeta(splitH->getFileEntry(fileRef->getFullPath()));
 
     if (fileEntryReaderFlags & READ_COMMON_HEADER)
     {
-        std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(&fileRef);
+        std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
         entry.headerData = BinaryReader(std::move(dataHeader));
         entry.commonHeader = CHRead(entry.headerData);
     }
     else if (fileEntryReaderFlags & READ_H_CACHE)
     {
-        std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(&fileRef);
+        std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
         entry.headerData = BinaryReader(std::move(dataHeader));
         size_t chSize = CHFindLen(entry.headerData);
         entry.headerData.seek(chSize, std::ios::beg);
@@ -236,6 +236,18 @@ PackageReader::getFile(const FileNode& fileRef, int fileEntryReaderFlags)
     }
 
     return entry;
+}
+
+FileEntry
+PackageReader::getFile(const FileMeta& fileRef)
+{
+    return getFile(fileRef.fileNode);
+}
+
+FileEntry
+PackageReader::getFile(const FileMeta& fileRef, int fileEntryReaderFlags)
+{
+    return getFile(fileRef.fileNode, fileEntryReaderFlags);
 }
 
 FileMeta

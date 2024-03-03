@@ -27,6 +27,7 @@ namespace LotusLib
 
     class FileMeta
     {
+        friend class PackageReader;
         const FileEntries::FileNode* fileNode;
 
     public:
@@ -44,6 +45,7 @@ namespace LotusLib
 
     class DirMeta
     {
+        friend class PackageReader;
         const FileEntries::DirNode* dirNode;
 
     public:
@@ -88,8 +90,10 @@ namespace LotusLib
 
         FileEntry getFile(LotusPath internalPath);
         FileEntry getFile(LotusPath internalPath, int fileEntryReaderFlags);
-        FileEntry getFile(const FileNode& fileRef);
-        FileEntry getFile(const FileNode& fileRef, int fileEntryReaderFlags);
+        FileEntry getFile(const FileNode* fileRef);
+        FileEntry getFile(const FileNode* fileRef, int fileEntryReaderFlags);
+        FileEntry getFile(const FileMeta& fileRef);
+        FileEntry getFile(const FileMeta& fileRef, int fileEntryReaderFlags);
 
         FileMeta getFileMeta(LotusPath internalPath);
         DirMeta getDirMeta(LotusPath internalPath);
