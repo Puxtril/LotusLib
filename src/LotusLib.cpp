@@ -150,7 +150,7 @@ PackageReader::getCommonHeader(const FileNode& fileRef)
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
     splitH->readToc();
     std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(&fileRef);
-    auto reader = BinaryReader(std::move(dataHeader));
+    auto reader = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
     CommonHeader ch = CHRead(reader);
     return ch;
 }
@@ -192,13 +192,13 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
     if (fileEntryReaderFlags & READ_COMMON_HEADER)
     {
         std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
-        entry.headerData = BinaryReader(std::move(dataHeader));
+        entry.headerData = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
         entry.commonHeader = CHRead(entry.headerData);
     }
     else if (fileEntryReaderFlags & READ_H_CACHE)
     {
         std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
-        entry.headerData = BinaryReader(std::move(dataHeader));
+        entry.headerData = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
         size_t chSize = CHFindLen(entry.headerData);
         entry.headerData.seek(chSize, std::ios::beg);
     }
@@ -213,7 +213,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
             {
                 FileRef entryB = splitB->getFileEntry(entry.internalPath);
                 std::vector<uint8_t> dataB = splitB->getDataAndDecompress(entryB);
-                entry.bData = BinaryReader(std::move(dataB));
+                entry.bData = BinaryReader::BinaryReaderBuffered(std::move(dataB));
             }
             catch (std::runtime_error&) { }
         }
@@ -229,7 +229,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
             {
                 FileRef entryF = splitF->getFileEntry(entry.internalPath);
                 std::vector<uint8_t> dataF = splitF->getDataAndDecompress(entryF);
-                entry.fData = BinaryReader(std::move(dataF));
+                entry.fData = BinaryReader::BinaryReaderBuffered(std::move(dataF));
             }
             catch (std::runtime_error&) { }
         }

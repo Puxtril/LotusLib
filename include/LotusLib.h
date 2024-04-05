@@ -15,8 +15,6 @@ namespace LotusLib
     using FileRef = FileEntries::FileNode*;
     using DirRef = FileEntries::DirNode*;
 
-    using BinaryReader = BinaryReader::BinaryReaderBuffered;
-
     enum FileEntryReaderFlags : int
     {
         READ_COMMON_HEADER = 1,
@@ -71,9 +69,9 @@ namespace LotusLib
         CommonHeader commonHeader;
         LotusPath internalPath;
         FileMeta metadata;
-        BinaryReader headerData;
-        BinaryReader bData;
-        BinaryReader fData;
+        BinaryReader::BinaryReaderBuffered headerData;
+        BinaryReader::BinaryReaderBuffered bData;
+        BinaryReader::BinaryReaderBuffered fData;
     };
 
     class PackageReader
