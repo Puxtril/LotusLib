@@ -4,3 +4,6 @@
 [submodule "lib/Binary-Reader"]
 	path = lib/Binary-Reader
 	url = https://github.com/Puxtril/Binary-Reader.git
+[submodule "lib/zstd"]
+	path = lib/zstd
+	url = https://github.com/facebook/zstd.git
