@@ -8,6 +8,7 @@
 #include "PackageCollection.h"
 #include "CommonHeader.h"
 #include "BinaryReaderBuffered.h"
+#include "PackagesBin.h"
 
 namespace LotusLib
 {
@@ -20,7 +21,8 @@ namespace LotusLib
         READ_COMMON_HEADER = 1,
         READ_H_CACHE = 2,
         READ_B_CACHE = 4,
-        READ_F_CACHE = 8
+        READ_F_CACHE = 8,
+        READ_EXTRA_ATTRIBUTES = 16
     };
 
     class FileMeta
@@ -64,6 +66,13 @@ namespace LotusLib
         const FileMeta getChildFile(const std::string& name) const;
     };
 
+    struct FileExtraAttributes
+    {
+        LotusLib::LotusPath parent;
+        std::string attributes;
+    };
+
+    // The easy-to-use file get-ter
     struct FileEntry
     {
         CommonHeader commonHeader;
@@ -72,14 +81,16 @@ namespace LotusLib
         BinaryReader::BinaryReaderBuffered headerData;
         BinaryReader::BinaryReaderBuffered bData;
         BinaryReader::BinaryReaderBuffered fData;
+        FileExtraAttributes extra;
     };
 
     class PackageReader
     {
         Package<CachePairReader>& m_pkg;
+        PackagesBin* m_packagesBin;
 
     public:
-        PackageReader(Package<CachePairReader>& package) : m_pkg(package) {}
+        PackageReader(Package<CachePairReader>& package, PackagesBin* packagesBin) : m_pkg(package), m_packagesBin(packagesBin) {}
 
         CommonHeader getCommonHeader(LotusPath internalPath);
         // Assumes this is inside the H package
@@ -111,6 +122,7 @@ namespace LotusLib
     class PackagesReader
     {
         PackageCollection<CachePairReader> m_packgesDir;
+        PackagesBin m_packagesBin;
 
     public:
         PackagesReader() : m_packgesDir() {}
@@ -118,6 +130,7 @@ namespace LotusLib
         
         void setData(std::filesystem::path pkgDir) { m_packgesDir.setData(pkgDir, true); }
         PackageReader getPackage(std::string name);
+        void initilizePackagesBin();
 
         std::vector<Package<CachePairReader>>::iterator begin() { return m_packgesDir.begin(); }
 		std::vector<Package<CachePairReader>>::iterator end() { return m_packgesDir.end(); }

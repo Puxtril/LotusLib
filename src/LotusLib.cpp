@@ -176,7 +176,7 @@ PackageReader::getFile(LotusPath internalPath, int fileEntryReaderFlags)
 FileEntry
 PackageReader::getFile(const FileNode* fileRef)
 {
-    return getFile(fileRef, READ_COMMON_HEADER | READ_H_CACHE | READ_B_CACHE | READ_F_CACHE);
+    return getFile(fileRef, -1);
 }
 
 FileEntry
@@ -187,7 +187,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
     entry.internalPath = fileRef->getFullPath();
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
     splitH->readToc();
-    entry.metadata = FileMeta(splitH->getFileEntry(fileRef->getFullPath()));
+    entry.metadata = FileMeta(splitH->getFileEntry(entry.internalPath));
 
     if (fileEntryReaderFlags & READ_COMMON_HEADER)
     {
@@ -233,6 +233,12 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
             }
             catch (std::runtime_error&) { }
         }
+    }
+
+    if (fileEntryReaderFlags & READ_EXTRA_ATTRIBUTES)
+    {
+        entry.extra.parent = m_packagesBin->getParent(entry.internalPath);
+        entry.extra.attributes = m_packagesBin->getParameters(entry.internalPath);
     }
 
     return entry;
@@ -330,5 +336,16 @@ PackageReader
 PackagesReader::getPackage(std::string name)
 {
     Package<CachePairReader>& pkg = m_packgesDir[name];
-    return PackageReader(pkg);
+    return PackageReader(pkg, &m_packagesBin);
+}
+
+void
+PackagesReader::initilizePackagesBin()
+{
+    LotusLib::Package<LotusLib::CachePairReader>& pkgMisc = m_packgesDir["Misc"];
+    std::shared_ptr<LotusLib::CachePairReader> pair = pkgMisc[LotusLib::PackageTrioType::H];
+    pair->readToc();
+    std::vector<uint8_t> packagesRaw = pair->getDataAndDecompress("Packages.bin");
+    BinaryReader::BinaryReaderBuffered reader(std::move(packagesRaw));
+    m_packagesBin.initilize(reader);
 }
