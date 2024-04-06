@@ -2,16 +2,81 @@
 
 using namespace LotusLib;
 
+PackagesBin::PackagesBin()
+    : m_isInitilized(false)
+{
+}
+
+PackagesBin::~PackagesBin()
+{
+    if (m_isInitilized)
+    {
+        ZSTD_freeDCtx(m_zstdContext);
+        ZSTD_freeDDict(m_zstdDict);
+    }
+}
+
 void
-PackagesBin::read(BinaryReader::BinaryReaderBuffered& reader)
+PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
+{
+    if (m_isInitilized)
+        return;
+
+    m_zstdContext = ZSTD_createDCtx();
+    ZSTD_DCtx_setParameter(m_zstdContext, ZSTD_d_experimentalParam1, 1);
+
+    std::vector<PackagesBin::RawPackagesEntity> rawEntities = readFile(reader);
+    buildEntityMap(rawEntities);
+
+    m_isInitilized = true;
+}
+
+bool
+PackagesBin::hasParameters(const std::string& filePath)
+{
+    PackagesEntity& entity = m_entityMap[filePath];
+    return entity.attributeData.size() > 0;
+}
+
+std::string
+PackagesBin::getParameters(const std::string& filePath)
+{
+    try
+    {
+        PackagesEntity& entity = m_entityMap.at(filePath);
+        return readAttributes(entity.attributeData, entity.decompressedLen);
+    }
+    catch (std::out_of_range&)
+    {
+        return std::string();
+    }
+}
+
+const std::string&
+PackagesBin::getParent(const std::string& filePath)
+{
+    try
+    {
+        PackagesEntity& entity = m_entityMap.at(filePath);
+        return entity.parent;
+    }
+    catch (std::out_of_range&)
+    {
+        static const std::string empty;
+        return empty;
+    }
+}
+
+std::vector<PackagesBin::RawPackagesEntity>
+PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
 {
     reader.seek(16, std::ios::beg);
-    uint32_t headerSize = reader.readUInt32(20, 20, "Packages.bin header size");
-    uint32_t version = reader.readUInt32(40, 40, "Packages.bin version");
-    uint32_t flags = reader.readUInt32(1, 1, "Packages.bin flags");
+    reader.readUInt32(20, 20, "Packages.bin header size");
+    reader.readUInt32(40, 40, "Packages.bin version");
+    reader.readUInt32(1, 1, "Packages.bin flags");
 
     // ???
-    reader.readUInt32();
+    reader.seek(4, std::ios::cur);
 
     std::vector<std::string> references;
     uint32_t referenceCount = reader.readUInt32();
@@ -22,10 +87,10 @@ PackagesBin::read(BinaryReader::BinaryReaderBuffered& reader)
         uint32_t refNameLen = reader.readUInt32();
         references[i] = reader.readAsciiString(refNameLen);
         // Unknown
-        reader.readUInt16();
+        reader.seek(2, std::ios::cur);
     }
 
-    uint32_t packageCount = reader.readUInt32(0, 0, "Package count");
+    reader.readUInt32(0, 0, "Package count");
 
     uint32_t comFlagsBufLen = reader.readUInt32();
     BinaryReader::BinaryReaderBuffered comFlagsBuf = reader.slice(comFlagsBufLen);
@@ -38,23 +103,19 @@ PackagesBin::read(BinaryReader::BinaryReaderBuffered& reader)
 
     uint32_t dictSize = comSizeBuffer.readUInt32();
     
-    ZSTD_DDict* zstdDict = ZSTD_createDDict(comZBuffer.getPtr(), dictSize);
-    if (zstdDict == nullptr)
-        throw std::runtime_error("ZSTD create dictionary failed");
+    createZstdDictionary(comZBuffer.getPtr(), dictSize);
+
     comZBuffer.seek(dictSize, std::ios::cur);
 
-    ZSTD_DCtx* zContext = ZSTD_createDCtx();
-    ZSTD_DCtx_setParameter(zContext, ZSTD_d_experimentalParam1, 1);
-
     uint32_t entityCount = reader.readUInt32();
-    m_entities.resize(entityCount);
+    std::vector<PackagesBin::RawPackagesEntity> entities(entityCount);
 
     unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
     size_t flagBufferCurrentBit = 0;
 
     for (uint32_t i = 0; i < entityCount; i++)
     {
-        PackagesEntity& curEntity = m_entities[i];
+        PackagesBin::RawPackagesEntity& curEntity = entities[i];
 
         uint32_t pkgNameLen = reader.readUInt32();
         curEntity.pkg = reader.readAsciiString(pkgNameLen);
@@ -62,8 +123,8 @@ PackagesBin::read(BinaryReader::BinaryReaderBuffered& reader)
         uint32_t fileNameLen = reader.readUInt32();
         curEntity.filename = reader.readAsciiString(fileNameLen);
 
-        uint16_t unk = reader.readUInt16();
-        uint8_t unk2 = reader.readUInt8();
+        // short + byte
+        reader.seek(3, std::ios::cur);
 
         uint32_t parentTypeLen = reader.readUInt32();
         curEntity.parentType = reader.readAsciiString(parentTypeLen);
@@ -84,33 +145,73 @@ PackagesBin::read(BinaryReader::BinaryReaderBuffered& reader)
             BinaryReader::BinaryReaderBuffered frameData = comZBuffer.slice(size);
 
             unsigned char isCompressed = flagBufferCurrentByte >> flagBufferCurrentBit++ & 1;
-            if (flagBufferCurrentBit > 8)
+            if (flagBufferCurrentBit > 7)
             {
                 flagBufferCurrentByte = comFlagsBuf.readUInt8();
                 flagBufferCurrentBit -= 8;
             }
-            
-            if (isCompressed == 0)
-            {
-                curEntity.parameters = frameData.readAsciiString(size);
-                continue;
-            }
 
-            uint64_t decompressedSize = frameData.readULEB(32);
-            std::vector<char> decompressed(decompressedSize);
+            if (isCompressed > 0)
+                curEntity.decompressedLen = frameData.readULEB(32);
+            else
+                curEntity.decompressedLen = size;
 
-            size_t ret = ZSTD_decompress_usingDDict(
-                zContext,
-                decompressed.data(),
-                decompressedSize,
-                frameData.getPtr() + frameData.tell(),
-                size,
-                zstdDict
-            );
-
-            curEntity.parameters = std::string(decompressed.data(), decompressedSize);
+            curEntity.attributeData.resize(size);
+            memcpy(curEntity.attributeData.data(), frameData.getPtr() + frameData.tell(), size);
+            frameData.seek(size, std::ios::cur);
         }
     }
 
-    ZSTD_freeDCtx(zContext);
+    return entities;
+}
+
+void
+PackagesBin::buildEntityMap(std::vector<RawPackagesEntity>& rawEntities)
+{
+    for (size_t i = 0; i < rawEntities.size(); i++)
+    {
+        RawPackagesEntity& curRawEntity = rawEntities[i];
+
+        std::string fullEntityPath = curRawEntity.pkg + curRawEntity.filename;
+        PackagesEntity& curEntity = m_entityMap[fullEntityPath];
+
+        curEntity.decompressedLen = curRawEntity.decompressedLen;
+        curEntity.parent = curRawEntity.parentType;
+        curEntity.attributeData = std::move(curRawEntity.attributeData);
+    }
+}
+
+ZSTD_DDict*
+PackagesBin::createZstdDictionary(const void* dictBuffer, size_t dictSize)
+{
+    m_zstdDict = ZSTD_createDDict(dictBuffer, dictSize);
+
+    if (m_zstdDict == nullptr)
+        throw std::runtime_error("ZSTD create dictionary failed");
+
+    return m_zstdDict;
+}
+
+std::string
+PackagesBin::readAttributes(const std::vector<char>& attributeData, size_t decompressedLen)
+{
+    if (attributeData.size() == decompressedLen)
+    {
+        return std::string(attributeData.data(), decompressedLen);
+    }
+    else
+    {
+        std::vector<uint8_t> decompressedData(decompressedLen);
+
+        ZSTD_decompress_usingDDict(
+            m_zstdContext,
+            decompressedData.data(),
+            decompressedLen,
+            attributeData.data(),
+            attributeData.size(),
+            m_zstdDict
+        );
+
+        return std::string((char*)decompressedData.data(), decompressedLen);
+    }
 }
