@@ -160,8 +160,17 @@ PackageReader::getFile(LotusPath internalPath)
 {
     PackageSplitReader split = m_pkg[PackageTrioType::H];
     split->readToc();
-    FileRef fileRef = split->getFileEntry(internalPath);
-    return getFile(fileRef);
+
+    try
+    {
+        FileRef fileRef = split->getFileEntry(internalPath);
+        return getFile(fileRef);
+    }
+    catch (std::runtime_error&)
+    {
+        return getFileOnlyPackagesBin(internalPath);
+    }
+    
 }
 
 FileEntry
@@ -169,8 +178,21 @@ PackageReader::getFile(LotusPath internalPath, int fileEntryReaderFlags)
 {
     PackageSplitReader split = m_pkg[PackageTrioType::H];
     split->readToc();
-    FileRef fileRef = split->getFileEntry(internalPath);
-    return getFile(fileRef, fileEntryReaderFlags);
+    
+    try
+    {
+        FileRef fileRef = split->getFileEntry(internalPath);
+        return getFile(fileRef, fileEntryReaderFlags);
+    }
+    catch (std::runtime_error&)
+    {
+        if (fileEntryReaderFlags & READ_EXTRA_ATTRIBUTES)
+            return getFileOnlyPackagesBin(internalPath);
+    }
+
+    FileEntry entry;
+    entry.internalPath = internalPath;
+    return entry;
 }
 
 FileEntry
@@ -330,6 +352,19 @@ PackageReader::lsDir(const LotusPath& internalPath) const
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
     splitH->readToc();
     return splitH->lsDir(internalPath);
+}
+
+FileEntry
+PackageReader::getFileOnlyPackagesBin(LotusLib::LotusPath internalpath)
+{
+    FileEntry entry;
+
+    entry.internalPath = internalpath;
+
+    entry.extra.parent = m_packagesBin->getParent(entry.internalPath);
+    entry.extra.attributes = m_packagesBin->getParameters(entry.internalPath);
+
+    return entry;
 }
 
 PackageReader

@@ -117,6 +117,10 @@ namespace LotusLib
 		bool isPostEnsmallening() const;
 
         void lsDir(const LotusPath& internalPath) const;
+    
+    private:
+        // File doesn't exist in cache files, only Packages.bin
+        FileEntry getFileOnlyPackagesBin(LotusLib::LotusPath internalpath);
     };
 
     class PackagesReader
