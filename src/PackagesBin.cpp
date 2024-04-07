@@ -176,8 +176,12 @@ PackagesBin::buildEntityMap(std::vector<RawPackagesEntity>& rawEntities)
         PackagesEntity& curEntity = m_entityMap[fullEntityPath];
 
         curEntity.decompressedLen = curRawEntity.decompressedLen;
-        curEntity.parent = curRawEntity.parentType;
         curEntity.attributeData = std::move(curRawEntity.attributeData);
+
+        if (curRawEntity.parentType[0] == '/')
+            curEntity.parent = curRawEntity.parentType;
+        else
+            curEntity.parent = curRawEntity.pkg + curRawEntity.parentType;
     }
 }
 
