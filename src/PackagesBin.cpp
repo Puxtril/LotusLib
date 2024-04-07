@@ -93,13 +93,13 @@ PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
     reader.readUInt32(0, 0, "Package count");
 
     uint32_t comFlagsBufLen = reader.readUInt32();
-    BinaryReader::BinaryReaderBuffered comFlagsBuf = reader.slice(comFlagsBufLen);
+    BinaryReader::BinaryReaderSlice comFlagsBuf = reader.slice(comFlagsBufLen);
 
     uint32_t comSizeBufferLen = reader.readUInt32();
-    BinaryReader::BinaryReaderBuffered comSizeBuffer = reader.slice(comSizeBufferLen);
+    BinaryReader::BinaryReaderSlice comSizeBuffer = reader.slice(comSizeBufferLen);
 
     uint32_t comZBufferLen = reader.readUInt32();
-    BinaryReader::BinaryReaderBuffered comZBuffer = reader.slice(comZBufferLen);
+    BinaryReader::BinaryReaderSlice comZBuffer = reader.slice(comZBufferLen);
 
     uint32_t dictSize = comSizeBuffer.readUInt32();
     
@@ -142,7 +142,7 @@ PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
         if (hasText > 0)
         {
             uint64_t size = comSizeBuffer.readULEB(32);
-            BinaryReader::BinaryReaderBuffered frameData = comZBuffer.slice(size);
+            BinaryReader::BinaryReaderSlice frameData = comZBuffer.slice(size);
 
             unsigned char isCompressed = flagBufferCurrentByte >> flagBufferCurrentBit++ & 1;
             if (flagBufferCurrentBit > 7)

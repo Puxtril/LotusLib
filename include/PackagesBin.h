@@ -5,6 +5,7 @@
 #include <map>
 
 #include "BinaryReaderBuffered.h"
+#include "BinaryReaderSlice.h"
 #include "zstd.h"
 
 namespace LotusLib
