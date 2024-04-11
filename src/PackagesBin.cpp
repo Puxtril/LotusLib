@@ -16,6 +16,12 @@ PackagesBin::~PackagesBin()
     }
 }
 
+bool
+PackagesBin::isInitilized()
+{
+    return m_isInitilized;
+}
+
 void
 PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
 {

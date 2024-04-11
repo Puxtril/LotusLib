@@ -40,6 +40,7 @@ namespace LotusLib
         PackagesBin();
         ~PackagesBin();
 
+        bool isInitilized();
         void initilize(BinaryReader::BinaryReaderBuffered& reader);
         bool hasParameters(const std::string& filePath);
         std::string getParameters(const std::string& filePath);

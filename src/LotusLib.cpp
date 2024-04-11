@@ -377,10 +377,13 @@ PackagesReader::getPackage(std::string name)
 void
 PackagesReader::initilizePackagesBin()
 {
-    LotusLib::Package<LotusLib::CachePairReader>& pkgMisc = m_packgesDir["Misc"];
-    std::shared_ptr<LotusLib::CachePairReader> pair = pkgMisc[LotusLib::PackageTrioType::H];
-    pair->readToc();
-    std::vector<uint8_t> packagesRaw = pair->getDataAndDecompress("Packages.bin");
-    BinaryReader::BinaryReaderBuffered reader(std::move(packagesRaw));
-    m_packagesBin.initilize(reader);
+    if (!m_packagesBin.isInitilized())
+    {
+        LotusLib::Package<LotusLib::CachePairReader>& pkgMisc = m_packgesDir["Misc"];
+        std::shared_ptr<LotusLib::CachePairReader> pair = pkgMisc[LotusLib::PackageTrioType::H];
+        pair->readToc();
+        std::vector<uint8_t> packagesRaw = pair->getDataAndDecompress("Packages.bin");
+        BinaryReader::BinaryReaderBuffered reader(std::move(packagesRaw));
+        m_packagesBin.initilize(reader);
+    }
 }
