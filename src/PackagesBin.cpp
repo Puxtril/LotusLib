@@ -38,10 +38,22 @@ PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
 }
 
 bool
+PackagesBin::hasParameters(const LotusLib::LotusPath& filePath)
+{
+    return hasParameters(filePath.string());
+}
+
+bool
 PackagesBin::hasParameters(const std::string& filePath)
 {
     PackagesEntity& entity = m_entityMap[filePath];
     return entity.attributeData.size() > 0;
+}
+
+std::string
+PackagesBin::getParameters(const LotusLib::LotusPath& filePath)
+{
+    return getParameters(filePath.string());
 }
 
 std::string
@@ -56,6 +68,12 @@ PackagesBin::getParameters(const std::string& filePath)
     {
         return std::string();
     }
+}
+
+const std::string&
+PackagesBin::getParent(const LotusLib::LotusPath& filePath)
+{
+    return getParent(filePath.string());
 }
 
 const std::string&

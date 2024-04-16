@@ -6,6 +6,7 @@
 
 #include "BinaryReaderBuffered.h"
 #include "BinaryReaderSlice.h"
+#include "LotusPath.h"
 #include "zstd.h"
 
 namespace LotusLib
@@ -42,8 +43,11 @@ namespace LotusLib
 
         bool isInitilized();
         void initilize(BinaryReader::BinaryReaderBuffered& reader);
+        bool hasParameters(const LotusLib::LotusPath& filePath);
         bool hasParameters(const std::string& filePath);
+        std::string getParameters(const LotusLib::LotusPath& filePath);
         std::string getParameters(const std::string& filePath);
+        const std::string& getParent(const LotusLib::LotusPath& filePath);
         const std::string& getParent(const std::string& filePath);
 
     private:
