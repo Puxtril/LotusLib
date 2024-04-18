@@ -379,6 +379,8 @@ PackagesReader::initilizePackagesBin()
 {
     if (!m_packagesBin.isInitilized())
     {
+        Logger::getInstance().info("Reading Packages.bin");
+
         LotusLib::Package<LotusLib::CachePairReader>& pkgMisc = m_packgesDir["Misc"];
         std::shared_ptr<LotusLib::CachePairReader> pair = pkgMisc[LotusLib::PackageTrioType::H];
         pair->readToc();
