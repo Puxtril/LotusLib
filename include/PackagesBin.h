@@ -8,6 +8,7 @@
 #include "BinaryReaderSlice.h"
 #include "LotusPath.h"
 #include "zstd.h"
+#include "Logger.h"
 
 namespace LotusLib
 {
@@ -31,6 +32,7 @@ namespace LotusLib
 
         std::map<std::string, PackagesEntity> m_entityMap;
         bool m_isInitilized;
+        bool m_errorReading;
         ZSTD_DDict* m_zstdDict;
         ZSTD_DCtx* m_zstdContext;
 
@@ -42,6 +44,7 @@ namespace LotusLib
         ~PackagesBin();
 
         bool isInitilized();
+        bool isInitSuccess();
         void initilize(BinaryReader::BinaryReaderBuffered& reader);
         bool hasParameters(const LotusLib::LotusPath& filePath);
         bool hasParameters(const std::string& filePath);

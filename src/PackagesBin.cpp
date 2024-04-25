@@ -3,7 +3,7 @@
 using namespace LotusLib;
 
 PackagesBin::PackagesBin()
-    : m_isInitilized(false)
+    : m_isInitilized(false), m_errorReading(false)
 {
 }
 
@@ -22,6 +22,12 @@ PackagesBin::isInitilized()
     return m_isInitilized;
 }
 
+bool
+PackagesBin::isInitSuccess()
+{
+    return !m_errorReading;
+}
+
 void
 PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
 {
@@ -31,8 +37,16 @@ PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
     m_zstdContext = ZSTD_createDCtx();
     ZSTD_DCtx_setParameter(m_zstdContext, ZSTD_d_experimentalParam1, 1);
 
-    std::vector<PackagesBin::RawPackagesEntity> rawEntities = readFile(reader);
-    buildEntityMap(rawEntities);
+    try
+    {
+        std::vector<PackagesBin::RawPackagesEntity> rawEntities = readFile(reader);
+        buildEntityMap(rawEntities);
+    }
+    catch (LimitException&)
+    {
+        Logger::getInstance().error("Packages.bin has an unknown format, cannot read.");
+        m_errorReading = true;
+    }
 
     m_isInitilized = true;
 }
