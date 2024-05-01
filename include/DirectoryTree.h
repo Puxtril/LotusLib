@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Logger.h" 
+#include "LotusLibLogger.h" 
 #include "DirNode.h"
 #include "FileNode.h"
 #include "LotusPath.h"
@@ -33,7 +33,6 @@ namespace LotusLib
 	//  * FileIteratorTree: Custom iterator that traverses the files in a depth-first algorithm
 	class DirectoryTree
 	{
-		LotusLib::Logger& m_log;
 		std::filesystem::path m_tocPath;
 		std::vector<DirNode> m_dirs;
 		std::vector<FileNode> m_files;

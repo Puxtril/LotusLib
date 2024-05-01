@@ -7,8 +7,7 @@ CachePair::CachePair(std::filesystem::path tocPath, std::filesystem::path cacheP
 	m_tocPath(tocPath),
 	m_cachePath(cachePath),
 	m_dirTree(tocPath),
-	m_hasReadToc(false),
-	m_logger(Logger::getInstance())
+	m_hasReadToc(false)
 {
 }
 
@@ -18,7 +17,7 @@ CachePair::readToc()
 	if (m_hasReadToc)
 		return;
 
-	m_logger.info(spdlog::fmt_lib::format("Reading {}", m_tocPath.filename().string()));
+	logInfo(spdlog::fmt_lib::format("Reading {}", m_tocPath.filename().string()));
 
 	std::ifstream tocReader(m_tocPath, std::ios_base::in | std::ios_base::binary);
 	if (!isValid(tocReader))
@@ -89,12 +88,12 @@ CachePair::isValid(std::ifstream& tocReader) const
 
 	if (magicNumber != m_magicNumber)
 	{
-		m_logger.error(spdlog::fmt_lib::format("Invalid magic number: {}", magicNumber));
+		logError(spdlog::fmt_lib::format("Invalid magic number: {}", magicNumber));
 		return false;
 	}
 	if (archiveVersion != m_archiveVersion)
 	{
-		m_logger.error(spdlog::fmt_lib::format("Invalid archive version: {}", archiveVersion));
+		logError(spdlog::fmt_lib::format("Invalid archive version: {}", archiveVersion));
 		return false;
 	}
 

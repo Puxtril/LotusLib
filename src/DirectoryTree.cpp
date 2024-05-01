@@ -3,8 +3,7 @@
 using namespace LotusLib;
 
 DirectoryTree::DirectoryTree(std::filesystem::path tocPath)
-	: m_log(LotusLib::Logger::getInstance()),
-	m_tocPath(tocPath),
+	: m_tocPath(tocPath),
 	m_dirs(std::vector<DirNode>()),
 	m_files(std::vector<FileNode>()),
 	m_rootNode(nullptr),
@@ -90,7 +89,7 @@ DirectoryTree::readTocFile()
 	m_dupeCount = realFileDupeCount;
 
 	m_hasRead = true;
-	m_log.info(spdlog::fmt_lib::format("{} files, {} dirs, {} deleted", realFileCount, realDirCount, realFileDupeCount));
+	logInfo(spdlog::fmt_lib::format("{} files, {} dirs, {} deleted", realFileCount, realDirCount, realFileDupeCount));
 }
 
 void

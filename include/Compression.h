@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include "LotusExceptions.h"
-#include "Logger.h"
+#include "LotusLibLogger.h"
 #include "oodle/oodle2.h"
 #include "DirNode.h"
 #include "FileNode.h"

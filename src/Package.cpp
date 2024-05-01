@@ -3,7 +3,7 @@
 using namespace LotusLib;
 
 Package::Package(std::filesystem::path pkgDir, std::string pkgName, bool isPostEnsmallening)
-    : m_log(Logger::getInstance()), m_directory(pkgDir), m_name(pkgName), m_isPostEnsmallening(isPostEnsmallening), m_pkgs()
+    : m_directory(pkgDir), m_name(pkgName), m_isPostEnsmallening(isPostEnsmallening), m_pkgs()
 {
     loadPkgPairs();
 }
@@ -74,7 +74,7 @@ Package::loadPkgPairs()
         }
         else
         {
-            m_log.debug(spdlog::fmt_lib::format("Package does not exist: {}", std::get<0>(pair).stem().string()));
+            logDebug(spdlog::fmt_lib::format("Package does not exist: {}", std::get<0>(pair).stem().string()));
         }
     }
 }

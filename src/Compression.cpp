@@ -28,13 +28,13 @@ Compression::getDataAndDecompressPost(const FileEntries::FileNode* entry, std::i
 
 		if (decompPos + std::get<1>(blockLens) > entry->getLen())
 		{
-			Logger::getInstance().error("Decompressed past the file length");
+			logError("Decompressed past the file length");
 			throw DecompressionException("Decompressed past the file length");
 		}
 
 		if (std::get<0>(blockLens) > std::min((size_t)getFileLen(cacheReader), (size_t)0x40000))
 		{
-			Logger::getInstance().error("Tried to read beyond limits, probably not a compressed file");
+			logError("Tried to read beyond limits, probably not a compressed file");
 			throw DecompressionException("Tried to read beyond limits, probably not a compressed file");
 		}
 

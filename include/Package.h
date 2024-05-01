@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CachePair.h"
-#include "Logger.h"
+#include "LotusLibLogger.h"
 
 #include "CachePair.h"
 #include "CommonHeader.h"
@@ -22,7 +22,6 @@ namespace LotusLib
 
 	class Package
 	{
-		Logger& m_log;
 		std::filesystem::path m_directory;
 		std::string m_name;
 		bool m_isPostEnsmallening;

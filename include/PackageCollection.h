@@ -15,10 +15,9 @@ namespace LotusLib
 		bool m_isPostEnsmallening;
 		std::unordered_map<std::string, int> m_pkgMap;
 		std::vector<Package> m_pkgs;
-		Logger& m_log;
 
 	public:
-		PackageCollection();
+		PackageCollection() = default;
 		PackageCollection(std::filesystem::path pkgDir, bool isPostEnsmallening);
 
 		void setData(std::filesystem::path pkgDir, bool isPostEnsmallening);

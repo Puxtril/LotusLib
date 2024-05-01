@@ -21,7 +21,6 @@ namespace LotusLib
 		std::filesystem::path m_cachePath;
 		DirectoryTree m_dirTree;
 		bool m_hasReadToc;
-		LotusLib::Logger& m_logger;
 
 	public:
 		CachePair(std::filesystem::path tocPath, std::filesystem::path cachePath, bool isPostEnsmallening);

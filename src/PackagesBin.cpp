@@ -44,7 +44,7 @@ PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
     }
     catch (LimitException&)
     {
-        Logger::getInstance().error("Packages.bin has an unknown format, cannot read.");
+        logError("Packages.bin has an unknown format, cannot read.");
         m_errorReading = true;
     }
 

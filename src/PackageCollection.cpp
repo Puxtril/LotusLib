@@ -2,12 +2,8 @@
 
 using namespace LotusLib;
 
-PackageCollection::PackageCollection()
-    : m_log(Logger::getInstance())
-{}
-
 PackageCollection::PackageCollection(std::filesystem::path pkgDir, bool isPostEnsmallening)
-    : m_packageDir(pkgDir), m_isPostEnsmallening(isPostEnsmallening), m_log(Logger::getInstance())
+    : m_packageDir(pkgDir), m_isPostEnsmallening(isPostEnsmallening)
 {
     loadPackages();
 }
@@ -88,7 +84,7 @@ PackageCollection::loadPackages()
     std::string pkgList = "";
     for (const auto& x : m_pkgs)
         pkgList += x.getName() + " ";
-    m_log.info(spdlog::fmt_lib::format("Loaded {} packages: {}", m_pkgs.size(), pkgList));
+    logInfo(spdlog::fmt_lib::format("Loaded {} packages: {}", m_pkgs.size(), pkgList));
 }
 
 void 

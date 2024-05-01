@@ -8,7 +8,7 @@
 #include "BinaryReaderSlice.h"
 #include "LotusPath.h"
 #include "zstd.h"
-#include "Logger.h"
+#include "LotusLibLogger.h"
 
 namespace LotusLib
 {
