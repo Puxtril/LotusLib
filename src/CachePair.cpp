@@ -66,13 +66,13 @@ CachePair::end() const
 	return const_cast<const DirectoryTree&>(m_dirTree).end();
 }
 
-LotusLib::DirectoryTree::ConstFileIteratorTree
+LotusLib::DirectoryTree::FileIteratorTree
 CachePair::getIter(const LotusPath& path) const
 {
 	return const_cast<const DirectoryTree&>(m_dirTree).getIter(path);
 }
 
-LotusLib::DirectoryTree::ConstFileIteratorTree
+LotusLib::DirectoryTree::FileIteratorTree
 CachePair::getIter() const
 {
 	return m_dirTree.getIter();

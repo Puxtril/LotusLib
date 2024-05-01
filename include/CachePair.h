@@ -43,8 +43,8 @@ namespace LotusLib
 
 		DirectoryTree::ConstFileIterator begin() const;
 		DirectoryTree::ConstFileIterator end() const;
-		DirectoryTree::ConstFileIteratorTree getIter(const LotusPath& path) const;
-		DirectoryTree::ConstFileIteratorTree getIter() const;
+		DirectoryTree::FileIteratorTree getIter(const LotusPath& path) const;
+		DirectoryTree::FileIteratorTree getIter() const;
 		
 		FileNode* getFileEntry(const LotusPath& lotusPath);
 		DirNode* getDirEntry(const LotusPath& lotusPath);

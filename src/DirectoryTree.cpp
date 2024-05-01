@@ -139,16 +139,16 @@ DirectoryTree::getIter()
 	return DirectoryTree::FileIteratorTree();
 }
 
-DirectoryTree::ConstFileIteratorTree
+DirectoryTree::FileIteratorTree
 DirectoryTree::getIter(const LotusPath& path) const
 {
-	return DirectoryTree::ConstFileIteratorTree(getDirEntry(path));
+	return DirectoryTree::FileIteratorTree(getDirEntry(path));
 }
 
-DirectoryTree::ConstFileIteratorTree
+DirectoryTree::FileIteratorTree
 DirectoryTree::getIter() const
 {
-	return DirectoryTree::ConstFileIteratorTree();
+	return DirectoryTree::FileIteratorTree();
 }
 
 FileNode*

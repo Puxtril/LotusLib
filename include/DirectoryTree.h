@@ -5,7 +5,7 @@
 #include "FileNode.h"
 #include "LotusPath.h"
 #include "RawEntry.h"
-#include "ForwardRecursiveFileIterator.h"
+#include "DirectoryTreeIterator.h"
 
 #include <stdexcept>
 #include <filesystem>
@@ -45,8 +45,7 @@ namespace LotusLib
 		int m_dupeCount;
 
 	public:
-		using FileIteratorTree = ForwardRecursiveFileIterator<false>;
-		using ConstFileIteratorTree = ForwardRecursiveFileIterator<true>;
+		using FileIteratorTree = DirectoryTreeIterator;
 		using FileIterator = std::vector<FileNode>::iterator;
 		using ConstFileIterator = std::vector<FileNode>::const_iterator;
 
@@ -62,8 +61,8 @@ namespace LotusLib
 
 		FileIteratorTree getIter(const LotusPath& path);
 		FileIteratorTree getIter();
-		ConstFileIteratorTree getIter(const LotusPath& path) const;
-		ConstFileIteratorTree getIter() const;
+		FileIteratorTree getIter(const LotusPath& path) const;
+		FileIteratorTree getIter() const;
 
 		FileNode* getFileEntry(const LotusPath& lotusPath);
 		DirNode* getDirEntry(const LotusPath& lotusPath);

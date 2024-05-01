@@ -312,7 +312,7 @@ PackageReader::end() const
     return splitH->end();
 }
 
-DirectoryTree::ConstFileIteratorTree
+DirectoryTree::FileIteratorTree
 PackageReader::getIter(LotusLib::LotusPath startingPath) const
 {
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
@@ -320,7 +320,7 @@ PackageReader::getIter(LotusLib::LotusPath startingPath) const
     return splitH->getIter(startingPath);
 }
 
-DirectoryTree::ConstFileIteratorTree
+DirectoryTree::FileIteratorTree
 PackageReader::getIter() const
 {
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
