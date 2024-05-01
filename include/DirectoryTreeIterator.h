@@ -43,23 +43,23 @@ namespace LotusLib
 		// Return true if at the end
 		bool findNextValidDir();
 
-		//! Returns true if the current state is valid
-		//! Typical input state: m_ptr.getSubDir(m_dirPositions.top()) has not been visited yet (currently invalid)
-		//!
-		//! Possible output states:
-		//! 1: Enters directory with files and no subdirs (valid state)
-		//! 2: Enters directory with no files and no subdirs (invalid state)
-		//! 3 (similar to 1): Does not leave current directory, m_dirPostions.top() >= m_ptr->getDirCount() (valid state)
-		//!		- This method should not be called in this case, because nothing will happen
+		// Returns true if the current state is valid
+		// Typical input state: m_ptr.getSubDir(m_dirPositions.top()) has not been visited yet (currently invalid)
+		//
+		// Possible output states:
+		// 1: Enters directory with files and no subdirs (valid state)
+		// 2: Enters directory with no files and no subdirs (invalid state)
+		// 3 (similar to 1): Does not leave current directory, m_dirPostions.top() >= m_ptr->getDirCount() (valid state)
+		//		- This method should not be called in this case, because nothing will happen
 		bool recurseToLowestFromCurrent();
 
-		//! Returns true if the current state is valid
-		//! Typical input state: m_filePostion >= m_ptr->getFileCount() (currently invalid)
+		// Returns true if the current state is valid
+		// Typical input state: m_filePostion >= m_ptr->getFileCount() (currently invalid)
 		//
-		//! Possible output states:
-		//! 1: Finds directory, m_dirPositions.top() < m_ptr->getDirCount() (invalid state, needs to recurse down)
-		//! 2: Finds directory, m_dirPositions.top() >= m_ptr->getDirCount() && m_ptr->getFileCount() > 0 (valid state, all dirs have been visited)
-		//! 3: Does not find directory, stack is empty (end state)
+		// Possible output states:
+		// 1: Finds directory, m_dirPositions.top() < m_ptr->getDirCount() (invalid state, needs to recurse down)
+		// 2: Finds directory, m_dirPositions.top() >= m_ptr->getDirCount() && m_ptr->getFileCount() > 0 (valid state, all dirs have been visited)
+		// 3: Does not find directory, stack is empty (end state)
 		bool recurseUpToNextDir();
 
 		void getPathRecursive(std::stringstream& stream, const FileEntries::DirNode* ptr) const;

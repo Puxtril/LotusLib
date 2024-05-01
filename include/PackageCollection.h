@@ -9,12 +9,6 @@
 
 namespace LotusLib
 {
-	//! \brief Provides templated access to Packages
-	//!
-	//! H.Texture.toc
-	//!   \------- 
-	//!      |
-	//! You are here
 	class PackageCollection
 	{
 		std::filesystem::path m_packageDir;

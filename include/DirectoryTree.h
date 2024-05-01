@@ -24,15 +24,13 @@ using namespace LotusLib::FileEntries;
 
 namespace LotusLib
 {
-	//! \brief Represents the internal Directory tree structure of Warframe's TOC files
-	//!
-	//! This can be thought of as an interface for .toc files
-	//! This will not touch .cache files
-	//!
-	//! No method to iterate over directories
-	//! Two methods to iterate over files
-	//!  * FileIterator: Alias for std::vector<FileNode>::iterator
-	//!  * FileIteratorTree: Custom iterator that traverses the files in a depth-first algorithm
+	// This can be thought of as an interface for .toc files
+	// This will not touch .cache files
+	//
+	// No method to iterate over directories
+	// Two methods to iterate over files
+	//  * FileIterator: Alias for std::vector<FileNode>::iterator
+	//  * FileIteratorTree: Custom iterator that traverses the files in a depth-first algorithm
 	class DirectoryTree
 	{
 		LotusLib::Logger& m_log;
@@ -73,8 +71,8 @@ namespace LotusLib
 		size_t fileCount() const;
 		size_t fileDupeCount() const;
 
-		//! Prints to stdout the directory in a similar fashion
-		//!  to the unix command `ls`
+		// Prints to stdout the directory in a similar fashion
+		//  to the unix command `ls`
 		void lsDir(const LotusPath& internalPath) const;
 	};
 }

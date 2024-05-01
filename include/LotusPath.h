@@ -6,11 +6,9 @@
 
 namespace LotusLib
 {
-	//! \brief Wrapper for std::filesystem::path with constraints
-	//! 
-	//! Constraints:
-	//!  * Path must be unix-like (/ delimiter)
-	//!  * Path must be absolute
+	// Constraints:
+	//  * Path must be unix-like (/ delimiter)
+	//  * Path must be absolute
 	class LotusPath : public std::filesystem::path
 	{
 		void checkSeparator()

@@ -8,17 +8,15 @@
 
 namespace LotusLib
 {
-	//! \brief Wrapper for spdlog
-	//!
-	//! Must call LotusLib::Logger::setLogProperties to log to file, otherwise 
-	//!  logging will only stream to stdout
+	// Must call LotusLib::Logger::setLogProperties to log to file, otherwise 
+	//  logging will only stream to stdout
 	class Logger
 	{
 	public:
-		//! Creates a new logger
-		//! Does not throw exception if called multiple times
+		// Creates a new logger
+		// Does not throw exception if called multiple times
 		static void setLogProperties(std::string loggerName, const std::filesystem::path& logPath, spdlog::level::level_enum logLevel);
-		//! Used to pull an existing logger
+		// Used to pull an existing logger
 		static void setLogProperties(std::string loggerName);
 		
 		static Logger& getInstance();

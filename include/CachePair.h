@@ -11,12 +11,6 @@
 
 namespace LotusLib
 {
-	//! \brief Base class for other CachePairs
-	//! 
-	//! H.Texture.toc
-	//!           \---
-	//!            |
-	//!       You are here
 	class CachePair
 	{
 	protected:

@@ -20,12 +20,6 @@ namespace LotusLib
 		B = 2
 	};
 
-	//! \brief Provided a templated container for CachePairs
-	//!
-	//! H.Texture.toc
-	//! \- 
-	//! |
-	//! You are here
 	class Package
 	{
 		Logger& m_log;
