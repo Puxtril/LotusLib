@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CachePairReader.h"
+#include "CachePair.h"
 #include "DirNode.h"
 #include "FileNode.h"
 #include "LotusPath.h"
@@ -12,7 +12,7 @@
 
 namespace LotusLib
 {
-    using PackageSplitReader = std::shared_ptr<LotusLib::CachePairReader>;
+    using PackageSplitReader = std::optional<LotusLib::CachePair>;
     using FileRef = FileEntries::FileNode*;
     using DirRef = FileEntries::DirNode*;
 
@@ -86,11 +86,11 @@ namespace LotusLib
 
     class PackageReader
     {
-        Package<CachePairReader>& m_pkg;
+        Package& m_pkg;
         PackagesBin* m_packagesBin;
 
     public:
-        PackageReader(Package<CachePairReader>& package, PackagesBin* packagesBin) : m_pkg(package), m_packagesBin(packagesBin) {}
+        PackageReader(Package& package, PackagesBin* packagesBin) : m_pkg(package), m_packagesBin(packagesBin) {}
 
         CommonHeader getCommonHeader(LotusPath internalPath);
         // Assumes this is inside the H package
@@ -125,7 +125,7 @@ namespace LotusLib
 
     class PackagesReader
     {
-        PackageCollection<CachePairReader> m_packgesDir;
+        PackageCollection m_packgesDir;
         PackagesBin m_packagesBin;
 
     public:
@@ -136,9 +136,9 @@ namespace LotusLib
         PackageReader getPackage(std::string name);
         void initilizePackagesBin();
 
-        std::vector<Package<CachePairReader>>::iterator begin() { return m_packgesDir.begin(); }
-		std::vector<Package<CachePairReader>>::iterator end() { return m_packgesDir.end(); }
-		std::vector<Package<CachePairReader>>::const_iterator begin() const { return m_packgesDir.begin(); }
-		std::vector<Package<CachePairReader>>::const_iterator end() const { return m_packgesDir.end(); }
+        std::vector<Package>::iterator begin() { return m_packgesDir.begin(); }
+		std::vector<Package>::iterator end() { return m_packgesDir.end(); }
+		std::vector<Package>::const_iterator begin() const { return m_packgesDir.begin(); }
+		std::vector<Package>::const_iterator end() const { return m_packgesDir.end(); }
     };
 }

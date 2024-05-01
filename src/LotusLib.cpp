@@ -370,7 +370,7 @@ PackageReader::getFileOnlyPackagesBin(LotusLib::LotusPath internalpath)
 PackageReader
 PackagesReader::getPackage(std::string name)
 {
-    Package<CachePairReader>& pkg = m_packgesDir[name];
+    Package& pkg = m_packgesDir[name];
     return PackageReader(pkg, &m_packagesBin);
 }
 
@@ -381,8 +381,8 @@ PackagesReader::initilizePackagesBin()
     {
         Logger::getInstance().info("Reading Packages.bin");
 
-        LotusLib::Package<LotusLib::CachePairReader>& pkgMisc = m_packgesDir["Misc"];
-        std::shared_ptr<LotusLib::CachePairReader> pair = pkgMisc[LotusLib::PackageTrioType::H];
+        LotusLib::Package& pkgMisc = m_packgesDir["Misc"];
+        std::optional<LotusLib::CachePair> pair = pkgMisc[LotusLib::PackageTrioType::H];
         pair->readToc();
         std::vector<uint8_t> packagesRaw = pair->getDataAndDecompress("Packages.bin");
         BinaryReader::BinaryReaderBuffered reader(std::move(packagesRaw));

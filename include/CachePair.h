@@ -3,6 +3,7 @@
 #include "DirectoryTree.h"
 #include "LotusExceptions.h"
 #include "LotusPath.h"
+#include "Compression.h"
 
 #include <filesystem>
 #include <fstream>
@@ -31,9 +32,6 @@ namespace LotusLib
 	public:
 		CachePair(std::filesystem::path tocPath, std::filesystem::path cachePath, bool isPostEnsmallening);
 
-		CachePair(const CachePair&) = delete;
-		CachePair& operator=(CachePair&) = delete;
-
 		void readToc();
 		void unReadToc();
 
@@ -57,8 +55,12 @@ namespace LotusLib
 
 		void lsDir(const LotusPath& internalPath) const;
 
+		std::vector<uint8_t> getData(const LotusPath& internalPath) const;
+		std::vector<uint8_t> getDataAndDecompress(const LotusPath& internalPath) const;
+		std::vector<uint8_t> getData(const FileEntries::FileNode* entry) const;
+		std::vector<uint8_t> getDataAndDecompress(const FileEntries::FileNode* entry) const;
+
 	private:
 		bool isValid(std::ifstream& tocReader) const;
-
 	};
 }
