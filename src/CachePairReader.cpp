@@ -39,7 +39,7 @@ CachePairReader::getDataAndDecompress(const FileEntries::FileNode* entry) const
 
 	std::ifstream cacheReader(m_cachePath, std::ios::in | std::ios::binary);
 	if (m_isPostEnsmallening)
-		return CompressionLotus::getDataAndDecompressPost(entry, cacheReader);
+		return Compression::getDataAndDecompressPost(entry, cacheReader);
 	else
-		return CompressionLotus::getDataAndDecompressPre(entry, cacheReader);
+		return Compression::getDataAndDecompressPre(entry, cacheReader);
 }

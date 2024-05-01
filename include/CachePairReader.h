@@ -4,7 +4,7 @@
 #include "LotusExceptions.h"
 #include "DirectoryTree.h"
 #include "LotusPath.h"
-#include "CompressionLotus.h"
+#include "Compression.h"
 
 #include <filesystem>
 #include <fstream>
