@@ -3,136 +3,6 @@
 using namespace LotusLib;
 
 //////////////////////////////////////////////////////////////////
-// FileMeta
-
-FileMeta::FileMeta(const FileEntries::FileNode* fileNode)
-: fileNode(fileNode)
-{ }
-
-FileMeta::FileMeta()
-: fileNode(nullptr)
-{ }
-
-bool
-FileMeta::isEmpty() const
-{
-    return fileNode == nullptr;
-}
-
-const std::string&
-FileMeta::getName() const
-{
-    return fileNode->getName();
-}
-
-int32_t
-FileMeta::getLen() const
-{
-    return fileNode->getLen();
-}
-
-int32_t
-FileMeta::getCompLen() const
-{
-    return fileNode->getCompLen();
-}
-
-int64_t
-FileMeta::getOffset() const
-{
-    return fileNode->getOffset();
-}
-
-int64_t
-FileMeta::getTimeStamp() const
-{
-    return fileNode->getTimeStamp();
-}
-
-std::string
-FileMeta::getFullPath() const
-{
-    return fileNode->getFullPath();
-}
-
-//////////////////////////////////////////////////////////////////
-// DirMeta
-
-DirMeta::DirMeta(const FileEntries::DirNode* dirNode)
-  : dirNode(dirNode)
-{ }
-
-DirMeta::DirMeta()
-  : dirNode(nullptr)
-{ }
-
-bool
-DirMeta::isEmpty() const
-{
-    return dirNode == nullptr;
-}
-
-const std::string&
-DirMeta::getName() const
-{
-    return dirNode->getName();
-}
-
-const DirMeta
-DirMeta::getParent() const
-{
-    return DirMeta(dirNode->getParent());
-}
-
-int
-DirMeta::getTocOffset() const
-{
-    return dirNode->getTocOffset();
-}
-
-size_t
-DirMeta::getDirCount() const
-{
-    return dirNode->getDirCount();
-}
-
-size_t
-DirMeta::getFileCount() const
-{
-    return dirNode->getFileCount();
-}
-
-std::string
-DirMeta::getFullPath() const
-{
-    return dirNode->getFullPath();
-}
-
-const DirMeta
-DirMeta::getChildDir(int index) const
-{
-    return DirMeta(dirNode->getChildDir(index));
-}
-
-const DirMeta
-DirMeta::getChildDir(const std::string& name) const
-{
-    return DirMeta(dirNode->getChildDir(name));
-}
-
-const FileMeta
-DirMeta::getChildFile(int index) const
-{
-    return FileMeta(dirNode->getChildFile(index));
-}
-
-const FileMeta
-DirMeta::getChildFile(const std::string& name) const
-{
-    return FileMeta(dirNode->getChildFile(name));
-}
-
-//////////////////////////////////////////////////////////////////
 // Package Reader
 
 CommonHeader
@@ -209,7 +79,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
     entry.internalPath = fileRef->getFullPath();
     PackageSplitReader splitH = m_pkg[PackageTrioType::H];
     splitH->readToc();
-    entry.metadata = FileMeta(splitH->getFileEntry(entry.internalPath));
+    entry.metadata = splitH->getFileEntry(entry.internalPath);
 
     if (fileEntryReaderFlags & READ_COMMON_HEADER)
     {
@@ -266,34 +136,20 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
     return entry;
 }
 
-FileEntry
-PackageReader::getFile(const FileMeta& fileRef)
-{
-    return getFile(fileRef.fileNode);
-}
-
-FileEntry
-PackageReader::getFile(const FileMeta& fileRef, int fileEntryReaderFlags)
-{
-    return getFile(fileRef.fileNode, fileEntryReaderFlags);
-}
-
-FileMeta
-PackageReader::getFileMeta(LotusPath internalPath)
+const FileNode*
+PackageReader::getFileEntry(LotusPath internalPath)
 {
     PackageSplitReader split = m_pkg[PackageTrioType::H];
     split->readToc();
-    LotusLib::FileEntries::FileNode* fileRef = split->getFileEntry(internalPath);
-    return FileMeta(fileRef);
+    return split->getFileEntry(internalPath);
 }
 
-DirMeta
-PackageReader::getDirMeta(LotusPath internalPath)
+const DirNode*
+PackageReader::getDirEntry(LotusPath internalPath)
 {
     PackageSplitReader split = m_pkg[PackageTrioType::H];
     split->readToc();
-    LotusLib::FileEntries::DirNode* dirRef = split->getDirEntry(internalPath);
-    return DirMeta(dirRef);
+    return split->getDirEntry(internalPath);
 }
 
 DirectoryTree::ConstFileIterator

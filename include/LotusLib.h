@@ -25,47 +25,6 @@ namespace LotusLib
         READ_EXTRA_ATTRIBUTES = 16
     };
 
-    class FileMeta
-    {
-        friend class PackageReader;
-        const FileEntries::FileNode* fileNode;
-
-    public:
-        FileMeta(const FileEntries::FileNode* fileNode);
-        FileMeta();
-        
-        bool isEmpty() const;
-        const std::string& getName() const;
-        int32_t getLen() const;
-        int32_t getCompLen() const;
-        int64_t getOffset() const;
-        int64_t getTimeStamp() const;
-        std::string getFullPath() const;
-    };
-
-    class DirMeta
-    {
-        friend class PackageReader;
-        const FileEntries::DirNode* dirNode;
-
-    public:
-        DirMeta(const FileEntries::DirNode* dirNode);
-        DirMeta();
-
-        bool isEmpty() const;
-        const std::string& getName() const;
-        const DirMeta getParent() const;
-        int getTocOffset() const;
-        size_t getDirCount() const;
-        size_t getFileCount() const;
-        std::string getFullPath() const;
-
-        const DirMeta getChildDir(int index) const;
-        const DirMeta getChildDir(const std::string& name) const;
-        const FileMeta getChildFile(int index) const;
-        const FileMeta getChildFile(const std::string& name) const;
-    };
-
     struct FileExtraAttributes
     {
         LotusLib::LotusPath parent;
@@ -77,7 +36,7 @@ namespace LotusLib
     {
         CommonHeader commonHeader;
         LotusPath internalPath;
-        FileMeta metadata;
+        FileNode* metadata;
         BinaryReader::BinaryReaderBuffered headerData;
         BinaryReader::BinaryReaderBuffered bData;
         BinaryReader::BinaryReaderBuffered fData;
@@ -101,11 +60,9 @@ namespace LotusLib
         FileEntry getFile(LotusPath internalPath, int fileEntryReaderFlags);
         FileEntry getFile(const FileNode* fileRef);
         FileEntry getFile(const FileNode* fileRef, int fileEntryReaderFlags);
-        FileEntry getFile(const FileMeta& fileRef);
-        FileEntry getFile(const FileMeta& fileRef, int fileEntryReaderFlags);
 
-        FileMeta getFileMeta(LotusPath internalPath);
-        DirMeta getDirMeta(LotusPath internalPath);
+        const FileNode* getFileEntry(LotusPath internalPath);
+        const DirNode* getDirEntry(LotusPath internalPath);
 
         DirectoryTree::ConstFileIterator begin() const;
 		DirectoryTree::ConstFileIterator end() const;
