@@ -1,8 +1,0 @@
-DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "LotusLib"
-PROJECT_NUMBER         = 1.0
-OUTPUT_DIRECTORY       = generated-docs
-INPUT                  = ../README.md ../Design.md ../include ../src
-USE_MDFILE_AS_MAINPAGE = README.md
-GENERATE_LATEX         = NO
-EXTRACT_PRIVATE        = NO
