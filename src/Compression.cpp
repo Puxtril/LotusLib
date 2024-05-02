@@ -26,7 +26,7 @@ Compression::getDataAndDecompressPost(const FileEntries::FileNode* entry, std::i
 		if (std::get<0>(blockLens) == 0 && std::get<1>(blockLens) == 0)
 			blockLens = { entry->getCompLen(), entry->getLen() };
 
-		if (decompPos + std::get<1>(blockLens) > entry->getLen())
+		if (decompPos + (int32_t)std::get<1>(blockLens) > entry->getLen())
 		{
 			logError("Decompressed past the file length");
 			throw DecompressionException("Decompressed past the file length");
