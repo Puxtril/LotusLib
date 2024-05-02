@@ -7,3 +7,6 @@
 [submodule "lib/zstd"]
 	path = lib/zstd
 	url = https://github.com/facebook/zstd.git
+[submodule "lib/liblzf"]
+	path = lib/liblzf
+	url = https://github.com/Puxtril/liblzf.git

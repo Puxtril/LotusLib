@@ -8,6 +8,7 @@
 #include "oodle/oodle2.h"
 #include "DirNode.h"
 #include "FileNode.h"
+#include "lzf.h"
 
 namespace LotusLib {
 	//! \brief Decompression algorithms
@@ -45,12 +46,6 @@ namespace LotusLib {
 		// \param outputLen Length of the output data array
 		static void decompressOodle(uint8_t* inputData, size_t inputLen, uint8_t* outputData, size_t outputLen);
 
-		// This doesn't fully conform to LZ decompressors
-		// Will throw exceptions if bad data is encountered
-		// Code was taken from GMMan's Evolution Engine Cache Extractor
-		// https://forum.xentax.com/viewtopic.php?t=10782
 		static void decompressLz(uint8_t* inputData, uint32_t inputLen, uint8_t* outputData, uint32_t outputLen);
-		static void decompressLzBlock(const unsigned char* inputData, uint32_t inputLen, unsigned char* outputData, uint32_t outputLen);
-		static void decompressLzBlockHelper(const unsigned char* compressedData, int32_t compressedDataLen, unsigned char* decompressedData, int32_t decompressedDataLen);
 	};
 }
