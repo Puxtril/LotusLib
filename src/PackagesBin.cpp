@@ -229,7 +229,7 @@ PackagesBin::createZstdDictionary(const void* dictBuffer, size_t dictSize)
     m_zstdDict = ZSTD_createDDict(dictBuffer, dictSize);
 
     if (m_zstdDict == nullptr)
-        throw std::runtime_error("ZSTD create dictionary failed");
+        throw LotusException("ZSTD create dictionary failed");
 
     return m_zstdDict;
 }

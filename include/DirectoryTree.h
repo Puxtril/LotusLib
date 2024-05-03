@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LotusLibLogger.h" 
+#include "LotusExceptions.h"
 #include "DirNode.h"
 #include "FileNode.h"
 #include "LotusPath.h"

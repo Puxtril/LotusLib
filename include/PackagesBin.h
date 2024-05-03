@@ -7,8 +7,9 @@
 #include "BinaryReaderBuffered.h"
 #include "BinaryReaderSlice.h"
 #include "LotusPath.h"
-#include "zstd.h"
 #include "LotusLibLogger.h"
+#include "LotusExceptions.h"
+#include "zstd.h"
 
 namespace LotusLib
 {

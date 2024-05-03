@@ -12,18 +12,28 @@ namespace LotusLib
         LotusException(const std::string& msg);
     };
 
-    class InvalidDataException : public LotusException {
-    public:
-        InvalidDataException(const std::string& msg);
-    };
-
     class DecompressionException : public LotusException {
     public:
         DecompressionException(const std::string& msg);
     };
 
-    class InvalidLotusPath : public LotusException {
+    class CommonHeaderError : public LotusException {
     public:
-        InvalidLotusPath(const std::string& msg);
+        CommonHeaderError(const std::string& msg);
+    };
+
+    class InternalEntryNotFound : public LotusException {
+    public:
+        InternalEntryNotFound(const std::string& msg);
+    };
+
+    class InternalFileNotFound : public InternalEntryNotFound {
+    public:
+        InternalFileNotFound(const std::string& msg);
+    };
+
+    class InternalDirectoryNotFound : public InternalEntryNotFound {
+    public:
+        InternalDirectoryNotFound(const std::string& msg);
     };
 }

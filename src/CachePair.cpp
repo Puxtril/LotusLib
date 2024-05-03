@@ -21,7 +21,7 @@ CachePair::readToc()
 
 	std::ifstream tocReader(m_tocPath, std::ios_base::in | std::ios_base::binary);
 	if (!isValid(tocReader))
-		throw InvalidDataException("CachePair is not valid");
+		throw LotusException("CachePair is not valid");
 	tocReader.close();
 
 	m_dirTree.readTocFile();

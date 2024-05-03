@@ -182,11 +182,11 @@ DirectoryTree::getFileEntry(const LotusPath& lotusPath) const
 			const FileNode* fNode = dirPos->findChildFile(lotusPathStr, curStart, curEnd);
 			if (fNode != nullptr)
 				return fNode;
-			throw std::runtime_error("\"" + dirPos->getFullPath() + "\" doesn't contain file \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
+			throw InternalFileNotFound("\"" + dirPos->getFullPath() + "\" doesn't contain file \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
 		}
 		nextDirPos = dirPos->findChildDir(lotusPathStr, curStart, curEnd - curStart);
 		if (nextDirPos == nullptr)
-			throw std::runtime_error("\"" + dirPos->getFullPath() + "\" doesn't contain directory \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
+			throw InternalDirectoryNotFound("\"" + dirPos->getFullPath() + "\" doesn't contain directory \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
 		dirPos = nextDirPos;
 		curStart = curEnd + 1;
 	}
@@ -214,7 +214,7 @@ DirectoryTree::getDirEntry(const LotusPath& lotusPath) const
 		curEnd = lotusPathStr.find('/', curStart);
 		nextDirPos = dirPos->findChildDir(lotusPathStr, curStart, curEnd - curStart);
 		if (nextDirPos == nullptr)
-			throw std::runtime_error("\"" + dirPos->getFullPath() + "\" doesn't contain directory \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
+			throw InternalDirectoryNotFound("\"" + dirPos->getFullPath() + "\" doesn't contain directory \"" + lotusPathStr.substr(curStart, curEnd - curStart) + "\"");
 		if (curEnd == std::string::npos)
 			return nextDirPos;
 		dirPos = nextDirPos;
@@ -247,7 +247,7 @@ DirectoryTree::lsDir(const LotusPath& internalPath) const
 {
 	const DirNode* printDir = getDirEntry(internalPath);
 	if (printDir == nullptr)
-		throw std::runtime_error("Directory was not found");
+		throw InternalDirectoryNotFound("Directory was not found");
 
 	size_t totalSize = 0;
 	for (uint32_t x = 0; x < printDir->getFileCount(); x++)

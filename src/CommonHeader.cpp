@@ -7,7 +7,7 @@ LotusLib::CHFindLen(BinaryReader::BinaryReaderBuffered& reader)
 
 	uint32_t sourcePathCount = reader.readUInt32();
 	if (sourcePathCount > 1500)
-		throw LotusLib::LotusException("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
+		throw CommonHeaderError("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
 	length += 4;
 
 	for (uint32_t x = 0; x < sourcePathCount; x++)
@@ -31,13 +31,13 @@ LotusLib::CHRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& heade
 
 	uint32_t sourcePathCount = reader.readUInt32();
 	if (sourcePathCount > 1500)
-		throw LotusException("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
+		throw CommonHeaderError("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
 
 	for (uint32_t x = 0; x < sourcePathCount; x++)
 	{
 		uint32_t curLen = reader.readUInt32();
 		if (curLen > 200)
-			throw LotusException("Source path length in Common Header was too large: " + std::to_string(curLen));
+			throw CommonHeaderError("Source path length in Common Header was too large: " + std::to_string(curLen));
 		
 		header.paths.push_back(reader.readAsciiString(curLen));
 	}

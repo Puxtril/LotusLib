@@ -7,14 +7,22 @@ LotusException::LotusException(const std::string& msg)
 {
 }
 
-InvalidDataException::InvalidDataException(const std::string& msg)
-    : LotusException(msg)
-{}
-
 DecompressionException::DecompressionException(const std::string& msg)
     : LotusException(msg)
 {}
 
-InvalidLotusPath::InvalidLotusPath(const std::string& msg)
+CommonHeaderError::CommonHeaderError(const std::string& msg)
     : LotusException(msg)
+{}
+
+InternalEntryNotFound::InternalEntryNotFound(const std::string& msg)
+    : LotusException(msg)
+{}
+
+InternalFileNotFound::InternalFileNotFound(const std::string& msg)
+    : InternalEntryNotFound(msg)
+{}
+
+InternalDirectoryNotFound::InternalDirectoryNotFound(const std::string& msg)
+    : InternalEntryNotFound(msg)
 {}

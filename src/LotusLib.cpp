@@ -36,7 +36,7 @@ PackageReader::getFile(LotusPath internalPath)
         FileRef fileRef = split->getFileEntry(internalPath);
         return getFile(fileRef);
     }
-    catch (std::runtime_error&)
+    catch (InternalEntryNotFound&)
     {
         return getFileOnlyPackagesBin(internalPath);
     }
@@ -54,7 +54,7 @@ PackageReader::getFile(LotusPath internalPath, int fileEntryReaderFlags)
         FileRef fileRef = split->getFileEntry(internalPath);
         return getFile(fileRef, fileEntryReaderFlags);
     }
-    catch (std::runtime_error&)
+    catch (InternalEntryNotFound&)
     {
         if (fileEntryReaderFlags & READ_EXTRA_ATTRIBUTES)
             return getFileOnlyPackagesBin(internalPath);
@@ -107,7 +107,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
                 std::vector<uint8_t> dataB = splitB->getDataAndDecompress(entryB);
                 entry.bData = BinaryReader::BinaryReaderBuffered(std::move(dataB));
             }
-            catch (std::runtime_error&) { }
+            catch (InternalEntryNotFound&) { }
         }
     }
 
@@ -123,7 +123,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
                 std::vector<uint8_t> dataF = splitF->getDataAndDecompress(entryF);
                 entry.fData = BinaryReader::BinaryReaderBuffered(std::move(dataF));
             }
-            catch (std::runtime_error&) { }
+            catch (InternalEntryNotFound&) { }
         }
     }
 
