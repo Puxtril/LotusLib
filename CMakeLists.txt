@@ -20,22 +20,35 @@ elseif(UNIX)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Wall -O0 -ggdb")
 endif()
 
-# ZSTD Build Options (Off)
-set(ZSTD_BUILD_PROGRAMS OFF CACHE BOOL "Build executable zstd programs")
-set(ZSTD_BUILD_TESTS OFF CACHE BOOL "Build zstd test suite")
-set(ZSTD_BUILD_CONTRIB OFF CACHE BOOL "Build zstd contribution documentation")
-# ZSTD Build modules (Off)
-set(ZSTD_BUILD_SHARED OFF CACHE BOOL "Build std shared libraries")
-set(ZSTD_BUILD_COMPRESSION OFF CACHE BOOL "Build zstd compression module")
-set(ZSTD_BUILD_DEPRECATED OFF CACHE BOOL "no")
-# ZSTD Build modules (On)
-set(ZSTD_BUILD_DECOMPRESSION ON CACHE BOOL "Build zstd decompression module")
-set(ZSTD_BUILD_STATIC ON CACHE BOOL "Build zstd static libraries")
-set(ZSTD_BUILD_DICTBUILDER ON CACHE BOOL "Build zstd dict builder")
-# ZSTD library
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/zstd/build/cmake")
+# Build the zstd library needed for decompressing Packages.bin
+# Link this build target with the executable: libzstd_static
+option(LOTUSLIB_BUILD_ZSTD "Build zstd" ON)
+if (LOTUSLIB_BUILD_ZSTD)
+	# ZSTD Build Options (Off)
+	set(ZSTD_BUILD_PROGRAMS OFF CACHE BOOL "Build executable zstd programs")
+	set(ZSTD_BUILD_TESTS OFF CACHE BOOL "Build zstd test suite")
+	set(ZSTD_BUILD_CONTRIB OFF CACHE BOOL "Build zstd contribution documentation")
+	
+	# ZSTD Build modules (Off)
+	set(ZSTD_BUILD_SHARED OFF CACHE BOOL "Build std shared libraries")
+	set(ZSTD_BUILD_COMPRESSION OFF CACHE BOOL "Build zstd compression module")
+	set(ZSTD_BUILD_DEPRECATED OFF CACHE BOOL "no")
+	
+	# ZSTD Build modules (On)
+	set(ZSTD_BUILD_DECOMPRESSION ON CACHE BOOL "Build zstd decompression module")
+	set(ZSTD_BUILD_STATIC ON CACHE BOOL "Build zstd static libraries")
+	set(ZSTD_BUILD_DICTBUILDER ON CACHE BOOL "Build zstd dict builder")
+	
+	# ZSTD library
+	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/zstd/build/cmake")
+endif()
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/liblzf")
+# Build the zstd library needed for decompressing .cache files
+# Link this build target with the executable: lzf
+option(LOTUSLIB_BUILD_LZF "Build liblzf" ON)
+if (LOTUSLIB_BUILD_LZF)
+	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/liblzf")
+endif()
 
 # Objects
 file(GLOB LOTUS_LIB_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
