@@ -40,16 +40,20 @@ PackageCollection::end() const
     return m_pkgs.end();
 }
 
-const Package&
-PackageCollection::operator[](const std::string& pkgName) const
+const Package*
+PackageCollection::getPackage(const std::string& pkgName) const
 {
-    return m_pkgs[m_pkgMap.at(pkgName)];
+    if (m_pkgMap.count(pkgName) == 0)
+        return nullptr;
+    return &m_pkgs[m_pkgMap.at(pkgName)];
 }
 
-Package&
-PackageCollection::operator[](const std::string& pkgName)
+Package*
+PackageCollection::getPackage(const std::string& pkgName)
 {
-    return m_pkgs[m_pkgMap.at(pkgName)];
+    if (m_pkgMap.count(pkgName) == 0)
+        return nullptr;
+    return &m_pkgs[m_pkgMap.at(pkgName)];
 }
 
 const std::filesystem::path&

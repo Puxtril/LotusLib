@@ -32,16 +32,20 @@ Package::end() const
     return m_pkgs.end();
 }
 
-const std::optional<CachePair>
-Package::operator[](PackageTrioType trioType) const
+const CachePair*
+Package::getPair(PackageTrioType trioType) const
 {
-    return m_pkgs[(int)trioType];
+    if (!m_pkgs[(int)trioType].has_value())
+        return nullptr;
+    return &m_pkgs[(int)trioType].value();
 }
 
-std::optional<CachePair>
-Package::operator[](PackageTrioType trioType)
+CachePair*
+Package::getPair(PackageTrioType trioType)
 {
-    return m_pkgs[(int)trioType];
+    if (!m_pkgs[(int)trioType].has_value())
+        return nullptr;
+    return &m_pkgs[(int)trioType].value();
 }
 
 const std::filesystem::path&

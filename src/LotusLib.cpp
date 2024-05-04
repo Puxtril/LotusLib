@@ -8,7 +8,7 @@ using namespace LotusLib;
 CommonHeader
 PackageReader::getCommonHeader(LotusPath internalPath)
 {
-    PackageSplitReader split = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
     split->readToc();
     FileRef fileRef = split->getFileEntry(internalPath);
     return getCommonHeader(*fileRef);
@@ -17,7 +17,7 @@ PackageReader::getCommonHeader(LotusPath internalPath)
 CommonHeader
 PackageReader::getCommonHeader(const FileNode& fileRef)
 {
-    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(&fileRef);
     auto reader = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
@@ -28,7 +28,7 @@ PackageReader::getCommonHeader(const FileNode& fileRef)
 FileEntry
 PackageReader::getFile(LotusPath internalPath)
 {
-    PackageSplitReader split = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
     split->readToc();
 
     try
@@ -46,7 +46,7 @@ PackageReader::getFile(LotusPath internalPath)
 FileEntry
 PackageReader::getFile(LotusPath internalPath, int fileEntryReaderFlags)
 {
-    PackageSplitReader split = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
     split->readToc();
     
     try
@@ -77,7 +77,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
     FileEntry entry;
 
     entry.internalPath = fileRef->getFullPath();
-    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     entry.metadata = splitH->getFileEntry(entry.internalPath);
 
@@ -97,7 +97,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
 
     if (fileEntryReaderFlags & READ_B_CACHE)
     {
-        PackageSplitReader splitB = m_pkg[PackageTrioType::B];
+        LotusLib::CachePair* splitB = m_pkg->getPair(PackageTrioType::B);
         if (splitB)
         {
             splitB->readToc();
@@ -113,7 +113,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
 
     if (fileEntryReaderFlags & READ_F_CACHE)
     {
-        PackageSplitReader splitF = m_pkg[PackageTrioType::F];
+        LotusLib::CachePair* splitF = m_pkg->getPair(PackageTrioType::F);
         if (splitF)
         {
             splitF->readToc();
@@ -137,17 +137,17 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
 }
 
 const FileNode*
-PackageReader::getFileEntry(LotusPath internalPath)
+PackageReader::getFileNode(LotusPath internalPath)
 {
-    PackageSplitReader split = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
     split->readToc();
     return split->getFileEntry(internalPath);
 }
 
 const DirNode*
-PackageReader::getDirEntry(LotusPath internalPath)
+PackageReader::getDirNode(LotusPath internalPath)
 {
-    PackageSplitReader split = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
     split->readToc();
     return split->getDirEntry(internalPath);
 }
@@ -155,7 +155,7 @@ PackageReader::getDirEntry(LotusPath internalPath)
 DirectoryTree::ConstFileIterator
 PackageReader::begin() const
 {
-    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     return splitH->begin();
 }
@@ -163,7 +163,7 @@ PackageReader::begin() const
 DirectoryTree::ConstFileIterator
 PackageReader::end() const
 {
-    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     return splitH->end();
 }
@@ -171,7 +171,7 @@ PackageReader::end() const
 DirectoryTree::FileIteratorTree
 PackageReader::getIter(LotusLib::LotusPath startingPath) const
 {
-    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     return splitH->getIter(startingPath);
 }
@@ -179,7 +179,7 @@ PackageReader::getIter(LotusLib::LotusPath startingPath) const
 DirectoryTree::FileIteratorTree
 PackageReader::getIter() const
 {
-    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     return splitH->getIter();
 }
@@ -187,25 +187,25 @@ PackageReader::getIter() const
 const std::filesystem::path&
 PackageReader::getDirectory() const
 {
-    return m_pkg.getDirectory();
+    return m_pkg->getDirectory();
 }
 
 const std::string&
 PackageReader::getName() const
 {
-    return m_pkg.getName();
+    return m_pkg->getName();
 }
 
 bool
 PackageReader::isPostEnsmallening() const
 {
-    return m_pkg.isPostEnsmallening();
+    return m_pkg->isPostEnsmallening();
 }
 
 void
 PackageReader::lsDir(const LotusPath& internalPath) const
 {
-    PackageSplitReader splitH = m_pkg[PackageTrioType::H];
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     return splitH->lsDir(internalPath);
 }
@@ -226,7 +226,7 @@ PackageReader::getFileOnlyPackagesBin(LotusLib::LotusPath internalpath)
 PackageReader
 PackagesReader::getPackage(std::string name)
 {
-    Package& pkg = m_packgesDir[name];
+    Package* pkg = m_packgesDir.getPackage(name);
     return PackageReader(pkg, &m_packagesBin);
 }
 
@@ -237,8 +237,8 @@ PackagesReader::initilizePackagesBin()
     {
         logInfo("Reading Packages.bin");
 
-        LotusLib::Package& pkgMisc = m_packgesDir["Misc"];
-        std::optional<LotusLib::CachePair> pair = pkgMisc[LotusLib::PackageTrioType::H];
+        LotusLib::Package* pkgMisc = m_packgesDir.getPackage("Misc");
+        LotusLib::CachePair* pair = pkgMisc->getPair(LotusLib::PackageTrioType::H);
         pair->readToc();
         std::vector<uint8_t> packagesRaw = pair->getDataAndDecompress("Packages.bin");
         BinaryReader::BinaryReaderBuffered reader(std::move(packagesRaw));

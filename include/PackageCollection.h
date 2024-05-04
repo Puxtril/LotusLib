@@ -27,8 +27,9 @@ namespace LotusLib
 		std::vector<Package>::const_iterator begin() const;
 		std::vector<Package>::const_iterator end() const;
 
-		const Package& operator[](const std::string& pkgName) const;
-		Package& operator[](const std::string& pkgName);
+		// Returns nullptr if package doesn't exist
+		const Package* getPackage(const std::string& pkgName) const;
+		Package* getPackage(const std::string& pkgName);
 
 		const std::filesystem::path& getPath() const;
 		bool isPostEnsmallening() const;

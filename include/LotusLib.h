@@ -12,7 +12,6 @@
 
 namespace LotusLib
 {
-    using PackageSplitReader = std::optional<LotusLib::CachePair>;
     using FileRef = FileEntries::FileNode*;
     using DirRef = FileEntries::DirNode*;
 
@@ -45,11 +44,11 @@ namespace LotusLib
 
     class PackageReader
     {
-        Package& m_pkg;
+        Package* m_pkg;
         PackagesBin* m_packagesBin;
 
     public:
-        PackageReader(Package& package, PackagesBin* packagesBin) : m_pkg(package), m_packagesBin(packagesBin) {}
+        PackageReader(Package* package, PackagesBin* packagesBin) : m_pkg(package), m_packagesBin(packagesBin) {}
 
         CommonHeader getCommonHeader(LotusPath internalPath);
         // Assumes this is inside the H package
@@ -61,8 +60,8 @@ namespace LotusLib
         FileEntry getFile(const FileNode* fileRef);
         FileEntry getFile(const FileNode* fileRef, int fileEntryReaderFlags);
 
-        const FileNode* getFileEntry(LotusPath internalPath);
-        const DirNode* getDirEntry(LotusPath internalPath);
+        const FileNode* getFileNode(LotusPath internalPath);
+        const DirNode* getDirNode(LotusPath internalPath);
 
         DirectoryTree::ConstFileIterator begin() const;
 		DirectoryTree::ConstFileIterator end() const;

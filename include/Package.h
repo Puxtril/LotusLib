@@ -35,8 +35,9 @@ namespace LotusLib
 		std::array<std::optional<CachePair>, 3>::const_iterator begin() const;
 		std::array<std::optional<CachePair>, 3>::const_iterator end() const;
 		
-		const std::optional<CachePair> operator[](PackageTrioType trioType) const;
-		std::optional<CachePair> operator[](PackageTrioType trioType);
+		// Returns nullptr if trioType doesn't exist
+		const CachePair* getPair(PackageTrioType trioType) const;
+		CachePair* getPair(PackageTrioType trioType);
 
 		const std::filesystem::path& getDirectory() const;
 		const std::string& getName() const;
