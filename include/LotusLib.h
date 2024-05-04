@@ -53,7 +53,11 @@ namespace LotusLib
         CommonHeader getCommonHeader(LotusPath internalPath);
         // Assumes this is inside the H package
         // The iterator for this class is compatable with this method
-        CommonHeader getCommonHeader(const FileNode& fileRef);
+        CommonHeader getCommonHeader(const FileNode* fileRef);
+
+        // Optimized subset of CommonHeader, only reads the format number
+        int getFileFormat(LotusPath internalPath);
+        int getFileFormat(const FileNode* fileRef);
 
         FileEntry getFile(LotusPath internalPath);
         FileEntry getFile(LotusPath internalPath, int fileEntryReaderFlags);

@@ -11,18 +11,38 @@ PackageReader::getCommonHeader(LotusPath internalPath)
     LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
     split->readToc();
     FileRef fileRef = split->getFileEntry(internalPath);
-    return getCommonHeader(*fileRef);
+    return getCommonHeader(fileRef);
 }
 
 CommonHeader
-PackageReader::getCommonHeader(const FileNode& fileRef)
+PackageReader::getCommonHeader(const FileNode* fileRef)
 {
     LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
-    std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(&fileRef);
+    std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
     auto reader = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
-    CommonHeader ch = CHRead(reader);
+    CommonHeader ch = commonHeaderRead(reader);
     return ch;
+}
+
+int
+PackageReader::getFileFormat(LotusPath internalPath)
+{
+    LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
+    split->readToc();
+    FileRef fileRef = split->getFileEntry(internalPath);
+    return getFileFormat(fileRef);
+}
+
+int
+PackageReader::getFileFormat(const FileNode* fileRef)
+{
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
+    splitH->readToc();
+    std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
+    auto reader = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
+    uint32_t format = commonHeaderReadFormat(reader);
+    return (int)format;
 }
 
 FileEntry
@@ -85,13 +105,13 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
     {
         std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
         entry.headerData = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
-        entry.commonHeader = CHRead(entry.headerData);
+        entry.commonHeader = commonHeaderRead(entry.headerData);
     }
     else if (fileEntryReaderFlags & READ_H_CACHE)
     {
         std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
         entry.headerData = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
-        size_t chSize = CHFindLen(entry.headerData);
+        size_t chSize = commonHeaderFindLen(entry.headerData);
         entry.headerData.seek(chSize, std::ios::beg);
     }
 

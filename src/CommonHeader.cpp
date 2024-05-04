@@ -1,7 +1,7 @@
 #include "CommonHeader.h"
 
 int
-LotusLib::CHFindLen(BinaryReader::BinaryReaderBuffered& reader)
+LotusLib::commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader)
 {
 	uint32_t length = 0;
 
@@ -24,8 +24,35 @@ LotusLib::CHFindLen(BinaryReader::BinaryReaderBuffered& reader)
 	return length;
 }
 
+uint32_t
+LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, bool seek)
+{
+	uint32_t length = 0;
+
+	uint32_t sourcePathCount = reader.readUInt32();
+	if (sourcePathCount > 1500)
+		throw CommonHeaderError("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
+	length += 4;
+
+	for (uint32_t x = 0; x < sourcePathCount; x++)
+		length += 4 + reader.readUInt32();
+
+	uint32_t attributeLen = reader.readUInt32();
+	length += 4 + attributeLen;
+
+	if (attributeLen > 0)
+		length += 1;
+	
+	uint32_t format = reader.readUInt32();
+
+	if (!seek)
+		reader.seek(0, std::ios::beg);
+
+	return format;
+}
+
 int
-LotusLib::CHRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header)
+LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header)
 {
 	reader.readUInt8Array(&header.hash[0], 16);
 
@@ -54,9 +81,9 @@ LotusLib::CHRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& heade
 }
 
 LotusLib::CommonHeader
-LotusLib::CHRead(BinaryReader::BinaryReaderBuffered& reader)
+LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader)
 {
 	CommonHeader header;
-	LotusLib::CHRead(reader, header);
+	LotusLib::commonHeaderRead(reader, header);
 	return header;
 }

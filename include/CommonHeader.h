@@ -21,7 +21,8 @@ namespace LotusLib
 		CommonHeader() : hash(), paths(), attributes(), type(0) {}
 	};
 
-	int CHFindLen(BinaryReader::BinaryReaderBuffered& reader);
-	int CHRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header);
-	CommonHeader CHRead(BinaryReader::BinaryReaderBuffered& reader);
+	int commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader);
+	uint32_t commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, bool seek = false);
+	int commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header);
+	CommonHeader commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader);
 }
