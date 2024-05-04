@@ -93,7 +93,7 @@ namespace LotusLib
         PackagesReader(std::filesystem::path pkgDir) : m_packgesDir(pkgDir, true) { }
         
         void setData(std::filesystem::path pkgDir) { m_packgesDir.setData(pkgDir, true); }
-        PackageReader getPackage(std::string name);
+        PackageReader getPackage(const std::string& name);
         void initilizePackagesBin();
 
         std::vector<Package>::iterator begin() { return m_packgesDir.begin(); }

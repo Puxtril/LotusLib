@@ -244,9 +244,11 @@ PackageReader::getFileOnlyPackagesBin(LotusLib::LotusPath internalpath)
 }
 
 PackageReader
-PackagesReader::getPackage(std::string name)
+PackagesReader::getPackage(const std::string& name)
 {
     Package* pkg = m_packgesDir.getPackage(name);
+    if (pkg == nullptr)
+        throw LotusException("Package doesn't exist: " + name);
     return PackageReader(pkg, &m_packagesBin);
 }
 
