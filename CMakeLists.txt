@@ -50,15 +50,17 @@ if (LOTUSLIB_BUILD_LZF)
 	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/liblzf")
 endif()
 
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/spdlog")
+
 # Objects
 file(GLOB LOTUS_LIB_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 set_source_files_properties(${LOTUS_LIB_SOURCES} PROPERTIES LANGUAGE CXX)
 add_library(LotusLib STATIC ${LOTUS_LIB_SOURCES})
+target_link_libraries(LotusLib spdlog)
 
 # Static Library
 target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/Oodle-2.9/include")
-target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/spdlog/include")
 target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/Binary-Reader/include")
 target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/zstd/lib/decompress")
 target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/zstd/lib")
