@@ -3,8 +3,6 @@
 int
 LotusLib::commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader)
 {
-	size_t pos = reader.tell();
-
 	reader.seek(16, std::ios::beg);
 
 	uint32_t sourcePathCount = reader.readUInt32();
