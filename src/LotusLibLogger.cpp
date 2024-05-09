@@ -5,6 +5,12 @@ using namespace LotusLib;
 void
 Logger::setLogProperties(spdlog::level::level_enum consoleLogLevel)
 {
+	if (spdlog::get("LotusLib"))
+		spdlog::drop("LotusLib");
+
+	if (spdlog::get("__default_logger"))
+		spdlog::drop("__default_logger");
+
 	auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_st>();
 	consoleSink->set_level(consoleLogLevel);
 	consoleSink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
@@ -20,6 +26,12 @@ Logger::setLogProperties(spdlog::level::level_enum consoleLogLevel)
 void
 Logger::setLogProperties(const std::filesystem::path& logPath, spdlog::level::level_enum logPathLevel, spdlog::level::level_enum consoleLogLevel)
 {
+	if (spdlog::get("LotusLib"))
+		spdlog::drop("LotusLib");
+
+	if (spdlog::get("__default_logger"))
+		spdlog::drop("__default_logger");
+	
 	auto sinkFile = std::make_shared<spdlog::sinks::basic_file_sink_st>(logPath.string(), true);
 	sinkFile->set_level(logPathLevel);
 	sinkFile->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
