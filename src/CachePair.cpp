@@ -7,7 +7,8 @@ CachePair::CachePair(std::filesystem::path tocPath, std::filesystem::path cacheP
 	m_tocPath(tocPath),
 	m_cachePath(cachePath),
 	m_dirTree(tocPath),
-	m_hasReadToc(false)
+	m_hasReadToc(false),
+	m_cacheReader(cachePath, std::ios::in | std::ios::binary)
 {
 }
 
@@ -158,10 +159,9 @@ CachePair::getData(const LotusPath& internalPath) const
 std::vector<uint8_t>
 CachePair::getData(const FileEntries::FileNode* entry) const
 {
-	std::ifstream cacheReader(m_cachePath, std::ios::in | std::ios::binary);
-	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
+	m_cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
 	std::vector<uint8_t> data(entry->getCompLen());
-	cacheReader.read((char*)data.data(), entry->getCompLen());
+	m_cacheReader.read((char*)data.data(), entry->getCompLen());
 	return data;
 }
 
@@ -178,9 +178,8 @@ CachePair::getDataAndDecompress(const FileEntries::FileNode* entry) const
 	if (entry->getCompLen() == entry->getLen())
 		return getData(entry);
 
-	std::ifstream cacheReader(m_cachePath, std::ios::in | std::ios::binary);
 	if (m_isPostEnsmallening)
-		return Compression::getDataAndDecompressPost(entry, cacheReader);
+		return Compression::getDataAndDecompressPost(entry, m_cacheReader);
 	else
-		return Compression::getDataAndDecompressPre(entry, cacheReader);
+		return Compression::getDataAndDecompressPre(entry, m_cacheReader);
 }

@@ -21,6 +21,10 @@ namespace LotusLib
 		std::filesystem::path m_cachePath;
 		DirectoryTree m_dirTree;
 		bool m_hasReadToc;
+		// Windows has abysmal performance for creating file handles
+		// So if `getDataAndDecompress` is called on every file in the package (~200K for Misc)...
+		// The performance tanks
+		mutable std::ifstream m_cacheReader;
 
 	public:
 		CachePair(std::filesystem::path tocPath, std::filesystem::path cachePath, bool isPostEnsmallening);
