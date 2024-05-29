@@ -6,6 +6,7 @@
 
 namespace LotusLib
 {
+	// Credit to Sainan for this class
 	class LotusNotationParser
 	{
 	protected:
