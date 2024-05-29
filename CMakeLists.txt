@@ -66,3 +66,8 @@ target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/zstd
 target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/zstd/lib")
 target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/zstd")
 target_include_directories(LotusLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/lib/liblzf/include")
+
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/json")
+
+target_link_libraries(LotusLib nlohmann_json::nlohmann_json)

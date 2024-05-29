@@ -10,3 +10,6 @@
 [submodule "lib/liblzf"]
 	path = lib/liblzf
 	url = https://github.com/Puxtril/liblzf.git
+[submodule "lib/json"]
+	path = lib/json
+	url = https://github.com/nlohmann/json.git
