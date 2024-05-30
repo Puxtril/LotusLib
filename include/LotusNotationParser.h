@@ -17,7 +17,7 @@ namespace LotusLib
 	public:
 		[[nodiscard]]
 		nlohmann::json
-		parse(char* data, size_t dataSize);
+		parse(const char* data, size_t dataSize);
 
 	protected:
 		void dischargeBuffer();

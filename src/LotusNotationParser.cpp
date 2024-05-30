@@ -3,7 +3,7 @@
 using namespace LotusLib;
 
 nlohmann::json
-LotusNotationParser::parse(char* data, size_t dataSize)
+LotusNotationParser::parse(const char* data, size_t dataSize)
 {
     auto root = nlohmann::json::object();
     m_stack.push(&root);
