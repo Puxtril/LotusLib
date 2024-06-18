@@ -37,6 +37,8 @@ namespace LotusLib
         ZSTD_DDict* m_zstdDict;
         ZSTD_DCtx* m_zstdContext;
 
+        const static inline std::vector<uint32_t> m_validVersions = { 40, 43 };
+
         PackagesBin(const PackagesBin&) = delete;
         PackagesBin& operator=(const PackagesBin&) = delete;
 
