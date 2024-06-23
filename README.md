@@ -11,11 +11,16 @@ This will allow you to access files stored within the .toc and .cache files. Tha
 ## How to install
 
 * Adding this project as a Git submodule is the easiest integration method for a project. `git submodule add https://github.com/Puxtril/LotusLib.git`
-* The only required dependency is __spdlog__. To download it, execute `git submodule update --init --recursive`
-* This builds using CMake. Ensure CMake is installed on your platform, then add these directives to CMakeLists.txt: `add_subdirectory(path/to/LotusLib)` and `include_directory(path/to/LotusLib/include)`. To compile into an executable, you will also need the `find_library()` directive for Oodle (see below).
-* This library uses [Oodle for decompression.](www.radgametools.com/oodle.html). To avoid copyright issues, the static library is not included in this repository. The easiest way to obtain Oodle is from Unreal Engine: download Unreal via the Epic Games Launcher and browse to _<InstallFolder>/Engine/Source/Runtime/OodleDataCompression/Sdks/2.9.5/lib_
-
-As a reminder: You do not need the static Oodle library to compile as a library, only to compile as an executable.
+* Initilize all required submodules with `git submodule update --init --recursive LotusLib`.
+* This builds using CMake. Ensure CMake is installed on your platform, then add this to your project's CMakeLists.txt: `add_subdirectory(path/to/LotusLib)`. When you create your executable, link with `target_link_libraries(<YOUR_EXE> LotusLib)`.
+* This library uses [Oodle](www.radgametools.com/oodle.html) for decompression. To avoid issues, the static library is not included in this repository. You will need to obtain this yourself first.
+    1. Download the files.
+        - Easy: Download [from here.](https://github.com/WorkingRobot/OodleUE/tree/main/Engine/Source/Runtime/OodleDataCompression/Sdks)
+        - Hard: Download from the engine
+            - Download Unreal Engine from the official website (You will need an account and the Epic launcher)
+            - Once downloaded find the SDK folder `Engine/Source/Runtime/OodleDataCompression/Sdks/<version>/lib`
+    1. Create a folder in the root of this repository (or top-most project) named `bin`
+    1. Copy folders `Linux` and `Win64` into `bin`. We want the *static* libraries here.
 
 ## How to use
 
@@ -37,8 +42,10 @@ int main()
     // This loads the package "Misc" from the "Cache.Windows" directory
     LotusLib::PackageReader pkg = dir.getPackage("Misc");
 
-    // This returns all relevant data for this particular file
     /*
+    These are defined in the project
+    Putting their definition here for documentation purposes.
+
     struct FileEntry
     {
         CommonHeader commonHeader;
@@ -49,15 +56,19 @@ int main()
     };
 
     struct CommonHeader
-	{
+    {
 		std::array<uint8_t, 16> hash;
 		std::vector<std::string> paths;
 		std::string attributes;
 		uint32_t type;
-    }
+    };
 
-    - The CommonHeader gives you the Type (Model/Texture/Material/etc...)
-    - The contents of the 3 BinaryReaders all depend on the file type.
+    The CommonHeader gives you the Type (Model/Texture/Material/etc...)
+        This is an int enumeration that must be known ahead of time.
+        Currently known formats are used in Warframe Exporter
+
+    The contents of `bData` and fData` may not always be populated.
+        Some types only store binary data in B, others only if F, some a mix of both.
     */
     LotusLib::FileEntry entry = pkg.getFile("/Lotus/Characters/Tenno/Excalibur/Excalibur_skel.fbx");
 }
