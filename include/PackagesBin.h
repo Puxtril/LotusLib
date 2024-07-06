@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-#include <iostream>
 #include <map>
+#include <algorithm>
 
 #include "BinaryReaderBuffered.h"
 #include "BinaryReaderSlice.h"
