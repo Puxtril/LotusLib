@@ -101,18 +101,17 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
     splitH->readToc();
     entry.metadata = splitH->getFileEntry(entry.internalPath);
 
+    if (fileEntryReaderFlags & READ_H_CACHE || fileEntryReaderFlags & READ_COMMON_HEADER)
+    {
+        std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
+        entry.headerData = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
+    }
+
     if (fileEntryReaderFlags & READ_COMMON_HEADER)
     {
-        std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
-        entry.headerData = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
         entry.commonHeader = commonHeaderRead(entry.headerData);
-    }
-    else if (fileEntryReaderFlags & READ_H_CACHE)
-    {
-        std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
-        entry.headerData = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
-        size_t chSize = commonHeaderFindLen(entry.headerData);
-        entry.headerData.seek(chSize, std::ios::beg);
+        size_t commonHeaderLen = commonHeaderFindLen(entry.headerData);
+        entry.headerData.seek(commonHeaderLen, std::ios::beg);
     }
 
     if (fileEntryReaderFlags & READ_B_CACHE)
