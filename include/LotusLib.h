@@ -10,6 +10,8 @@
 #include "BinaryReaderBuffered.h"
 #include "PackagesBin.h"
 
+#include <optional>
+
 namespace LotusLib
 {
     using FileRef = FileEntries::FileNode*;
@@ -36,6 +38,7 @@ namespace LotusLib
         CommonHeader commonHeader;
         LotusPath internalPath;
         FileNode* metadata;
+        std::string srcPkgName;
         BinaryReader::BinaryReaderBuffered headerData;
         BinaryReader::BinaryReaderBuffered bData;
         BinaryReader::BinaryReaderBuffered fData;
@@ -93,7 +96,7 @@ namespace LotusLib
         PackagesReader(std::filesystem::path pkgDir) : m_packgesDir(pkgDir, true) { }
         
         void setData(std::filesystem::path pkgDir) { m_packgesDir.setData(pkgDir, true); }
-        PackageReader getPackage(const std::string& name);
+        std::optional<PackageReader> getPackage(const std::string& name);
         void initilizePackagesBin();
 
         std::vector<Package>::iterator begin() { return m_packgesDir.begin(); }

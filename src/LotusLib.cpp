@@ -2,9 +2,6 @@
 
 using namespace LotusLib;
 
-//////////////////////////////////////////////////////////////////
-// Package Reader
-
 CommonHeader
 PackageReader::getCommonHeader(LotusPath internalPath)
 {
@@ -97,6 +94,8 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
     FileEntry entry;
 
     entry.internalPath = fileRef->getFullPath();
+    entry.srcPkgName = m_pkg->getName();
+
     LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     entry.metadata = splitH->getFileEntry(entry.internalPath);
@@ -242,12 +241,12 @@ PackageReader::getFileOnlyPackagesBin(LotusLib::LotusPath internalpath)
     return entry;
 }
 
-PackageReader
+std::optional<PackageReader>
 PackagesReader::getPackage(const std::string& name)
 {
     Package* pkg = m_packgesDir.getPackage(name);
     if (pkg == nullptr)
-        throw LotusException("Package doesn't exist: " + name);
+        return std::nullopt;
     return PackageReader(pkg, &m_packagesBin);
 }
 
