@@ -155,49 +155,49 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
 }
 
 const FileNode*
-PackageReader::getFileNode(LotusPath internalPath)
+PackageReader::getFileNode(LotusPath internalPath, PackageTrioType trioType)
 {
-    LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
+    LotusLib::CachePair* split = m_pkg->getPair(trioType);
     split->readToc();
     return split->getFileEntry(internalPath);
 }
 
 const DirNode*
-PackageReader::getDirNode(LotusPath internalPath)
+PackageReader::getDirNode(LotusPath internalPath, PackageTrioType trioType)
 {
-    LotusLib::CachePair* split = m_pkg->getPair(PackageTrioType::H);
+    LotusLib::CachePair* split = m_pkg->getPair(trioType);
     split->readToc();
     return split->getDirEntry(internalPath);
 }
 
 DirectoryTree::ConstFileIterator
-PackageReader::begin() const
+PackageReader::begin(PackageTrioType trioType) const
 {
-    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
+    LotusLib::CachePair* splitH = m_pkg->getPair(trioType);
     splitH->readToc();
     return splitH->begin();
 }
 
 DirectoryTree::ConstFileIterator
-PackageReader::end() const
+PackageReader::end(PackageTrioType trioType) const
 {
-    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
+    LotusLib::CachePair* splitH = m_pkg->getPair(trioType);
     splitH->readToc();
     return splitH->end();
 }
 
 DirectoryTree::FileIteratorTree
-PackageReader::getIter(LotusLib::LotusPath startingPath) const
+PackageReader::getIter(LotusLib::LotusPath startingPath, PackageTrioType trioType) const
 {
-    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
+    LotusLib::CachePair* splitH = m_pkg->getPair(trioType);
     splitH->readToc();
     return splitH->getIter(startingPath);
 }
 
 DirectoryTree::FileIteratorTree
-PackageReader::getIter() const
+PackageReader::getIter(PackageTrioType trioType) const
 {
-    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
+    LotusLib::CachePair* splitH = m_pkg->getPair(trioType);
     splitH->readToc();
     return splitH->getIter();
 }

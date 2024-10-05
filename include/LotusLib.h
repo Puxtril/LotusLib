@@ -64,20 +64,22 @@ namespace LotusLib
 
         FileEntry getFile(LotusPath internalPath);
         FileEntry getFile(LotusPath internalPath, int fileEntryReaderFlags);
+
+        // If passing by FileNode*, it must be from the H cache
         FileEntry getFile(const FileNode* fileRef);
         FileEntry getFile(const FileNode* fileRef, int fileEntryReaderFlags);
 
-        const FileNode* getFileNode(LotusPath internalPath);
-        const DirNode* getDirNode(LotusPath internalPath);
+        const FileNode* getFileNode(LotusPath internalPath, PackageTrioType trioType = PackageTrioType::H);
+        const DirNode* getDirNode(LotusPath internalPath, PackageTrioType trioType = PackageTrioType::H);
 
-        DirectoryTree::ConstFileIterator begin() const;
-		DirectoryTree::ConstFileIterator end() const;
-        DirectoryTree::FileIteratorTree getIter(LotusLib::LotusPath startingPath) const;
-        DirectoryTree::FileIteratorTree getIter() const;
+        DirectoryTree::ConstFileIterator begin(PackageTrioType trioType = PackageTrioType::H) const;
+        DirectoryTree::ConstFileIterator end(PackageTrioType trioType = PackageTrioType::H) const;
+        DirectoryTree::FileIteratorTree getIter(LotusLib::LotusPath startingPath, PackageTrioType trioType = PackageTrioType::H) const;
+        DirectoryTree::FileIteratorTree getIter(PackageTrioType trioType = PackageTrioType::H) const;
 
         const std::filesystem::path& getDirectory() const;
-		const std::string& getName() const;
-		bool isPostEnsmallening() const;
+        const std::string& getName() const;
+        bool isPostEnsmallening() const;
 
         void lsDir(const LotusPath& internalPath) const;
     
@@ -100,8 +102,8 @@ namespace LotusLib
         void initilizePackagesBin();
 
         std::vector<Package>::iterator begin() { return m_packgesDir.begin(); }
-		std::vector<Package>::iterator end() { return m_packgesDir.end(); }
-		std::vector<Package>::const_iterator begin() const { return m_packgesDir.begin(); }
-		std::vector<Package>::const_iterator end() const { return m_packgesDir.end(); }
+        std::vector<Package>::iterator end() { return m_packgesDir.end(); }
+        std::vector<Package>::const_iterator begin() const { return m_packgesDir.begin(); }
+        std::vector<Package>::const_iterator end() const { return m_packgesDir.end(); }
     };
 }
