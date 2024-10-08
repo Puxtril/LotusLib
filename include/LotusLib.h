@@ -72,8 +72,8 @@ namespace LotusLib
         const FileNode* getFileNode(LotusPath internalPath, PackageTrioType trioType = PackageTrioType::H);
         const DirNode* getDirNode(LotusPath internalPath, PackageTrioType trioType = PackageTrioType::H);
 
-        DirectoryTree::ConstFileIterator begin(PackageTrioType trioType = PackageTrioType::H) const;
-        DirectoryTree::ConstFileIterator end(PackageTrioType trioType = PackageTrioType::H) const;
+        DirectoryTree::ConstFileIterator begin() const;
+        DirectoryTree::ConstFileIterator end() const;
         DirectoryTree::FileIteratorTree getIter(LotusLib::LotusPath startingPath, PackageTrioType trioType = PackageTrioType::H) const;
         DirectoryTree::FileIteratorTree getIter(PackageTrioType trioType = PackageTrioType::H) const;
 

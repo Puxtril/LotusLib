@@ -158,6 +158,8 @@ const FileNode*
 PackageReader::getFileNode(LotusPath internalPath, PackageTrioType trioType)
 {
     LotusLib::CachePair* split = m_pkg->getPair(trioType);
+    if (split == nullptr)
+        return nullptr;
     split->readToc();
     return split->getFileEntry(internalPath);
 }
@@ -166,22 +168,24 @@ const DirNode*
 PackageReader::getDirNode(LotusPath internalPath, PackageTrioType trioType)
 {
     LotusLib::CachePair* split = m_pkg->getPair(trioType);
+    if (split == nullptr)
+        return nullptr;
     split->readToc();
     return split->getDirEntry(internalPath);
 }
 
 DirectoryTree::ConstFileIterator
-PackageReader::begin(PackageTrioType trioType) const
+PackageReader::begin() const
 {
-    LotusLib::CachePair* splitH = m_pkg->getPair(trioType);
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     return splitH->begin();
 }
 
 DirectoryTree::ConstFileIterator
-PackageReader::end(PackageTrioType trioType) const
+PackageReader::end() const
 {
-    LotusLib::CachePair* splitH = m_pkg->getPair(trioType);
+    LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
     splitH->readToc();
     return splitH->end();
 }
@@ -189,17 +193,29 @@ PackageReader::end(PackageTrioType trioType) const
 DirectoryTree::FileIteratorTree
 PackageReader::getIter(LotusLib::LotusPath startingPath, PackageTrioType trioType) const
 {
-    LotusLib::CachePair* splitH = m_pkg->getPair(trioType);
-    splitH->readToc();
-    return splitH->getIter(startingPath);
+    LotusLib::CachePair* split = m_pkg->getPair(trioType);
+    if (split == nullptr)
+    {
+        LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
+        splitH->readToc();
+        return splitH->getIter();
+    }
+    split->readToc();
+    return split->getIter(startingPath);
 }
 
 DirectoryTree::FileIteratorTree
 PackageReader::getIter(PackageTrioType trioType) const
 {
-    LotusLib::CachePair* splitH = m_pkg->getPair(trioType);
-    splitH->readToc();
-    return splitH->getIter();
+    LotusLib::CachePair* split = m_pkg->getPair(trioType);
+    if (split == nullptr)
+    {
+        LotusLib::CachePair* splitH = m_pkg->getPair(PackageTrioType::H);
+        splitH->readToc();
+        return splitH->getIter();
+    }
+    split->readToc();
+    return split->getIter();
 }
 
 const std::filesystem::path&
