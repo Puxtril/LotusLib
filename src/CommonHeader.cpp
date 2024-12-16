@@ -55,7 +55,7 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, boo
 	if (attributeLen > 0)
 		reader.seek(1, std::ios::cur);
 
-	uint32_t format = reader.readUInt32();
+	uint32_t format = reader.readUInt32() & 0x0000FFFF;
 
 	if (!seek)
 		reader.seek(pos, std::ios::beg);
@@ -87,7 +87,7 @@ LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHea
 	if (attributeLen > 0)
 		reader.seek(1, std::ios::cur);
 
-	header.type = reader.readUInt32();
+	header.type = reader.readUInt32() & 0x0000FFFF;
 
 	return reader.tell();
 }
