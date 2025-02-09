@@ -2,6 +2,14 @@
 
 using namespace LotusLib;
 
+//////////////////////////////////////////////////////////////////////////
+// PackageReader
+
+PackageReader::PackageReader(Package* package, PackagesBin* packagesBin, Game game)
+ : m_pkg(package), m_packagesBin(packagesBin)
+ {
+ }
+
 CommonHeader
 PackageReader::getCommonHeader(LotusPath internalPath)
 {
@@ -230,10 +238,10 @@ PackageReader::getName() const
     return m_pkg->getName();
 }
 
-bool
-PackageReader::isPostEnsmallening() const
+Game
+PackageReader::getGame() const
 {
-    return m_pkg->isPostEnsmallening();
+    return m_pkg->getGame();
 }
 
 void
@@ -257,13 +265,32 @@ PackageReader::getFileOnlyPackagesBin(LotusLib::LotusPath internalpath)
     return entry;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// PackagesReader
+
+PackagesReader::PackagesReader()
+ : m_packgesDir()
+{
+}
+
+PackagesReader::PackagesReader(std::filesystem::path pkgDir, Game game)
+ : m_packgesDir(pkgDir, game)
+{
+}
+
+void
+PackagesReader::setData(std::filesystem::path pkgDir, Game game)
+{
+    m_packgesDir.setData(pkgDir, game);
+}
+
 std::optional<PackageReader>
 PackagesReader::getPackage(const std::string& name)
 {
     Package* pkg = m_packgesDir.getPackage(name);
     if (pkg == nullptr)
         return std::nullopt;
-    return PackageReader(pkg, &m_packagesBin);
+    return PackageReader(pkg, &m_packagesBin, m_game);
 }
 
 void
@@ -280,4 +307,28 @@ PackagesReader::initilizePackagesBin()
         BinaryReader::BinaryReaderBuffered reader(std::move(packagesRaw));
         m_packagesBin.initilize(reader);
     }
+}
+
+std::vector<Package>::iterator
+PackagesReader::begin()
+{
+    return m_packgesDir.begin();
+}
+
+std::vector<Package>::iterator
+PackagesReader::end()
+{
+    return m_packgesDir.end();
+}
+
+std::vector<Package>::const_iterator
+PackagesReader::begin() const
+{
+    return m_packgesDir.begin();
+}
+
+std::vector<Package>::const_iterator
+PackagesReader::end() const 
+{
+    return m_packgesDir.end();
 }

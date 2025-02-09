@@ -4,6 +4,7 @@
 #include "LotusExceptions.h"
 #include "LotusPath.h"
 #include "Compression.h"
+#include "Enums.h"
 
 #include <filesystem>
 #include <fstream>
@@ -16,7 +17,7 @@ namespace LotusLib
 	protected:
 		static const unsigned int m_magicNumber = 0x1867C64E;
 		static const unsigned int m_archiveVersion = 20;
-		bool m_isPostEnsmallening;
+		Game m_game;
 		std::filesystem::path m_tocPath;
 		std::filesystem::path m_cachePath;
 		DirectoryTree m_dirTree;
@@ -27,12 +28,12 @@ namespace LotusLib
 		mutable std::ifstream m_cacheReader;
 
 	public:
-		CachePair(std::filesystem::path tocPath, std::filesystem::path cachePath, bool isPostEnsmallening);
+		CachePair(std::filesystem::path tocPath, std::filesystem::path cachePath, Game game);
 
 		void readToc();
 		void unReadToc();
 
-		bool isPostEnsmallening() const;
+		Game getGame() const;
 		const std::filesystem::path& getTocPath() const;
 		const std::filesystem::path& getCachePath() const;
 

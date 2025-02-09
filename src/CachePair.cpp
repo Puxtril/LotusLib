@@ -2,8 +2,8 @@
 
 using namespace LotusLib;
 
-CachePair::CachePair(std::filesystem::path tocPath, std::filesystem::path cachePath, bool isPostEnsmallening)
-	: m_isPostEnsmallening(isPostEnsmallening),
+CachePair::CachePair(std::filesystem::path tocPath, std::filesystem::path cachePath, Game game)
+	: m_game(game),
 	m_tocPath(tocPath),
 	m_cachePath(cachePath),
 	m_dirTree(tocPath),
@@ -36,10 +36,10 @@ CachePair::unReadToc()
 	m_hasReadToc = false;
 }
 
-bool
-CachePair::isPostEnsmallening() const
+Game
+CachePair::getGame() const
 {
-	return m_isPostEnsmallening;
+	return m_game;
 }
 
 const std::filesystem::path&
@@ -178,8 +178,8 @@ CachePair::getDataAndDecompress(const FileEntries::FileNode* entry) const
 	if (entry->getCompLen() == entry->getLen())
 		return getData(entry);
 
-	if (m_isPostEnsmallening)
-		return Compression::getDataAndDecompressPost(entry, m_cacheReader);
-	else
+	if (m_game == Game::WARFRAME_PE)
 		return Compression::getDataAndDecompressPre(entry, m_cacheReader);
+	else
+		return Compression::getDataAndDecompressPost(entry, m_cacheReader);
 }

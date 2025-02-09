@@ -24,11 +24,11 @@ namespace LotusLib
 	{
 		std::filesystem::path m_directory;
 		std::string m_name;
-		bool m_isPostEnsmallening;
+		Game m_game;
 		std::array<std::optional<CachePair>, 3> m_pkgs;
 
 	public:
-		Package(std::filesystem::path pkgDir, std::string pkgName, bool isPostEnsmallening);
+		Package(std::filesystem::path pkgDir, std::string pkgName, Game game);
 
 		std::array<std::optional<CachePair>, 3>::iterator begin();
 		std::array<std::optional<CachePair>, 3>::iterator end();
@@ -41,7 +41,7 @@ namespace LotusLib
 
 		const std::filesystem::path& getDirectory() const;
 		const std::string& getName() const;
-		bool isPostEnsmallening() const;
+		Game getGame() const;
 		
 	private:
 		void loadPkgPairs();

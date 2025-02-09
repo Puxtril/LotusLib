@@ -2,17 +2,17 @@
 
 using namespace LotusLib;
 
-PackageCollection::PackageCollection(std::filesystem::path pkgDir, bool isPostEnsmallening)
-    : m_packageDir(pkgDir), m_isPostEnsmallening(isPostEnsmallening)
+PackageCollection::PackageCollection(std::filesystem::path pkgDir, Game game)
+    : m_packageDir(pkgDir), m_game(game)
 {
     loadPackages();
 }
 
 void
-PackageCollection::setData(std::filesystem::path pkgDir, bool isPostEnsmallening)
+PackageCollection::setData(std::filesystem::path pkgDir, Game game)
 {
     m_packageDir = pkgDir;
-    m_isPostEnsmallening = isPostEnsmallening;
+    m_game = game;
     loadPackages();
 }
 
@@ -62,10 +62,10 @@ PackageCollection::getPath() const
     return m_packageDir;
 }
 
-bool
-PackageCollection::isPostEnsmallening() const
+Game
+PackageCollection::getGame() const
 {
-    return m_isPostEnsmallening;
+    return m_game;
 }
 
 void
@@ -99,5 +99,5 @@ PackageCollection::loadPackage(std::string pkgName)
         std::forward_as_tuple(pkgName),
         std::forward_as_tuple(static_cast<int>(m_pkgs.size()))
     );
-    m_pkgs.emplace_back(m_packageDir, pkgName, m_isPostEnsmallening);
+    m_pkgs.emplace_back(m_packageDir, pkgName, m_game);
 } 

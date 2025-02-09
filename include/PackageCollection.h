@@ -12,15 +12,15 @@ namespace LotusLib
 	class PackageCollection
 	{
 		std::filesystem::path m_packageDir;
-		bool m_isPostEnsmallening;
+		Game m_game;
 		std::unordered_map<std::string, int> m_pkgMap;
 		std::vector<Package> m_pkgs;
 
 	public:
 		PackageCollection() = default;
-		PackageCollection(std::filesystem::path pkgDir, bool isPostEnsmallening);
+		PackageCollection(std::filesystem::path pkgDir, Game game);
 
-		void setData(std::filesystem::path pkgDir, bool isPostEnsmallening);
+		void setData(std::filesystem::path pkgDir, Game game);
 
 		std::vector<Package>::iterator begin();
 		std::vector<Package>::iterator end();
@@ -32,7 +32,7 @@ namespace LotusLib
 		Package* getPackage(const std::string& pkgName);
 
 		const std::filesystem::path& getPath() const;
-		bool isPostEnsmallening() const;
+		Game getGame() const;
 
 	protected:
 		void loadPackages();

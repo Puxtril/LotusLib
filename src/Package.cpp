@@ -2,8 +2,8 @@
 
 using namespace LotusLib;
 
-Package::Package(std::filesystem::path pkgDir, std::string pkgName, bool isPostEnsmallening)
-    : m_directory(pkgDir), m_name(pkgName), m_isPostEnsmallening(isPostEnsmallening), m_pkgs()
+Package::Package(std::filesystem::path pkgDir, std::string pkgName, Game game)
+    : m_directory(pkgDir), m_name(pkgName), m_game(game), m_pkgs()
 {
     loadPkgPairs();
 }
@@ -60,10 +60,10 @@ Package::getName() const
     return m_name;
 }
 
-bool
-Package::isPostEnsmallening() const
+Game
+Package::getGame() const
 {
-    return m_isPostEnsmallening;
+    return m_game;
 }
 
 void
@@ -74,7 +74,7 @@ Package::loadPkgPairs()
         auto pair = getPairPath((PackageTrioType)i);
         if (std::filesystem::exists(std::get<0>(pair)) && std::filesystem::exists(std::get<1>(pair)))
         {
-            m_pkgs[i].emplace(CachePair{std::get<0>(pair), std::get<1>(pair), m_isPostEnsmallening});
+            m_pkgs[i].emplace(CachePair{std::get<0>(pair), std::get<1>(pair), m_game});
         }
         else
         {

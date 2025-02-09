@@ -49,9 +49,10 @@ namespace LotusLib
     {
         Package* m_pkg;
         PackagesBin* m_packagesBin;
+        Game game;
 
     public:
-        PackageReader(Package* package, PackagesBin* packagesBin) : m_pkg(package), m_packagesBin(packagesBin) {}
+        PackageReader(Package* package, PackagesBin* packagesBin, Game game);
 
         CommonHeader getCommonHeader(LotusPath internalPath);
         // Assumes this is inside the H package
@@ -79,7 +80,7 @@ namespace LotusLib
 
         const std::filesystem::path& getDirectory() const;
         const std::string& getName() const;
-        bool isPostEnsmallening() const;
+        Game getGame() const;
 
         void lsDir(const LotusPath& internalPath) const;
     
@@ -92,18 +93,19 @@ namespace LotusLib
     {
         PackageCollection m_packgesDir;
         PackagesBin m_packagesBin;
+        Game m_game;
 
     public:
-        PackagesReader() : m_packgesDir() {}
-        PackagesReader(std::filesystem::path pkgDir) : m_packgesDir(pkgDir, true) { }
+        PackagesReader();
+        PackagesReader(std::filesystem::path pkgDir, Game game = Game::WARFRAME);
         
-        void setData(std::filesystem::path pkgDir) { m_packgesDir.setData(pkgDir, true); }
+        void setData(std::filesystem::path pkgDir, Game game = Game::WARFRAME);
         std::optional<PackageReader> getPackage(const std::string& name);
         void initilizePackagesBin();
 
-        std::vector<Package>::iterator begin() { return m_packgesDir.begin(); }
-        std::vector<Package>::iterator end() { return m_packgesDir.end(); }
-        std::vector<Package>::const_iterator begin() const { return m_packgesDir.begin(); }
-        std::vector<Package>::const_iterator end() const { return m_packgesDir.end(); }
+        std::vector<Package>::iterator begin();
+        std::vector<Package>::iterator end();
+        std::vector<Package>::const_iterator begin() const;
+        std::vector<Package>::const_iterator end() const;
     };
 }
