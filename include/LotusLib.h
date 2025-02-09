@@ -81,6 +81,7 @@ namespace LotusLib
         const std::filesystem::path& getDirectory() const;
         const std::string& getName() const;
         Game getGame() const;
+        PackageCategory getPkgCategory() const;
 
         void lsDir(const LotusPath& internalPath) const;
     

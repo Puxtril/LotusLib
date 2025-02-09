@@ -244,6 +244,12 @@ PackageReader::getGame() const
     return m_pkg->getGame();
 }
 
+PackageCategory
+PackageReader::getPkgCategory() const
+{
+    return m_pkg->getPkgCategory();
+}
+
 void
 PackageReader::lsDir(const LotusPath& internalPath) const
 {

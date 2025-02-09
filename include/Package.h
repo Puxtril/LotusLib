@@ -25,6 +25,7 @@ namespace LotusLib
 		std::filesystem::path m_directory;
 		std::string m_name;
 		Game m_game;
+		PackageCategory m_category;
 		std::array<std::optional<CachePair>, 3> m_pkgs;
 
 	public:
@@ -42,9 +43,11 @@ namespace LotusLib
 		const std::filesystem::path& getDirectory() const;
 		const std::string& getName() const;
 		Game getGame() const;
+		PackageCategory getPkgCategory() const;
 		
 	private:
 		void loadPkgPairs();
 		std::tuple<std::filesystem::path, std::filesystem::path> getPairPath(PackageTrioType trioType);
+		PackageCategory findPackageCategory();
 	};
 }

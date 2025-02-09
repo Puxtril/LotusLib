@@ -1,21 +1,22 @@
 namespace LotusLib
 {
-    enum Game
+    enum Game : int
     {
-        SOULFRAME,
-        WARFRAME,
-        WARFRAME_PE // Pre-Ensmallening
+        SOULFRAME = 1,
+        WARFRAME = 2,
+        WARFRAME_PE = 4 // Pre-Ensmallening
     };
 
-    enum PackageCategory
+    enum PackageCategory : int
     {
-        ANIM_RETARGET,
-        CHARACTER_CODES,
-        FONT,
-        LIGHT_MAP,
-        MISC,
-        SHADER,
-        TEXTURE,
-        VIDEO_TEXTURE,
+        UNKNOWN = 0,
+        ANIM_RETARGET = 1,
+        CHARACTER_CODES = 2,
+        FONT = 4,
+        LIGHT_MAP = 8,
+        MISC = 16,
+        SHADER = 32,
+        TEXTURE = 64,
+        VIDEO_TEXTURE = 128
     };
 };

@@ -6,6 +6,7 @@ Package::Package(std::filesystem::path pkgDir, std::string pkgName, Game game)
     : m_directory(pkgDir), m_name(pkgName), m_game(game), m_pkgs()
 {
     loadPkgPairs();
+    m_category = findPackageCategory();
 }
 
 std::array<std::optional<CachePair>, 3>::iterator
@@ -66,6 +67,12 @@ Package::getGame() const
     return m_game;
 }
 
+PackageCategory
+Package::getPkgCategory() const
+{
+    return m_category;
+}
+
 void
 Package::loadPkgPairs()
 {
@@ -107,4 +114,29 @@ Package::getPairPath(PackageTrioType trioType)
     cachePath /= trioChar + m_name + ".cache";
 
     return { tocPath, cachePath };
+}
+
+PackageCategory
+Package::findPackageCategory()
+{
+    const std::string& name = getName();
+    if (name.rfind("AnimRetarget", 0) == 0)
+        return PackageCategory::ANIM_RETARGET;
+    if (name.rfind("CharacterCodes", 0) == 0)
+        return PackageCategory::CHARACTER_CODES;
+    if (name.rfind("Font", 0) == 0)
+        return PackageCategory::FONT;
+    if (name.rfind("LightMap", 0) == 0)
+        return PackageCategory::LIGHT_MAP;
+    if (name.rfind("Misc", 0) == 0)
+        return PackageCategory::MISC;
+    if (name.rfind("Shader", 0) == 0)
+        return PackageCategory::SHADER;
+    if (name.rfind("Texture", 0) == 0)
+        return PackageCategory::TEXTURE;
+    if (name.rfind("VideoTexture", 0) == 0)
+        return PackageCategory::VIDEO_TEXTURE;
+
+    logWarn("Unable to match category for " + name);
+    return UNKNOWN;
 }
