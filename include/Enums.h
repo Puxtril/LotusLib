@@ -1,3 +1,5 @@
+#pragma once
+
 namespace LotusLib
 {
     enum Game : int
