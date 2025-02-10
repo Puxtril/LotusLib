@@ -5,6 +5,7 @@
 
 #include "CachePair.h"
 #include "CommonHeader.h"
+#include "LotusUtils.h"
 
 #include <filesystem>
 #include <string>
@@ -48,6 +49,5 @@ namespace LotusLib
 	private:
 		void loadPkgPairs();
 		std::tuple<std::filesystem::path, std::filesystem::path> getPairPath(PackageTrioType trioType);
-		PackageCategory findPackageCategory();
 	};
 }
