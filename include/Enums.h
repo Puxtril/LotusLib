@@ -2,14 +2,15 @@
 
 namespace LotusLib
 {
-    enum Game : int
+    enum class Game : int
     {
+        UNKNOWN = 0,
         SOULFRAME = 1,
         WARFRAME = 2,
         WARFRAME_PE = 4 // Pre-Ensmallening
     };
 
-    enum PackageCategory : int
+    enum class PackageCategory : int
     {
         UNKNOWN = 0,
         ANIM_RETARGET = 1,
