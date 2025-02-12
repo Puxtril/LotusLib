@@ -10,6 +10,11 @@ namespace LotusLib
         WARFRAME_PE = 4 // Pre-Ensmallening
     };
 
+    inline Game operator|(Game a, Game b)
+    {
+        return static_cast<Game>(static_cast<int>(a) | static_cast<int>(b));
+    }
+
     enum class PackageCategory : int
     {
         UNKNOWN = 0,
@@ -22,4 +27,9 @@ namespace LotusLib
         TEXTURE = 64,
         VIDEO_TEXTURE = 128
     };
+
+    inline PackageCategory operator|(PackageCategory a, PackageCategory b)
+    {
+        return static_cast<PackageCategory>(static_cast<int>(a) | static_cast<int>(b));
+    }
 };
