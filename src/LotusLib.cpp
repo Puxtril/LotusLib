@@ -317,6 +317,12 @@ PackagesReader::initilizePackagesBin()
     }
 }
 
+Game
+PackagesReader::getGame() const
+{
+    return m_game;
+}
+
 std::vector<std::string>::iterator
 PackagesReader::begin()
 {

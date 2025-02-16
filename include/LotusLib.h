@@ -103,6 +103,7 @@ namespace LotusLib
         
         void setData(std::filesystem::path pkgDir, Game game = Game::WARFRAME);
         std::optional<PackageReader> getPackage(const std::string& name);
+        Game getGame() const;
         void initilizePackagesBin();
 
         std::vector<std::string>::iterator begin();
