@@ -92,6 +92,7 @@ namespace LotusLib
 
     class PackagesReader
     {
+        std::vector<std::string> m_pkgNames;
         PackageCollection m_packgesDir;
         PackagesBin m_packagesBin;
         Game m_game;
@@ -104,9 +105,10 @@ namespace LotusLib
         std::optional<PackageReader> getPackage(const std::string& name);
         void initilizePackagesBin();
 
-        std::vector<Package>::iterator begin();
-        std::vector<Package>::iterator end();
-        std::vector<Package>::const_iterator begin() const;
-        std::vector<Package>::const_iterator end() const;
+        std::vector<std::string>::iterator begin();
+        std::vector<std::string>::iterator end();
+
+    private:
+        std::vector<std::string> getPkgNames(PackageCollection& pkgDir);
     };
 }

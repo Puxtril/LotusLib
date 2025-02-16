@@ -282,12 +282,14 @@ PackagesReader::PackagesReader()
 PackagesReader::PackagesReader(std::filesystem::path pkgDir, Game game)
  : m_packgesDir(pkgDir, game)
 {
+    m_pkgNames = getPkgNames(m_packgesDir);
 }
 
 void
 PackagesReader::setData(std::filesystem::path pkgDir, Game game)
 {
     m_packgesDir.setData(pkgDir, game);
+    m_pkgNames = getPkgNames(m_packgesDir);
 }
 
 std::optional<PackageReader>
@@ -315,26 +317,25 @@ PackagesReader::initilizePackagesBin()
     }
 }
 
-std::vector<Package>::iterator
+std::vector<std::string>::iterator
 PackagesReader::begin()
 {
-    return m_packgesDir.begin();
+    return m_pkgNames.begin();
 }
 
-std::vector<Package>::iterator
+std::vector<std::string>::iterator
 PackagesReader::end()
 {
-    return m_packgesDir.end();
+    return m_pkgNames.end();
 }
 
-std::vector<Package>::const_iterator
-PackagesReader::begin() const
+std::vector<std::string>
+PackagesReader::getPkgNames(PackageCollection& pkgDir)
 {
-    return m_packgesDir.begin();
-}
-
-std::vector<Package>::const_iterator
-PackagesReader::end() const 
-{
-    return m_packgesDir.end();
+    std::vector<std::string> names;
+    for (Package& pkg : pkgDir)
+    {
+        names.push_back(pkg.getName());
+    }
+    return names;
 }
