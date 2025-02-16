@@ -280,7 +280,7 @@ PackagesReader::PackagesReader()
 }
 
 PackagesReader::PackagesReader(std::filesystem::path pkgDir, Game game)
- : m_packgesDir(pkgDir, game)
+ : m_packgesDir(pkgDir, game), m_game(game)
 {
     m_pkgNames = getPkgNames(m_packgesDir);
 }
@@ -290,6 +290,7 @@ PackagesReader::setData(std::filesystem::path pkgDir, Game game)
 {
     m_packgesDir.setData(pkgDir, game);
     m_pkgNames = getPkgNames(m_packgesDir);
+    m_game = game;
 }
 
 std::optional<PackageReader>
