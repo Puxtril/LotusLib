@@ -99,9 +99,9 @@ namespace LotusLib
 
     public:
         PackagesReader();
-        PackagesReader(std::filesystem::path pkgDir, Game game = Game::WARFRAME);
+        PackagesReader(std::filesystem::path pkgDir, Game game);
         
-        void setData(std::filesystem::path pkgDir, Game game = Game::WARFRAME);
+        void setData(std::filesystem::path pkgDir, Game game);
         std::optional<PackageReader> getPackage(const std::string& name);
         Game getGame() const;
         void initilizePackagesBin();
