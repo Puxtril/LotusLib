@@ -9,7 +9,7 @@ PackagesBin::PackagesBin()
 
 PackagesBin::~PackagesBin()
 {
-    if (m_isInitilized)
+    if (m_isInitilized && !m_errorReading)
     {
         ZSTD_freeDCtx(m_zstdContext);
         ZSTD_freeDDict(m_zstdDict);
