@@ -42,9 +42,9 @@ PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
         std::vector<PackagesBin::RawPackagesEntity> rawEntities = readFile(reader);
         buildEntityMap(rawEntities);
     }
-    catch (LimitException&)
+    catch (LimitException& ex)
     {
-        logError("Packages.bin has an unknown format, cannot read.");
+        logError("Packages.bin read error: " + std::string(ex.what()));
         m_errorReading = true;
     }
 
@@ -112,7 +112,7 @@ PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
     reader.readUInt32(20, 20, "Packages.bin header size");
     uint32_t version = reader.readUInt32();
     if (std::find(m_validVersions.begin(), m_validVersions.end(), version) == m_validVersions.end())
-        throw LimitException((uint64_t)version, (uint64_t)m_validVersions[m_validVersions.size() - 1], "Packages.bin is using an unknown format");
+        throw LimitException((uint64_t)version, (uint64_t)m_validVersions[m_validVersions.size() - 1], "Packages.bin format");
     reader.readUInt32(1, 1, "Packages.bin flags");
 
     // ???
