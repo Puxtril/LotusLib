@@ -10,7 +10,7 @@ DirectoryTreeIterator::DirectoryTreeIterator(const FileEntries::DirNode* ptr)
     : m_startingPos(ptr), m_ptr(ptr), m_dirPositions(std::stack<uint32_t>()), m_filePosition(0)
 {
     m_dirPositions.push(0);
-    findNextValidDir();
+    ++(*this);
 }
 
 DirectoryTreeIterator&
