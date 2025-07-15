@@ -15,6 +15,8 @@ LotusLib::findPackageCategory(const std::string& name)
         return PackageCategory::LIGHT_MAP;
     if (name.rfind("Misc", 0) == 0)
         return PackageCategory::MISC;
+    if (name.rfind("ShaderPermutation", 0) == 0)
+        return PackageCategory::SHADER_PERMUTATION;
     if (name.rfind("Shader", 0) == 0)
         return PackageCategory::SHADER;
     if (name.rfind("Texture", 0) == 0)
@@ -70,6 +72,8 @@ LotusLib::packageCategoryToString(PackageCategory pkgCategory)
             return "LightMap";
         case PackageCategory::MISC:
             return "Misc";
+        case PackageCategory::SHADER_PERMUTATION:
+            return "ShaderPermutation";
         case PackageCategory::SHADER:
             return "Shader";
         case PackageCategory::TEXTURE:
@@ -93,6 +97,8 @@ LotusLib::stringToPackageCategory(const std::string& pkgCategoryStr)
         return PackageCategory::LIGHT_MAP;
     if (pkgCategoryStr == "misc")
         return PackageCategory::MISC;
+    if (pkgCategoryStr == "shaderpermutation")
+        return PackageCategory::SHADER_PERMUTATION;
     if (pkgCategoryStr == "shader")
         return PackageCategory::SHADER;
     if (pkgCategoryStr == "texture")
