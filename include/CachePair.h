@@ -16,7 +16,8 @@ namespace LotusLib
 	{
 	protected:
 		static const unsigned int m_magicNumber = 0x1867C64E;
-		static const unsigned int m_archiveVersion = 20;
+		static const unsigned int m_archiveVersion1 = 16;
+		static const unsigned int m_archiveVersion2 = 20;
 		Game m_game;
 		std::filesystem::path m_tocPath;
 		std::filesystem::path m_cachePath;

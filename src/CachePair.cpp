@@ -22,7 +22,7 @@ CachePair::readToc()
 
 	std::ifstream tocReader(m_tocPath, std::ios_base::in | std::ios_base::binary);
 	if (!isValid(tocReader))
-		throw LotusException("CachePair is not valid");
+		throw LotusException("CachePair is not valid: " + m_tocPath.string());
 	tocReader.close();
 
 	m_dirTree.readTocFile();
@@ -92,7 +92,7 @@ CachePair::isValid(std::ifstream& tocReader) const
 		logError(spdlog::fmt_lib::format("Invalid magic number: {}", magicNumber));
 		return false;
 	}
-	if (archiveVersion != m_archiveVersion)
+	if (archiveVersion != m_archiveVersion1 && archiveVersion != m_archiveVersion2)
 	{
 		logError(spdlog::fmt_lib::format("Invalid archive version: {}", archiveVersion));
 		return false;
@@ -178,7 +178,7 @@ CachePair::getDataAndDecompress(const FileEntries::FileNode* entry) const
 	if (entry->getCompLen() == entry->getLen())
 		return getData(entry);
 
-	if (m_game == Game::WARFRAME_PE)
+	if (m_game == Game::WARFRAME_PE || m_game == Game::DARKNESSII || m_game == Game::STARTREK)
 		return Compression::getDataAndDecompressPre(entry, m_cacheReader);
 	else
 		return Compression::getDataAndDecompressPost(entry, m_cacheReader);

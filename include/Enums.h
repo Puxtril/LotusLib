@@ -4,10 +4,14 @@ namespace LotusLib
 {
     enum class Game : int
     {
-        UNKNOWN = 0,
-        SOULFRAME = 1,
-        WARFRAME = 2,
-        WARFRAME_PE = 4 // Pre-Ensmallening
+        UNKNOWN     = 0,
+        SOULFRAME   = 1 << 0,
+        WARFRAME    = 1 << 1,
+        WARFRAME_PE = 1 << 2, // Pre-Ensmallening
+        KEYSTONE    = 1 << 3,
+        STARTREK    = 1 << 4,
+        DARKNESSII  = 1 << 5,
+        DARKSECTOR  = 1 << 6,
     };
 
     inline Game operator|(Game a, Game b)

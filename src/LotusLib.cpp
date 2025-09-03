@@ -6,7 +6,7 @@ using namespace LotusLib;
 // PackageReader
 
 PackageReader::PackageReader(Package* package, PackagesBin* packagesBin, Game game)
- : m_pkg(package), m_packagesBin(packagesBin)
+ : m_pkg(package), m_packagesBin(packagesBin), m_game(game)
  {
  }
 
@@ -282,6 +282,13 @@ PackagesReader::PackagesReader()
 PackagesReader::PackagesReader(std::filesystem::path pkgDir, Game game)
  : m_packgesDir(pkgDir, game), m_game(game)
 {
+    m_pkgNames = getPkgNames(m_packgesDir);
+}
+
+PackagesReader::PackagesReader(std::filesystem::path pkgDir)
+{
+    m_game = guessGame(pkgDir);
+    m_packgesDir = LotusLib::PackageCollection(pkgDir, m_game);
     m_pkgNames = getPkgNames(m_packgesDir);
 }
 

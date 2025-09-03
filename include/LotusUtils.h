@@ -1,8 +1,12 @@
 #pragma once
 
 #include "Enums.h"
+#include "RawEntry.h"
 
 #include <string>
+#include <filesystem>
+#include <fstream>
+#include <cstring>
 
 namespace LotusLib
 {
@@ -18,4 +22,7 @@ namespace LotusLib
     // Intended to match user input
     Game stringToGame(const std::string& gameStr);
     PackageCategory stringToPackageCategory(const std::string& pkgCategoryStr);
+
+    // Max 10ms for Warframe/WarframePE
+    Game guessGame(const std::string& pkgDir);
 };
