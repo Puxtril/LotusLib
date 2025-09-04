@@ -17,15 +17,16 @@ namespace LotusLib
 
     enum class PackageCategory : int
     {
-        UNKNOWN = 0,
-        ANIM_RETARGET = 1,
-        CHARACTER_CODES = 2,
-        FONT = 4,
-        LIGHT_MAP = 8,
-        MISC = 16,
-        SHADER = 32,
-        TEXTURE = 64,
-        VIDEO_TEXTURE = 128
+        UNKNOWN             = 0,
+        ANIM_RETARGET       = 1 << 0,
+        CHARACTER_CODES     = 1 << 1,
+        FONT                = 1 << 2,
+        LIGHT_MAP           = 1 << 3,
+        MISC                = 1 << 4,
+        SHADER_PERMUTATION  = 1 << 5,
+        SHADER              = 1 << 6,
+        TEXTURE             = 1 << 7,
+        VIDEO_TEXTURE       = 1 << 8,
     };
 
     inline PackageCategory operator|(PackageCategory a, PackageCategory b)

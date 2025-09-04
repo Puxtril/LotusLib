@@ -36,10 +36,9 @@ namespace LotusLib
         std::map<std::string, PackagesEntity> m_entityMap;
         bool m_isInitilized;
         bool m_errorReading;
+        int m_version;
         ZSTD_DDict* m_zstdDict;
         ZSTD_DCtx* m_zstdContext;
-
-        const static inline std::vector<uint32_t> m_validVersions = { 40, 42, 43 };
 
         PackagesBin(const PackagesBin&) = delete;
         PackagesBin& operator=(const PackagesBin&) = delete;
@@ -53,12 +52,15 @@ namespace LotusLib
         void initilize(BinaryReader::BinaryReaderBuffered& reader);
         bool hasParameters(const LotusLib::LotusPath& filePath);
         bool hasParameters(const std::string& filePath);
+        int getVersion();
         std::string getParameters(const LotusLib::LotusPath& filePath);
         std::string getParameters(const std::string& filePath);
         nlohmann::json getParametersJson(const LotusLib::LotusPath& filePath);
         nlohmann::json getParametersJson(const std::string& filePath);
         const std::string& getParent(const LotusLib::LotusPath& filePath);
         const std::string& getParent(const std::string& filePath);
+        std::map<std::string, PackagesEntity>::const_iterator begin() const;
+        std::map<std::string, PackagesEntity>::const_iterator end() const;
 
     private:
         std::vector<RawPackagesEntity> readFile(BinaryReader::BinaryReaderBuffered& reader);

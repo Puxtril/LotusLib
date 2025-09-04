@@ -105,6 +105,12 @@ PackagesBin::getParametersJson(const std::string& filePath)
     }
 }
 
+int
+PackagesBin::getVersion()
+{
+    return m_version;
+}
+
 const std::string&
 PackagesBin::getParent(const LotusLib::LotusPath& filePath)
 {
@@ -126,14 +132,24 @@ PackagesBin::getParent(const std::string& filePath)
     }
 }
 
+std::map<std::string, PackagesBin::PackagesEntity>::const_iterator
+PackagesBin::begin() const
+{
+    return m_entityMap.begin();
+}
+
+std::map<std::string, PackagesBin::PackagesEntity>::const_iterator
+PackagesBin::end() const
+{
+    return m_entityMap.end();
+}
+
 std::vector<PackagesBin::RawPackagesEntity>
 PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
 {
     reader.seek(16, std::ios::beg);
     reader.readUInt32(20, 20, "Packages.bin header size");
-    uint32_t version = reader.readUInt32();
-    if (std::find(m_validVersions.begin(), m_validVersions.end(), version) == m_validVersions.end())
-        throw LimitException((uint64_t)version, (uint64_t)m_validVersions[m_validVersions.size() - 1], "Packages.bin format");
+    m_version = reader.readUInt32();
     reader.readUInt32(1, 1, "Packages.bin flags");
 
     // ???
