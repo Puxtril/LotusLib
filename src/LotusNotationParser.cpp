@@ -5,8 +5,12 @@ using namespace LotusLib;
 nlohmann::json
 LotusNotationParser::parse(const char* data, size_t dataSize)
 {
+    std::stack<nlohmann::json*> stack;
+    std::string key;
+    std::string buf;
+
     auto root = nlohmann::json::object();
-    m_stack.push(&root);
+    stack.push(&root);
     bool pending_obj_or_arr = false;
     bool is_string = false;
     for (size_t i = 0; i < dataSize; i++)
@@ -18,7 +22,7 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
             if (curChar == '"')
             {
                 is_string = false;
-                dischargeBuffer();
+                dischargeBuffer(stack, buf, key);
             }
             else
             {
@@ -39,7 +43,7 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
                 if (pending_obj_or_arr)
                 {
                     pending_obj_or_arr = false;
-                    pushAndIndentObject();
+                    pushAndIndentObject(stack, key);
                     key = std::move(buf);
                 }
                 else
@@ -54,7 +58,7 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
             {
                 if (pending_obj_or_arr)
                 {
-                    pushAndIndentArray();
+                    pushAndIndentArray(stack, key);
                 }
                 pending_obj_or_arr = true;
                 break;
@@ -65,14 +69,14 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
                 if (pending_obj_or_arr)
                 {
                     pending_obj_or_arr = false;
-                    pushAndIndentArray();
-                    dischargeBuffer();
+                    pushAndIndentArray(stack, key);
+                    dischargeBuffer(stack, buf, key);
                 }
                 else
                 {
                     if (!buf.empty())
                     {
-                        dischargeBuffer();
+                        dischargeBuffer(stack, buf, key);
                     }
                 }
                 break;
@@ -83,13 +87,13 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
                 if (pending_obj_or_arr)
                 {
                     pending_obj_or_arr = false;
-                    pushAndIndentArray();
+                    pushAndIndentArray(stack, key);
                 }
                 if (!buf.empty())
                 {
-                    dischargeBuffer();
+                    dischargeBuffer(stack, buf, key);
                 }
-                m_stack.pop();
+                stack.pop();
                 break;
             }
 
@@ -98,7 +102,7 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
                 if (pending_obj_or_arr)
                 {
                     pending_obj_or_arr = false;
-                    pushAndIndentArray();
+                    pushAndIndentArray(stack, key);
                 }
                 if (buf.empty())
                 {
@@ -115,7 +119,7 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
             {
                 if (!buf.empty() && !pending_obj_or_arr)
                 {
-                    dischargeBuffer();
+                    dischargeBuffer(stack, buf, key);
                 }
                 break;
             }
@@ -126,13 +130,13 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
             }
         }
     }
-    while (m_stack.size() != 0)
-        m_stack.pop();
+    while (stack.size() != 0)
+        stack.pop();
     return root;
 }
 
 void
-LotusNotationParser::dischargeBuffer()
+LotusNotationParser::dischargeBuffer(std::stack<nlohmann::json*>& stack, std::string& buf, std::string& key)
 {
     char* endptr;
     auto ival = strtoll(buf.data(), &endptr, 10);
@@ -141,11 +145,11 @@ LotusNotationParser::dischargeBuffer()
         if (buf.empty())
         {
             std::string p(buf.data(), buf.size());
-            pushValue(p);
+            pushValue(stack, key, p);
         }
         else
         {
-            pushValue(ival);
+            pushValue(stack, key, ival);
         }
     }
     else if (endptr != buf.data())
@@ -153,34 +157,34 @@ LotusNotationParser::dischargeBuffer()
         auto fval = strtod(buf.data(), &endptr);
         if (endptr == buf.data() + buf.size())
         {
-            pushValue(fval);
+            pushValue(stack, key, fval);
         }
         else
         {
             std::string p(buf.data(), buf.size());
-            pushValue(p);
+            pushValue(stack, key, p);
         }
     }
     else
     {
         std::string p(buf.data(), buf.size());
-        pushValue(p);
+        pushValue(stack, key, p);
     }
     buf.clear();
 }
 
 void
-LotusNotationParser::pushAndIndentArray()
+LotusNotationParser::pushAndIndentArray(std::stack<nlohmann::json*>& stack, std::string& key)
 {
     auto value = nlohmann::json::array();
-    auto inserted = pushAndGetValue(value);
-    m_stack.push(inserted);
+    auto inserted = pushAndGetValue(stack, key, value);
+    stack.push(inserted);
 }
 
 void
-LotusNotationParser::pushAndIndentObject()
+LotusNotationParser::pushAndIndentObject(std::stack<nlohmann::json*>& stack, std::string& key)
 {
     auto value = nlohmann::json::object();
-    auto inserted = pushAndGetValue(value);
-    m_stack.push(inserted);
+    auto inserted = pushAndGetValue(stack, key, value);
+    stack.push(inserted);
 }

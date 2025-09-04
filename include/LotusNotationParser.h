@@ -7,52 +7,49 @@
 namespace LotusLib
 {
 	// Credit to Sainan for this class
+	// https://github.com/Sainan/ee-notation-parser
 	class LotusNotationParser
 	{
-	protected:
-		std::stack<nlohmann::json*> m_stack;
-		std::string key;
-		std::string buf;
-
 	public:
 		[[nodiscard]]
-		nlohmann::json
-		parse(const char* data, size_t dataSize);
+		static nlohmann::json parse(const char* data, size_t dataSize);
 
 	protected:
-		void dischargeBuffer();
-		void pushAndIndentArray();
-		void pushAndIndentObject();
+		static void dischargeBuffer(std::stack<nlohmann::json*>& stack, std::string& buf, std::string& key);
+		static void pushAndIndentArray(std::stack<nlohmann::json*>& stack, std::string& key);
+		static void pushAndIndentObject(std::stack<nlohmann::json*>& stack, std::string& key);
 
 		template <typename T>
+		static
 		nlohmann::json*
-		pushAndGetValue(T& value)
+		pushAndGetValue(std::stack<nlohmann::json*>& stack, std::string& key, T& value)
 		{
-			if (m_stack.top()->is_array())
+			if (stack.top()->is_array())
 			{
-				m_stack.top()->push_back(value);
-				return &m_stack.top()->back();
+				stack.top()->push_back(value);
+				return &stack.top()->back();
 			}
 			else
 			{
-				m_stack.top()->operator[](key) = value;
-				nlohmann::json* ret = &m_stack.top()->operator[](key);
+				stack.top()->operator[](key) = value;
+				nlohmann::json* ret = &stack.top()->operator[](key);
 				key.clear();
 				return ret;
 			}
 		}
 
 		template <typename T>
+		static
 		void
-		pushValue(T& value)
+		pushValue(std::stack<nlohmann::json*>& stack, std::string& key, T& value)
 		{
-			if (m_stack.top()->is_array())
+			if (stack.top()->is_array())
 			{
-				m_stack.top()->push_back(value);
+				stack.top()->push_back(value);
 			}
 			else
 			{
-				m_stack.top()->operator[](key) = value;
+				stack.top()->operator[](key) = value;
 				key.clear();
 			}
 		}

@@ -9,6 +9,8 @@
 #include "LotusPath.h"
 #include "LotusLibLogger.h"
 #include "LotusExceptions.h"
+#include "nlohmann/json.hpp"
+#include "LotusNotationParser.h"
 #include "zstd.h"
 
 namespace LotusLib
@@ -53,6 +55,8 @@ namespace LotusLib
         int getVersion();
         std::string getParameters(const LotusLib::LotusPath& filePath);
         std::string getParameters(const std::string& filePath);
+        nlohmann::json getParametersJson(const LotusLib::LotusPath& filePath);
+        nlohmann::json getParametersJson(const std::string& filePath);
         const std::string& getParent(const LotusLib::LotusPath& filePath);
         const std::string& getParent(const std::string& filePath);
         std::map<std::string, PackagesEntity>::const_iterator begin() const;
