@@ -84,6 +84,27 @@ PackagesBin::getParameters(const std::string& filePath)
     }
 }
 
+nlohmann::json
+PackagesBin::getParametersJson(const LotusLib::LotusPath& filePath)
+{
+    return getParametersJson(filePath.string());
+}
+
+nlohmann::json
+PackagesBin::getParametersJson(const std::string& filePath)
+{
+    try
+    {
+        PackagesEntity& entity = m_entityMap.at(filePath);
+        std::string attrs = readAttributes(entity.attributeData, entity.decompressedLen);
+        return LotusNotationParser::parse(attrs.c_str(), attrs.size());
+    }
+    catch (std::out_of_range&)
+    {
+        return std::string();
+    }
+}
+
 const std::string&
 PackagesBin::getParent(const LotusLib::LotusPath& filePath)
 {
