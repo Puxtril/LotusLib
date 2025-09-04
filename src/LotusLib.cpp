@@ -300,6 +300,14 @@ PackagesReader::setData(std::filesystem::path pkgDir, Game game)
     m_game = game;
 }
 
+void
+PackagesReader::setData(std::filesystem::path pkgDir)
+{
+    m_game = guessGame(pkgDir);
+    m_packgesDir.setData(pkgDir, m_game);
+    m_pkgNames = getPkgNames(m_packgesDir);
+}
+
 std::optional<PackageReader>
 PackagesReader::getPackage(const std::string& name)
 {

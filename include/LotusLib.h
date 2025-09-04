@@ -104,6 +104,7 @@ namespace LotusLib
         PackagesReader(std::filesystem::path pkgDir);
         
         void setData(std::filesystem::path pkgDir, Game game);
+        void setData(std::filesystem::path pkgDir);
         std::optional<PackageReader> getPackage(const std::string& name);
         Game getGame() const;
         void initilizePackagesBin();
