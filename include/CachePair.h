@@ -5,6 +5,7 @@
 #include "LotusPath.h"
 #include "Compression.h"
 #include "Enums.h"
+#include "LotusUtils.h"
 
 #include <filesystem>
 #include <fstream>

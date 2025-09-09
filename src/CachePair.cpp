@@ -178,8 +178,12 @@ CachePair::getDataAndDecompress(const FileEntries::FileNode* entry) const
 	if (entry->getCompLen() == entry->getLen())
 		return getData(entry);
 
-	if (m_game == Game::WARFRAME_PE || m_game == Game::DARKNESSII || m_game == Game::STARTREK)
-		return Compression::getDataAndDecompressPre(entry, m_cacheReader);
+	if (m_game == Game::WARFRAME_PE)
+		return Compression::decompressWarframePre(entry, m_cacheReader);
+	else if (m_game == Game::WARFRAME || m_game == Game::SOULFRAME)
+		return Compression::decompressWarframePost(entry, m_cacheReader);
+	else if (m_game == Game::DARKNESSII || m_game == Game::STARTREK)
+		return Compression::decompressEE(entry, m_cacheReader);
 	else
-		return Compression::getDataAndDecompressPost(entry, m_cacheReader);
+		throw LotusLib::DecompressionException("Cannot decompress data from " + gameToString(m_game));
 }
