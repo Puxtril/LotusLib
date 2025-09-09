@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Enums.h"
+#include "LotusUtils.h"
 #include "LotusExceptions.h"
 #include "BinaryReaderBuffered.h"
 

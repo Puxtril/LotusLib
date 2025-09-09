@@ -25,10 +25,20 @@ LotusLib::commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader, LotusL
 	if (attributeLen > 0)
 		reader.seek(1, std::ios::cur);
 
-	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
-		reader.seek(4, std::ios::cur);
-	else
-		reader.seek(1, std::ios::cur);
+	switch(game)
+	{
+		case LotusLib::Game::DARKNESSII:
+		case LotusLib::Game::STARTREK:
+			reader.seek(1, std::ios::cur);
+			break;
+		case LotusLib::Game::WARFRAME:
+		case LotusLib::Game::WARFRAME_PE:
+		case LotusLib::Game::SOULFRAME:
+			reader.seek(4, std::ios::cur);
+			break;
+		default:
+			throw LotusException("Cannot read CommonHeader from " + gameToString(game));
+	}
 
 	return (int)reader.tell();
 }
@@ -61,10 +71,20 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, Lot
 		reader.seek(1, std::ios::cur);
 
 	uint32_t format;
-	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
-		format = reader.readUInt32() & 0x0000FFFF;
-	else
-	 	format = reader.readUInt8();
+	switch(game)
+	{
+		case LotusLib::Game::DARKNESSII:
+		case LotusLib::Game::STARTREK:
+			format = reader.readUInt8();
+			break;
+		case LotusLib::Game::WARFRAME_PE:
+		case LotusLib::Game::WARFRAME:
+		case LotusLib::Game::SOULFRAME:
+			format = reader.readUInt32() & 0x0000FFFF;
+			break;
+		default:
+			throw LotusException("Cannot read CommonHeader from " + gameToString(game));
+	}
 
 	if (!seek)
 		reader.seek(pos, std::ios::beg);
@@ -97,10 +117,20 @@ LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHea
 	if (attributeLen > 0)
 		reader.seek(1, std::ios::cur);
 
-	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
-		header.type = reader.readUInt32() & 0x0000FFFF;
-	else
-	 	header.type = reader.readUInt8();
+	switch(game)
+	{
+		case LotusLib::Game::DARKNESSII:
+		case LotusLib::Game::STARTREK:
+			header.type = reader.readUInt8();
+			break;
+		case LotusLib::Game::WARFRAME_PE:
+		case LotusLib::Game::WARFRAME:
+		case LotusLib::Game::SOULFRAME:
+			header.type = reader.readUInt32() & 0x0000FFFF;
+			break;
+		default:
+			throw LotusException("Cannot read CommonHeader from " + gameToString(game));
+	}
 
 	return reader.tell();
 }
