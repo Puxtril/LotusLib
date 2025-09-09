@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Enums.h"
 #include "LotusExceptions.h"
 #include "BinaryReaderBuffered.h"
 
@@ -21,8 +22,8 @@ namespace LotusLib
 		CommonHeader() : hash(), paths(), attributes(), type(0) {}
 	};
 
-	int commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader);
-	uint32_t commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, bool seek = false);
-	int commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header);
-	CommonHeader commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader);
+	int commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game = LotusLib::Game::WARFRAME);
+	uint32_t commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game = LotusLib::Game::WARFRAME, bool seek = false);
+	int commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header, LotusLib::Game game = LotusLib::Game::WARFRAME);
+	CommonHeader commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game = LotusLib::Game::WARFRAME);
 }

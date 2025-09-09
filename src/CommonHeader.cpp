@@ -1,9 +1,10 @@
 #include "CommonHeader.h"
 
 int
-LotusLib::commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader)
+LotusLib::commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game)
 {
-	reader.seek(16, std::ios::beg);
+	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+		reader.seek(16, std::ios::beg);
 
 	uint32_t sourcePathCount = reader.readUInt32();
 	if (sourcePathCount > 1500)
@@ -24,17 +25,21 @@ LotusLib::commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader)
 	if (attributeLen > 0)
 		reader.seek(1, std::ios::cur);
 
-	reader.seek(4, std::ios::cur);
+	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+		reader.seek(4, std::ios::cur);
+	else
+		reader.seek(1, std::ios::cur);
 
 	return (int)reader.tell();
 }
 
 uint32_t
-LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, bool seek)
+LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game, bool seek)
 {
 	size_t pos = reader.tell();
 
-	reader.seek(16, std::ios::beg);
+	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+		reader.seek(16, std::ios::beg);
 
 	uint32_t sourcePathCount = reader.readUInt32();
 	if (sourcePathCount > 1500)
@@ -55,7 +60,11 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, boo
 	if (attributeLen > 0)
 		reader.seek(1, std::ios::cur);
 
-	uint32_t format = reader.readUInt32() & 0x0000FFFF;
+	uint32_t format;
+	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+		format = reader.readUInt32() & 0x0000FFFF;
+	else
+	 	format = reader.readUInt8();
 
 	if (!seek)
 		reader.seek(pos, std::ios::beg);
@@ -64,9 +73,10 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, boo
 }
 
 int
-LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header)
+LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header, LotusLib::Game game)
 {
-	reader.readUInt8Array(&header.hash[0], 16);
+	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+		reader.readUInt8Array(&header.hash[0], 16);
 
 	uint32_t sourcePathCount = reader.readUInt32();
 	if (sourcePathCount > 1500)
@@ -87,15 +97,18 @@ LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHea
 	if (attributeLen > 0)
 		reader.seek(1, std::ios::cur);
 
-	header.type = reader.readUInt32() & 0x0000FFFF;
+	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+		header.type = reader.readUInt32() & 0x0000FFFF;
+	else
+	 	header.type = reader.readUInt8();
 
 	return reader.tell();
 }
 
 LotusLib::CommonHeader
-LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader)
+LotusLib::commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game)
 {
 	CommonHeader header;
-	LotusLib::commonHeaderRead(reader, header);
+	LotusLib::commonHeaderRead(reader, header, game);
 	return header;
 }

@@ -116,9 +116,7 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
 
     if (fileEntryReaderFlags & READ_COMMON_HEADER)
     {
-        entry.commonHeader = commonHeaderRead(entry.headerData);
-        size_t commonHeaderLen = commonHeaderFindLen(entry.headerData);
-        entry.headerData.seek(commonHeaderLen, std::ios::beg);
+        entry.commonHeader = commonHeaderRead(entry.headerData, m_game);
     }
 
     if (fileEntryReaderFlags & READ_B_CACHE)
