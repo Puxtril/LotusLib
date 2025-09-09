@@ -184,6 +184,4 @@ CachePair::getDataAndDecompress(const FileEntries::FileNode* entry) const
 		return Compression::decompressWarframePost(entry, m_cacheReader);
 	else if (m_game == Game::DARKNESSII || m_game == Game::STARTREK)
 		return Compression::decompressEE(entry, m_cacheReader);
-	else
-		throw LotusLib::DecompressionException("Cannot decompress data from " + gameToString(m_game));
 }

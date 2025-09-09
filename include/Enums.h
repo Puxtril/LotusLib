@@ -11,7 +11,6 @@ namespace LotusLib
         KEYSTONE    = 1 << 3,
         STARTREK    = 1 << 4,
         DARKNESSII  = 1 << 5,
-        DARKSECTOR  = 1 << 6,
     };
 
     inline Game operator|(Game a, Game b)

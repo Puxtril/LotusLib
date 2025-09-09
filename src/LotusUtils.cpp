@@ -41,8 +41,6 @@ LotusLib::gameToString(Game game)
             return "Warframe (Pre-Ensmallening)";
         case Game::DARKNESSII:
             return "Darkness II";
-        case Game::DARKSECTOR:
-            return "Dark Sector";
         case Game::STARTREK:
             return "Star Trek";
         case Game::KEYSTONE:
@@ -62,8 +60,6 @@ LotusLib::stringToGame(const std::string& gameStr)
         return Game::WARFRAME_PE;
     if (gameStr == "darkness2" || gameStr == "darkness 2" || gameStr == "darknessii" || gameStr == "darkness ii")
         return Game::DARKNESSII;
-    if (gameStr == "darksector" || gameStr == "dark sector")
-        return Game::DARKSECTOR;
     if (gameStr == "startrek" || gameStr == "star trek")
         return Game::STARTREK;
     if (gameStr == "keystone")
@@ -132,9 +128,6 @@ LotusLib::guessGame(const std::string& pkgDir)
     // This exists for every game
     if (!std::filesystem::exists(pkgPath / "H.Misc.cache"))
         return Game::UNKNOWN;
-
-    if (!std::filesystem::exists(pkgPath / "H.Misc.toc"))
-        return Game::DARKSECTOR;
 
     // Dig into the Toc/Cache files further
     std::ifstream tocReader(pkgPath / "H.Misc.toc", std::ios_base::in | std::ios_base::binary | std::ios_base::ate);
