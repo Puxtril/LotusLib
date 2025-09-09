@@ -275,12 +275,12 @@ PackageReader::getFileOnlyPackagesBin(LotusLib::LotusPath internalpath)
 // PackagesReader
 
 PackagesReader::PackagesReader()
- : m_packgesDir()
+ : m_packgesDir(), m_packagesBinExists(true)
 {
 }
 
 PackagesReader::PackagesReader(std::filesystem::path pkgDir, Game game)
- : m_packgesDir(pkgDir, game), m_game(game)
+ : m_packgesDir(pkgDir, game), m_game(game), m_packagesBinExists(true)
 {
     if (m_game == LotusLib::Game::UNKNOWN)
         throw LotusException("Cannot initilize with unknown game");
@@ -309,16 +309,23 @@ PackagesReader::getPackage(const std::string& name)
 void
 PackagesReader::initilizePackagesBin()
 {
-    if (!m_packagesBin.isInitilized())
+    if (m_packagesBinExists && !m_packagesBin.isInitilized())
     {
         logInfo("Reading Packages.bin");
 
         LotusLib::Package* pkgMisc = m_packgesDir.getPackage("Misc");
         LotusLib::CachePair* pair = pkgMisc->getPair(LotusLib::PackageTrioType::H);
         pair->readToc();
-        std::vector<uint8_t> packagesRaw = pair->getDataAndDecompress("Packages.bin");
-        BinaryReader::BinaryReaderBuffered reader(std::move(packagesRaw));
-        m_packagesBin.initilize(reader);
+        try
+        {
+            std::vector<uint8_t> packagesRaw = pair->getDataAndDecompress("Packages.bin");
+            BinaryReader::BinaryReaderBuffered reader(std::move(packagesRaw));
+            m_packagesBin.initilize(reader);
+        }
+        catch (LotusLib::InternalFileNotFound&)
+        {
+            m_packagesBinExists = false;
+        }
     }
 }
 

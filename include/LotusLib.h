@@ -96,6 +96,7 @@ namespace LotusLib
         PackageCollection m_packgesDir;
         PackagesBin m_packagesBin;
         Game m_game;
+        bool m_packagesBinExists;
 
     public:
         PackagesReader();
