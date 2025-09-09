@@ -53,7 +53,6 @@ namespace LotusLib
 
     public:
         PackageReader(Package* package, PackagesBin* packagesBin, Game game);
-        PackageReader(Package* package, PackagesBin* packagesBin);
 
         CommonHeader getCommonHeader(LotusPath internalPath);
         // Assumes this is inside the H package
@@ -101,10 +100,8 @@ namespace LotusLib
     public:
         PackagesReader();
         PackagesReader(std::filesystem::path pkgDir, Game game);
-        PackagesReader(std::filesystem::path pkgDir);
         
         void setData(std::filesystem::path pkgDir, Game game);
-        void setData(std::filesystem::path pkgDir);
         std::optional<PackageReader> getPackage(const std::string& name);
         Game getGame() const;
         void initilizePackagesBin();

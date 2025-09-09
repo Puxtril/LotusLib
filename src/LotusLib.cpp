@@ -287,15 +287,6 @@ PackagesReader::PackagesReader(std::filesystem::path pkgDir, Game game)
     m_pkgNames = getPkgNames(m_packgesDir);
 }
 
-PackagesReader::PackagesReader(std::filesystem::path pkgDir)
-{
-    m_game = guessGame(pkgDir);
-    if (m_game == LotusLib::Game::UNKNOWN)
-        throw LotusException("Could not identify game");
-    m_packgesDir = LotusLib::PackageCollection(pkgDir, m_game);
-    m_pkgNames = getPkgNames(m_packgesDir);
-}
-
 void
 PackagesReader::setData(std::filesystem::path pkgDir, Game game)
 {
@@ -304,16 +295,6 @@ PackagesReader::setData(std::filesystem::path pkgDir, Game game)
         throw LotusException("Cannot initilize with unknown game");
     m_pkgNames = getPkgNames(m_packgesDir);
     m_game = game;
-}
-
-void
-PackagesReader::setData(std::filesystem::path pkgDir)
-{
-    m_game = guessGame(pkgDir);
-    if (m_game == LotusLib::Game::UNKNOWN)
-        throw LotusException("Could not identify game");
-    m_packgesDir.setData(pkgDir, m_game);
-    m_pkgNames = getPkgNames(m_packgesDir);
 }
 
 std::optional<PackageReader>
