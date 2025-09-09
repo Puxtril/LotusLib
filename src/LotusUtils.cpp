@@ -43,8 +43,6 @@ LotusLib::gameToString(Game game)
             return "Darkness II";
         case Game::STARTREK:
             return "Star Trek";
-        case Game::KEYSTONE:
-            return "Keystone";
     }
     return "Unknown";
 }
@@ -62,8 +60,6 @@ LotusLib::stringToGame(const std::string& gameStr)
         return Game::DARKNESSII;
     if (gameStr == "startrek" || gameStr == "star trek")
         return Game::STARTREK;
-    if (gameStr == "keystone")
-        return Game::KEYSTONE;
     return Game::UNKNOWN;
 }
 

@@ -8,9 +8,8 @@ namespace LotusLib
         SOULFRAME   = 1 << 0,
         WARFRAME    = 1 << 1,
         WARFRAME_PE = 1 << 2, // Pre-Ensmallening
-        KEYSTONE    = 1 << 3,
-        STARTREK    = 1 << 4,
-        DARKNESSII  = 1 << 5,
+        STARTREK    = 1 << 3,
+        DARKNESSII  = 1 << 4,
     };
 
     inline Game operator|(Game a, Game b)
