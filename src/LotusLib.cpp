@@ -28,7 +28,7 @@ PackageReader::getCommonHeader(const FileNode* fileRef)
     splitH->readToc();
     std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
     auto reader = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
-    CommonHeader ch = commonHeaderRead(reader);
+    CommonHeader ch = commonHeaderRead(reader, m_game);
     return ch;
 }
 
@@ -48,7 +48,7 @@ PackageReader::getFileFormat(const FileNode* fileRef)
     splitH->readToc();
     std::vector<uint8_t> dataHeader = splitH->getDataAndDecompress(fileRef);
     auto reader = BinaryReader::BinaryReaderBuffered(std::move(dataHeader));
-    uint32_t format = commonHeaderReadFormat(reader);
+    uint32_t format = commonHeaderReadFormat(reader, m_game);
     return (int)format;
 }
 

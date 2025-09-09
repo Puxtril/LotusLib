@@ -23,8 +23,8 @@ namespace LotusLib
 		CommonHeader() : hash(), paths(), attributes(), type(0) {}
 	};
 
-	int commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game = LotusLib::Game::WARFRAME);
-	uint32_t commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game = LotusLib::Game::WARFRAME, bool seek = false);
-	int commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header, LotusLib::Game game = LotusLib::Game::WARFRAME);
-	CommonHeader commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game = LotusLib::Game::WARFRAME);
+	int commonHeaderFindLen(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game);
+	uint32_t commonHeaderReadFormat(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game, bool seek = false);
+	int commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, CommonHeader& header, LotusLib::Game game);
+	CommonHeader commonHeaderRead(BinaryReader::BinaryReaderBuffered& reader, LotusLib::Game game);
 }
