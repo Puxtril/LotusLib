@@ -149,25 +149,25 @@ PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
 {
     reader.seek(16, std::ios::beg);
     reader.readUInt32(20, 20, "Packages.bin header size");
-    m_version = reader.readUInt32();
+    m_version = reader.readUInt32(30, 100, "Packages.bin Version");
     reader.readUInt32(1, 1, "Packages.bin flags");
 
     // ???
     reader.seek(4, std::ios::cur);
 
     std::vector<std::string> references;
-    uint32_t referenceCount = reader.readUInt32();
+    uint32_t referenceCount = reader.readUInt32(0, 1000, "Packages.bin Reference count");
     references.resize(referenceCount);
 
     for (size_t i = 0; i < referenceCount; i++)
     {
-        uint32_t refNameLen = reader.readUInt32();
+        uint32_t refNameLen = reader.readUInt32(0, 2000, "Packages.bin Reference name");
         references[i] = reader.readAsciiString(refNameLen);
         // Unknown
         reader.seek(2, std::ios::cur);
     }
 
-    reader.readUInt32(0, 0, "Package count");
+    reader.readUInt32(0, 0, "Packages.bin Package count");
 
     uint32_t comFlagsBufLen = reader.readUInt32();
     BinaryReader::BinaryReaderSlice comFlagsBuf = reader.slice(comFlagsBufLen);
