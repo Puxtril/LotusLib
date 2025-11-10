@@ -70,11 +70,6 @@ namespace LotusLib
         // Versions: 45+
         std::vector<RawPackagesEntity> readFile2(BinaryReader::BinaryReaderBuffered& reader);
 
-        bool findOffsets(BinaryReader::BinaryReaderBuffered& reader, std::array<int, 4>& offsets, int depth);
-
-        // Structures inside packages.bin
-        bool tryReadReferences(BinaryReader::BinaryReaderBuffered& reader);
-
         void buildEntityMap(std::vector<RawPackagesEntity>& rawEntities);
 
         // Sets m_zstdDict and returns
@@ -82,8 +77,6 @@ namespace LotusLib
 
         std::string readAttributes(const std::vector<char>& attributeData, size_t decompressedLen);
 
-        // If return value is false, `reader` position will remain unchanged.
-        // If return value is true, `reader` position will be at the found integer position.
-        bool findValueOffsetInRange(BinaryReader::BinaryReaderBuffered& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch);
+        void findValueOffsetInRange(BinaryReader::BinaryReaderBuffered& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg);
     };
 };
