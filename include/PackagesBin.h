@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <cmath>
 
 #include "BinaryReaderBuffered.h"
 #include "BinaryReaderSlice.h"
@@ -64,6 +65,15 @@ namespace LotusLib
 
     private:
         std::vector<RawPackagesEntity> readFile(BinaryReader::BinaryReaderBuffered& reader);
+        // Versions: ?? - 44
+        std::vector<RawPackagesEntity> readFile1(BinaryReader::BinaryReaderBuffered& reader);
+        // Versions: 45+
+        std::vector<RawPackagesEntity> readFile2(BinaryReader::BinaryReaderBuffered& reader);
+
+        bool findOffsets(BinaryReader::BinaryReaderBuffered& reader, std::array<int, 4>& offsets, int depth);
+
+        // Structures inside packages.bin
+        bool tryReadReferences(BinaryReader::BinaryReaderBuffered& reader);
 
         void buildEntityMap(std::vector<RawPackagesEntity>& rawEntities);
 
@@ -71,5 +81,9 @@ namespace LotusLib
         ZSTD_DDict* createZstdDictionary(const void* dictBuffer, size_t dictSize);
 
         std::string readAttributes(const std::vector<char>& attributeData, size_t decompressedLen);
+
+        // If return value is false, `reader` position will remain unchanged.
+        // If return value is true, `reader` position will be at the found integer position.
+        bool findValueOffsetInRange(BinaryReader::BinaryReaderBuffered& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch);
     };
 };
