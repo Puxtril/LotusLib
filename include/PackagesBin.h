@@ -25,6 +25,7 @@ namespace LotusLib
             std::string parentType;
             int decompressedLen;
             std::vector<char> attributeData;
+            bool isCompressed;
         };
 
         struct PackagesEntity
@@ -32,6 +33,7 @@ namespace LotusLib
             std::string parent;
             std::vector<char> attributeData;
             int decompressedLen;
+            bool isCompressed;
         };
 
         std::map<std::string, PackagesEntity> m_entityMap;
@@ -75,7 +77,7 @@ namespace LotusLib
         // Sets m_zstdDict and returns
         ZSTD_DDict* createZstdDictionary(const void* dictBuffer, size_t dictSize);
 
-        std::string readAttributes(const std::vector<char>& attributeData, size_t decompressedLen);
+        std::string readAttributes(const PackagesEntity& entity);
 
         void findValueOffsetInRange(BinaryReader::BinaryReaderBuffered& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg);
     };

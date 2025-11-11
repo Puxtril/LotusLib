@@ -81,7 +81,7 @@ PackagesBin::getParameters(const std::string& filePath)
     try
     {
         PackagesEntity& entity = m_entityMap.at(filePath);
-        return readAttributes(entity.attributeData, entity.decompressedLen);
+        return readAttributes(entity);
     }
     catch (std::out_of_range&)
     {
@@ -101,7 +101,7 @@ PackagesBin::getParametersJson(const std::string& filePath)
     try
     {
         PackagesEntity& entity = m_entityMap.at(filePath);
-        std::string attrs = readAttributes(entity.attributeData, entity.decompressedLen);
+        std::string attrs = readAttributes(entity);
         return LotusNotationParser::parse(attrs.c_str(), attrs.size());
     }
     catch (std::out_of_range&)
@@ -240,14 +240,14 @@ PackagesBin::readFile1(BinaryReader::BinaryReaderBuffered& reader)
             uint64_t size = comSizeBuffer.readULEB(32);
             BinaryReader::BinaryReaderSlice frameData = comZBuffer.slice(size);
 
-            unsigned char isCompressed = flagBufferCurrentByte >> flagBufferCurrentBit++ & 1;
+            curEntity.isCompressed = (flagBufferCurrentByte >> flagBufferCurrentBit++ & 1) > 0;
             if (flagBufferCurrentBit > 7)
             {
                 flagBufferCurrentByte = comFlagsBuf.readUInt8();
                 flagBufferCurrentBit -= 8;
             }
 
-            if (isCompressed > 0)
+            if (curEntity.isCompressed)
                 curEntity.decompressedLen = frameData.readULEB(32);
             else
                 curEntity.decompressedLen = size;
@@ -361,6 +361,7 @@ PackagesBin::buildEntityMap(std::vector<RawPackagesEntity>& rawEntities)
         std::string fullEntityPath = curRawEntity.pkg + curRawEntity.filename;
         PackagesEntity& curEntity = m_entityMap[fullEntityPath];
 
+        curEntity.isCompressed = curRawEntity.isCompressed;
         curEntity.decompressedLen = curRawEntity.decompressedLen;
         curEntity.attributeData = std::move(curRawEntity.attributeData);
 
@@ -383,26 +384,26 @@ PackagesBin::createZstdDictionary(const void* dictBuffer, size_t dictSize)
 }
 
 std::string
-PackagesBin::readAttributes(const std::vector<char>& attributeData, size_t decompressedLen)
+PackagesBin::readAttributes(const PackagesEntity& entity)
 {
-    if (attributeData.size() == decompressedLen)
+    if (!entity.isCompressed)
     {
-        return std::string(attributeData.data(), decompressedLen);
+        return std::string(entity.attributeData.data(), entity.decompressedLen);
     }
     else
     {
-        std::vector<uint8_t> decompressedData(decompressedLen);
+        std::vector<uint8_t> decompressedData(entity.decompressedLen);
 
         ZSTD_decompress_usingDDict(
             m_zstdContext,
             decompressedData.data(),
-            decompressedLen,
-            attributeData.data(),
-            attributeData.size(),
+            entity.decompressedLen,
+            entity.attributeData.data(),
+            entity.attributeData.size(),
             m_zstdDict
         );
 
-        return std::string((char*)decompressedData.data(), decompressedLen);
+        return std::string((char*)decompressedData.data(), entity.decompressedLen);
     }
 }
 
