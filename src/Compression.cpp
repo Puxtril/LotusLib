@@ -61,8 +61,19 @@ void
 Compression::decompressWarframePre(const FileEntries::FileNode* entry, std::ifstream& cacheReader, uint8_t* outData)
 {
 	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
-	cacheReader.read((char*)m_compressedBuffer, entry->getCompLen());
-	Compression::decompressLz(m_compressedBuffer + 4, entry->getCompLen(), outData, entry->getLen());
+
+	size_t decompressedBytes = 0;
+	while (decompressedBytes < entry->getLen())
+	{
+		static unsigned char lenBuffer[4];
+		cacheReader.read((char*)lenBuffer, 4);
+		int chunkCompressedLen = (lenBuffer[0] << 8) | lenBuffer[1];
+		int chunkLen = (lenBuffer[2] << 8) | lenBuffer[3];
+
+		cacheReader.read((char*)m_compressedBuffer, chunkCompressedLen);
+		Compression::decompressLz(m_compressedBuffer, chunkCompressedLen, outData + decompressedBytes, chunkLen);
+		decompressedBytes += chunkLen;
+	}
 }
 
 std::vector<uint8_t>
@@ -215,5 +226,4 @@ Compression::decompressLz(uint8_t* inputData, uint32_t inputLen, uint8_t* output
 		outputData = inputData;
 	else
 		lzf_decompress((char*)inputData, inputLen, (char*)outputData, outputLen);
-
 }
