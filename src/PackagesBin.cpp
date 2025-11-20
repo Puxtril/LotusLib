@@ -330,14 +330,14 @@ PackagesBin::readFile2(BinaryReader::BinaryReaderBuffered& reader)
             uint64_t size = comSizeBuffer.readULEB(32);
             BinaryReader::BinaryReaderSlice frameData = comZBuffer.slice(size);
 
-            unsigned char isCompressed = flagBufferCurrentByte >> flagBufferCurrentBit++ & 1;
+            curEntity.isCompressed = (flagBufferCurrentByte >> flagBufferCurrentBit++ & 1) > 0;
             if (flagBufferCurrentBit > 7)
             {
                 flagBufferCurrentByte = comFlagsBuf.readUInt8();
                 flagBufferCurrentBit -= 8;
             }
 
-            if (isCompressed > 0)
+            if (curEntity.isCompressed)
                 curEntity.decompressedLen = frameData.readULEB(32);
             else
                 curEntity.decompressedLen = size;
