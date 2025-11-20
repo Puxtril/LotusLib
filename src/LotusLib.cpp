@@ -155,8 +155,11 @@ PackageReader::getFile(const FileNode* fileRef, int fileEntryReaderFlags)
 
     if (fileEntryReaderFlags & READ_EXTRA_ATTRIBUTES)
     {
-        entry.extra.parent = m_packagesBin->getParent(entry.internalPath);
-        entry.extra.attributes = m_packagesBin->getParameters(entry.internalPath);
+        if (m_packagesBin->isInitilized() && m_packagesBin->isInitSuccess())
+        {
+            entry.extra.parent = m_packagesBin->getParent(entry.internalPath);
+            entry.extra.attributes = m_packagesBin->getParameters(entry.internalPath);
+        }
     }
 
     return entry;
