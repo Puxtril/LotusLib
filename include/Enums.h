@@ -10,6 +10,7 @@ namespace LotusLib
         WARFRAME_PE = 1 << 2, // Pre-Ensmallening
         STARTREK    = 1 << 3,
         DARKNESSII  = 1 << 4,
+        DARKSECTOR  = 1 << 5,
     };
 
     inline Game operator|(Game a, Game b)

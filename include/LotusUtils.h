@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <fstream>
 #include <cstring>
+#include <algorithm>
 
 namespace LotusLib
 {

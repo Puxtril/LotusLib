@@ -43,6 +43,8 @@ LotusLib::gameToString(Game game)
             return "Darkness II";
         case Game::STARTREK:
             return "Star Trek";
+        case Game::DARKSECTOR:
+            return "Dark Sector";
     }
     return "Unknown";
 }
@@ -50,16 +52,20 @@ LotusLib::gameToString(Game game)
 Game
 LotusLib::stringToGame(const std::string& gameStr)
 {
-    if (gameStr == "warframe")
+    std::string lower(gameStr);
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+
+    if (lower == "warframe")
         return Game::WARFRAME;
-    if (gameStr == "soulframe")
+    if (lower == "soulframe")
         return Game::SOULFRAME;
-    if (gameStr == "warframe_pe" || gameStr == "warframe-pe" || gameStr == "warframepe")
+    if (lower == "warframe_pe" || lower == "warframe-pe" || lower == "warframepe" || lower == "warframe pe")
         return Game::WARFRAME_PE;
-    if (gameStr == "darkness2" || gameStr == "darkness 2" || gameStr == "darknessii" || gameStr == "darkness ii")
+    if (lower == "darkness2" || lower == "darkness 2" || lower == "darknessii" || lower == "darkness ii")
         return Game::DARKNESSII;
-    if (gameStr == "startrek" || gameStr == "star trek")
+    if (lower == "startrek" || lower == "star trek")
         return Game::STARTREK;
+    if (lower == "darksector" || lower == "dark sector")
     return Game::UNKNOWN;
 }
 
@@ -124,6 +130,9 @@ LotusLib::guessGame(const std::string& pkgDir)
     // This exists for every game
     if (!std::filesystem::exists(pkgPath / "H.Misc.cache"))
         return Game::UNKNOWN;
+
+    if (!std::filesystem::exists(pkgPath / "H.Misc.toc") && std::filesystem::exists(pkgPath / "H.BasePose.cache"))
+        return Game::DARKSECTOR;
 
     // Dig into the Toc/Cache files further
     std::ifstream tocReader(pkgPath / "H.Misc.toc", std::ios_base::in | std::ios_base::binary | std::ios_base::ate);
