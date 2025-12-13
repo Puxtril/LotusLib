@@ -154,7 +154,7 @@ PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
 {
     reader.seek(16, std::ios::beg);
     reader.readUInt32(20, 20, "Packages.bin header size");
-    m_version = reader.readUInt32(30, 100, "Packages.bin Version");
+    m_version = reader.readUInt32(40, 100, "Packages.bin Version");
     reader.readUInt32(1, 1, "Packages.bin flags");
 
     if (m_version < 45)
