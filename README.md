@@ -3,18 +3,17 @@
 This is a C++17 library which can read data from Evolution Engine game files.
 
 Games supported:
-    * Warframe
-    * Soulframe
-    * Darkness II
-    * Star Trek (2013)
-
-This library does NOT support Dark Sector.
+* Warframe
+* Soulframe
+* Darkness II
+* Star Trek (2013)
+* **NOT** Dark Sector
 
 # General Overview
 
 ## What this is, and what is isn't
 
-It can access data stored within the .toc and .cache files. That's it. It doesn't have any knowledge of the virtual file types. It cannot distinguish between 3D Models, Textures, and Audio clips. But this library will retrieve and decompress the raw data. 
+It can access data stored within the .toc and .cache files. That's it. It cannot distinguish between 3D Models, Textures, and Audio clips. But this library will retrieve and decompress the raw data. 
 
 ## How to install
 
@@ -36,7 +35,7 @@ It can access data stored within the .toc and .cache files. That's it. It doesn'
 
 ### Cache Files
 
-Understanding the cache files will assist in understanding how to utilize this library. If you open the `Cache.Windows` directory, you'll see a bunch of files looking like this.
+Understanding the cache files will assist in understanding how to utilize this library. If you open the `Cache.Windows` directory inside your game installation, you'll see a bunch of files looking like this.
 
 ```
 H.Texture.toc
@@ -49,7 +48,7 @@ H.Texture.toc
 |- PackageSplit. The only 3 types are H(eader) B(ody) and F(ooter). Source file is `PackageSplit`.
 ```
 
-The collection of these packages (the `Cache.Windows` directory) is represented as the `PackageCollection` source file. So likely your first line of code will be creating an instance of `PackageCollection`.
+The collection of these packages (the `Cache.Windows` directory) is represented as the `PackageCollection` object. So likely your first line of code will be creating an instance of `PackageCollection`.
 
 ### Virtual Files
 
@@ -61,7 +60,7 @@ Every virtual file has an entry in the H split. Inside the H split is an importa
 
 This is a special virtual file stored inside the `Misc` Package, specifically the H split. It's a complex Zstd-compressed structure that contains heirarchecal JSON-like data. Every virtual file stored inside packages has a corresponding entry inside `Packages.bin`, but not the reverse - `Packages.bin` contains many meta-files.
 
-To read this data, read `/Packages.bin` from the `Misc` package and pass to the `PackagesBin` constructor.
+To read this data, read `/Packages.bin` from the `Misc` package and pass to the `PackagesBin` object's `initialize` method.
 
 ## WARFRAME_PE?
 
@@ -69,7 +68,7 @@ Warframe changed compression methods from LZ to Oodle, dubbed "The Great Ensmall
 
 ## The PackageCategory Enumeration
 
-Over time, Warframe specifically has updated their package names - ex. `TextureDx9` -> `Texture`. Additionally, I've noticed overlap with format enumerations (stored inside the CommonHeader) between packages. It seems these enumerations are unique only within their own package category.
+Over time, Warframe specifically has updated their package names - ex. `TextureDx9` -> `Texture`. Additionally, I've noticed overlap with format enumerations (stored inside the CommonHeader) between packages. It seems these enumerations are unique only within their own package category. So as an alternative to clients hard-coding both package names `TextureDx9` and `Texture`, you may match against `PackageCategory::TEXTURE` instead.
 
 ## Examples
 
@@ -121,7 +120,7 @@ int main()
 {
     LotusLib::Game game = LotusLib::guessGame(cachePath);
     LotusLib::PackageCollection pkgCollection(cachePath, game);
-    
+
     LotusLib::Package miscPkg = pkgCollection.getPackage("Misc");
     std::vector<uint8_t> pkgsBinData = miscPkg.getFile(LotusLib::PkgSplitType::HEADER, "/Packages.bin");
     BinaryReader::BinaryReaderBuffered pkgsBinReader(std::move(pkgsBinData));
