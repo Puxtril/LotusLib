@@ -1,6 +1,6 @@
 # LotusLib
 
-This is a C++17 library which can read data from Evolution Engine game files.
+This is a C++17 library for reading data from Evolution Engine game files.
 
 Games supported:
 * Warframe
@@ -62,13 +62,14 @@ This is a special virtual file stored inside the `Misc` Package, specifically th
 
 To read this data, read `/Packages.bin` from the `Misc` package and pass to the `PackagesBin` object's `initialize` method.
 
-## WARFRAME_PE?
+###  WARFRAME_PE?
 
 Warframe changed compression methods from LZ to Oodle, dubbed "The Great Ensmallening", which took place late 2020 - early 2021. The change in compression methods changes the behavior of decompression, and I decided to represent this as a separate game altogether - "Warframe Pre-Ensmallening".
 
-## The PackageCategory Enumeration
+### The PackageCategory Enumeration
 
 Over time, Warframe specifically has updated their package names - ex. `TextureDx9` -> `Texture`. Additionally, I've noticed overlap with format enumerations (stored inside the CommonHeader) between packages. It seems these enumerations are unique only within their own package category. So as an alternative to clients hard-coding both package names `TextureDx9` and `Texture`, you may match against `PackageCategory::TEXTURE` instead.
+
 
 ## Examples
 
@@ -81,6 +82,8 @@ Over time, Warframe specifically has updated their package names - ex. `TextureD
 
 int main()
 {
+    const std::string cachePath = "C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows";
+
     LotusLib::Game game = LotusLib::guessGame(cachePath);
     LotusLib::PackageCollection pkgCollection(cachePath, game);
 
@@ -95,11 +98,11 @@ int main()
             // An even quicker method to read the format
             uint32_t cHeaderFormat = pkg.readCommonHeaderFormat(fileNode);
 
-            // Get the full file entry - CommonHeader, and H/B/F split
+            // Get the full file entry - CommonHeader and H/B/F split
             LotusLib::FileEntry fullEntry = pkg.getFileEntry(fileNode);
 
             // Get the absolute path to the file
-            std::string absPath = getFullPath(fileNode);
+            std::string absPath = LotusLib::getFullPath(fileNode);
         }
     }
 }
@@ -118,6 +121,8 @@ int main()
 
 int main()
 {
+    const std::string cachePath = "C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows";
+
     LotusLib::Game game = LotusLib::guessGame(cachePath);
     LotusLib::PackageCollection pkgCollection(cachePath, game);
 
@@ -135,4 +140,11 @@ int main()
 }
 ```
 
-</deatils>
+</details>
+
+
+## Misc
+
+**Why not Dark Sector?**
+
+The DS game files are very different from the games supported by this library. From my limited research, the `cache` files are just ZIP archives with a custom compression format. Theoretically I could squeeze DS support into this library, but IMO it doesn't make sense.
