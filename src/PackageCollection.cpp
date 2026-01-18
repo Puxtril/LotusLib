@@ -1,18 +1,10 @@
-#include "PackageCollection.h"
+#include "LotusLib/PackageCollection.h"
 
 using namespace LotusLib;
 
 PackageCollection::PackageCollection(std::filesystem::path pkgDir, Game game)
     : m_packageDir(pkgDir), m_game(game)
 {
-    loadPackages();
-}
-
-void
-PackageCollection::setData(std::filesystem::path pkgDir, Game game)
-{
-    m_packageDir = pkgDir;
-    m_game = game;
     loadPackages();
 }
 
@@ -40,20 +32,12 @@ PackageCollection::end() const
     return m_pkgs.end();
 }
 
-const Package*
+Package
 PackageCollection::getPackage(const std::string& pkgName) const
 {
     if (m_pkgMap.count(pkgName) == 0)
-        return nullptr;
-    return &m_pkgs[m_pkgMap.at(pkgName)];
-}
-
-Package*
-PackageCollection::getPackage(const std::string& pkgName)
-{
-    if (m_pkgMap.count(pkgName) == 0)
-        return nullptr;
-    return &m_pkgs[m_pkgMap.at(pkgName)];
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)];
 }
 
 const std::filesystem::path&
@@ -66,6 +50,113 @@ Game
 PackageCollection::getGame() const
 {
     return m_game;
+}
+
+const FileNode&
+PackageCollection::getFileNode(const std::string& pkgName, PkgSplitType split, const std::string& internalPath) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].getFileNode(split, internalPath);
+}
+
+const DirNode&
+PackageCollection::getDirNode(const std::string& pkgName, PkgSplitType split, const std::string& internalPath) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].getDirNode(split, internalPath);
+}
+
+size_t
+PackageCollection::dirCount() const
+{
+    size_t total = 0;
+    for (const Package& pkg : m_pkgs)
+        total += pkg.dirCount();
+    return total;
+}
+
+size_t
+PackageCollection::dirCount(const std::string& pkgName) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].dirCount();
+}
+
+size_t
+PackageCollection::dirCount(const std::string& pkgName, PkgSplitType split) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].dirCount(split);
+}
+
+size_t
+PackageCollection::fileCount() const
+{
+    size_t total = 0;
+    for (const Package& pkg : m_pkgs)
+        total += pkg.fileCount();
+    return total;
+}
+
+size_t
+PackageCollection::fileCount(const std::string& pkgName) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].fileCount();
+}
+
+size_t
+PackageCollection::fileCount(const std::string& pkgName, PkgSplitType split) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].fileCount(split);
+}
+
+size_t
+PackageCollection::fileDupeCount() const
+{
+    size_t total = 0;
+    for (const Package& pkg : m_pkgs)
+        total += pkg.fileDupeCount();
+    return total;
+}
+
+size_t
+PackageCollection::fileDupeCount(const std::string& pkgName) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].fileDupeCount();
+}
+
+size_t
+PackageCollection::fileDupeCount(const std::string& pkgName, PkgSplitType split) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].fileDupeCount(split);
+}
+
+std::vector<uint8_t>
+PackageCollection::getFileUncompressed(const std::string& pkgName, PkgSplitType split, const std::string& internalPath) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].getFileUncompressed(split, internalPath); 
+}
+
+std::vector<uint8_t>
+PackageCollection::getFile(const std::string& pkgName, PkgSplitType split, const std::string& internalPath) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        throw PackageNotFound(pkgName);
+    return m_pkgs[m_pkgMap.at(pkgName)].getFile(split, internalPath); 
 }
 
 void

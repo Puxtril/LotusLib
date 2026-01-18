@@ -1,9 +1,9 @@
-#include "LotusNotationParser.h"
+#include "LotusLib/EENotationParser.h"
 
 using namespace LotusLib;
 
 nlohmann::json
-LotusNotationParser::parse(const char* data, size_t dataSize)
+EENotationParser::parse(const char* data, size_t dataSize)
 {
     std::stack<nlohmann::json*> stack;
     std::string key;
@@ -136,7 +136,7 @@ LotusNotationParser::parse(const char* data, size_t dataSize)
 }
 
 void
-LotusNotationParser::dischargeBuffer(std::stack<nlohmann::json*>& stack, std::string& buf, std::string& key)
+EENotationParser::dischargeBuffer(std::stack<nlohmann::json*>& stack, std::string& buf, std::string& key)
 {
     char* endptr;
     auto ival = strtoll(buf.data(), &endptr, 10);
@@ -174,7 +174,7 @@ LotusNotationParser::dischargeBuffer(std::stack<nlohmann::json*>& stack, std::st
 }
 
 void
-LotusNotationParser::pushAndIndentArray(std::stack<nlohmann::json*>& stack, std::string& key)
+EENotationParser::pushAndIndentArray(std::stack<nlohmann::json*>& stack, std::string& key)
 {
     auto value = nlohmann::json::array();
     auto inserted = pushAndGetValue(stack, key, value);
@@ -182,7 +182,7 @@ LotusNotationParser::pushAndIndentArray(std::stack<nlohmann::json*>& stack, std:
 }
 
 void
-LotusNotationParser::pushAndIndentObject(std::stack<nlohmann::json*>& stack, std::string& key)
+EENotationParser::pushAndIndentObject(std::stack<nlohmann::json*>& stack, std::string& key)
 {
     auto value = nlohmann::json::object();
     auto inserted = pushAndGetValue(stack, key, value);

@@ -1,4 +1,4 @@
-#include "LotusUtils.h"
+#include "LotusLib/Utils.h"
 
 using namespace LotusLib;
 
@@ -24,6 +24,52 @@ LotusLib::findPackageCategory(const std::string& name)
     if (name.rfind("VideoTexture", 0) == 0)
         return PackageCategory::VIDEO_TEXTURE;
     return PackageCategory::UNKNOWN;
+}
+
+std::string
+LotusLib::getFullPath(const FileNode& fileNode)
+{
+    std::stack<const DirNode*> pathStack;
+    std::stringstream pathStr;
+    const DirNode* ptr = fileNode.parentDir;
+
+    while (ptr->parentNode != nullptr)
+    {
+        pathStack.push(ptr);
+        ptr = ptr->parentNode;
+    }
+    
+    while (!pathStack.empty())
+    {
+        pathStr << '/' << pathStack.top()->name;
+        pathStack.pop();
+    }
+
+    pathStr << '/' << fileNode.name;
+    return pathStr.str();
+}
+
+std::string
+LotusLib::getFullPath(const DirNode& dirNode)
+{
+    std::stack<const DirNode*> pathQueue;
+    std::stringstream pathStr;
+    const DirNode* ptr = dirNode.parentNode;
+
+    while (ptr->parentNode != nullptr)
+    {
+        pathQueue.push(ptr);
+        ptr = ptr->parentNode;
+    }
+
+    while (!pathQueue.empty())
+    {
+        pathStr << '/' << pathQueue.top()->name;
+        pathQueue.pop();
+    }
+
+    pathStr << '/' << dirNode.name;
+    return pathStr.str();
 }
 
 std::string
@@ -66,6 +112,7 @@ LotusLib::stringToGame(const std::string& gameStr)
     if (lower == "startrek" || lower == "star trek")
         return Game::STARTREK;
     if (lower == "darksector" || lower == "dark sector")
+        return Game::DARKSECTOR;
     return Game::UNKNOWN;
 }
 
@@ -120,6 +167,36 @@ LotusLib::stringToPackageCategory(const std::string& pkgCategoryStr)
     if (pkgCategoryStr == "videotexture" || pkgCategoryStr == "video-texture" || pkgCategoryStr == "video_texture")
         return PackageCategory::VIDEO_TEXTURE;
     return PackageCategory::UNKNOWN;
+}
+
+std::string
+LotusLib::pkgSplitTypeToString(PkgSplitType split)
+{
+    switch(split)
+    {
+        case PkgSplitType::HEADER:
+            return "Header";
+        case PkgSplitType::BODY:
+            return "Body";
+        case PkgSplitType::FOOTER:
+            return "Footer";
+    }
+    return "";
+}
+
+char
+LotusLib::pkgSplitTypeToChar(PkgSplitType split)
+{
+    switch(split)
+    {
+        case PkgSplitType::HEADER:
+            return 'H';
+        case PkgSplitType::BODY:
+            return 'B';
+        case PkgSplitType::FOOTER:
+            return 'F';
+    }
+    return '\0';
 }
 
 Game

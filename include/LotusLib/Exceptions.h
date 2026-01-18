@@ -1,8 +1,6 @@
 #pragma once
 
-#include <exception>
 #include <stdexcept>
-#include <sstream>
 #include <string>
 
 namespace LotusLib
@@ -35,5 +33,15 @@ namespace LotusLib
     class InternalDirectoryNotFound : public InternalEntryNotFound {
     public:
         InternalDirectoryNotFound(const std::string& msg);
+    };
+
+    class PackageNotFound : public LotusException {
+    public:
+        PackageNotFound(const std::string& pkg);
+    };
+
+    class PackageSplitNotFound : public LotusException {
+    public:
+        PackageSplitNotFound(const std::string& pkg, char split);
     };
 }

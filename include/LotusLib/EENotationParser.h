@@ -8,7 +8,7 @@ namespace LotusLib
 {
 	// Credit to Sainan for this class
 	// https://github.com/Sainan/ee-notation-parser
-	class LotusNotationParser
+	class EENotationParser
 	{
 	public:
 		[[nodiscard]]

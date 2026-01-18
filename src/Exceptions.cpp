@@ -1,4 +1,4 @@
-#include "LotusExceptions.h"
+#include "LotusLib/Exceptions.h"
 
 using namespace LotusLib;
 
@@ -25,4 +25,12 @@ InternalFileNotFound::InternalFileNotFound(const std::string& msg)
 
 InternalDirectoryNotFound::InternalDirectoryNotFound(const std::string& msg)
     : InternalEntryNotFound(msg)
+{}
+
+PackageNotFound::PackageNotFound(const std::string& pkg)
+    : LotusException("Package doesn't exist: " + pkg)
+{}
+
+PackageSplitNotFound::PackageSplitNotFound(const std::string& pkg, char split)
+    : LotusException("PackageSplit doesn't exist: " + std::to_string(split) + '.' + pkg)
 {}

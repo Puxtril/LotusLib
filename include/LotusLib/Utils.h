@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Enums.h"
-#include "RawEntry.h"
+#include "LotusLib/Enums.h"
+#include "LotusLib/TOCEntry.h"
+#include "LotusLib/TOCTree.h"
 
-#include <string>
-#include <filesystem>
-#include <fstream>
-#include <cstring>
 #include <algorithm>
+#include <fstream>
+#include <stack>
+#include <string>
 
 namespace LotusLib
 {
@@ -15,8 +15,13 @@ namespace LotusLib
     // Intended to be used internally
     PackageCategory findPackageCategory(const std::string& name);
 
+    std::string getFullPath(const FileNode& fileNode);
+    std::string getFullPath(const DirNode& dirNode);
+
     std::string gameToString(Game game);
     std::string packageCategoryToString(PackageCategory pkgCategory);
+    std::string pkgSplitTypeToString(PkgSplitType split);
+    char pkgSplitTypeToChar(PkgSplitType split);
 
     // Will be matched with lower-case names
     // Passed-in string must already be lower-case

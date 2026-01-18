@@ -1,140 +1,139 @@
 # LotusLib
 
-This is a C++17 library for reading data from Warframe's files stored in the Cache.Windows folder. Data stored in these cache files contain compressed data in a directory-like structure. See below for an example to retrieve a file's data.
+This is a C++17 library which can read data from Evolution Engine game files.
+
+Games supported:
+    * Warframe
+    * Soulframe
+    * Darkness II
+    * Star Trek (2013)
+
+This library does NOT support Dark Sector.
 
 # General Overview
 
 ## What this is, and what is isn't
 
-This will allow you to access files stored within the .toc and .cache files. That's it. It doesn't have any knowledge of the file types. It cannot distinguish between 3D Models, Textures, and Audio clips. But this library will retrieve and decompress the raw data for these files. 
+It can access data stored within the .toc and .cache files. That's it. It doesn't have any knowledge of the virtual file types. It cannot distinguish between 3D Models, Textures, and Audio clips. But this library will retrieve and decompress the raw data. 
 
 ## How to install
 
 * Adding this project as a Git submodule is the easiest integration method for a project. `git submodule add https://github.com/Puxtril/LotusLib.git`
 * Initilize all required submodules with `git submodule update --init --recursive LotusLib`.
 * This builds using CMake. Ensure CMake is installed on your platform, then add this to your project's CMakeLists.txt: `add_subdirectory(path/to/LotusLib)`. When you create your executable, link with `target_link_libraries(<YOUR_EXE> LotusLib)`.
-* This library uses [Oodle](www.radgametools.com/oodle.html) for decompression. To avoid issues, the static library is not included in this repository. You will need to obtain this yourself first.
-    1. Download the files.
-        - Easy: Download [from here.](https://github.com/WorkingRobot/OodleUE/tree/main/Engine/Source/Runtime/OodleDataCompression/Sdks)
-        - Hard: Download from the engine
-            - Download Unreal Engine from the official website (You will need an account and the Epic launcher)
-            - Once downloaded find the SDK folder `Engine/Source/Runtime/OodleDataCompression/Sdks/<version>/lib`
-    1. Create a folder in the root of this repository (or top-most project) named `bin`
-    1. Copy folders `Linux` and `Win64` into `bin`. We want the *static* libraries here.
+* Obtain Oodle
+    * Option 1: Download from Github
+        * Browse to `https://github.com/WorkingRobot/OodleUE/tree/main/Engine/Source/Runtime/OodleDataCompression/Sdks`
+        * Click on the latest version
+        * Download `lib/Linux/liboo2corelinux64.a` or `lib/Win64/oo2core_win64.lib`. If you wish to compile this project in Debug mode, download the debug binaries `lib/Linux/liboo2corelinux64_dbg.a` or `lib/Win64/oo2core_win64_debug.lib`
+        * For the lazy, [Linux](https://github.com/WorkingRobot/OodleUE/raw/refs/heads/main/Engine/Source/Runtime/OodleDataCompression/Sdks/2.9.12/lib/Linux/liboo2corelinux64.a), [Linux-Debug](https://github.com/WorkingRobot/OodleUE/raw/refs/heads/main/Engine/Source/Runtime/OodleDataCompression/Sdks/2.9.12/lib/Linux/liboo2corelinux64_dbg.a), [Windows](https://github.com/WorkingRobot/OodleUE/raw/refs/heads/main/Engine/Source/Runtime/OodleDataCompression/Sdks/2.9.12/lib/Win64/oo2core_win64.lib), [Windows-Debug](https://github.com/WorkingRobot/OodleUE/raw/refs/heads/main/Engine/Source/Runtime/OodleDataCompression/Sdks/2.9.12/lib/Win64/oo2core_win64_debug.lib).
+    * Option 2: Obtain directly from Unreal Engine
+        * Download and install [Epic Launcher](https://store.epicgames.com)
+        * Once downloaded find the SDK folder `Engine/Source/Runtime/OodleDataCompression/Sdks/X.X.X/lib`
+    * Once downloaded, create a root folder in this project `bin` and place them inside. If I were on Linux, my folder structure would look like `bin/Linux/liboo2corelinux64.a` and `bin/Linux/liboo2corelinux64_dbg.a`.
 
 ## How to use
 
-1. Once you have everything installed, you need to create a PackageCollection to start reading files. You currently have 2 options for the CachePairs: _CachePairReader_ and _CachePairMeta_.
- * If you want to read file data, use _CachePairReader_. This requires cache files to be present.
- * If you only have the .toc files, use _CachePairMeta_. 
- * If you have other needs, subclass _CachePair_ and create your own interface.
-1. Determine the filepath of your _Cache.Windows_ folder. If you installed through Steam, it's most likely in "C:\Steam\steamapps\common\Warframe\Cache.Windows".
-1. Determine if your installation is pre/post Ensmallening. This is pretty easy - [if the installation was updated after September 9th, 2020; it's post](https://forums.warframe.com/topic/1223735-the-great-ensmallening/).
+### Cache Files
 
-Now you can create a collection like so:
-```cpp
-#include "LotusLib.h"
-
-int main()
-{
-    // "Cache.Windows" is located in the installation directory
-    LotusLib::PackagesReader dir("C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows");
-    // This loads the package "Misc" from the "Cache.Windows" directory
-    LotusLib::PackageReader pkg = dir.getPackage("Misc");
-
-    /*
-    These are defined in the project
-    Putting their definition here for documentation purposes.
-
-    struct FileEntry
-    {
-        CommonHeader commonHeader;
-        LotusPath internalPath;
-        BinaryReader headerData;
-        BinaryReader bData;
-        BinaryReader fData;
-    };
-
-    struct CommonHeader
-    {
-		std::array<uint8_t, 16> hash;
-		std::vector<std::string> paths;
-		std::string attributes;
-		uint32_t type;
-    };
-
-    The CommonHeader gives you the Type (Model/Texture/Material/etc...)
-        This is an int enumeration that must be known ahead of time.
-        Currently known formats are used in Warframe Exporter
-
-    The contents of `bData` and fData` may not always be populated.
-        Some types only store binary data in B, others only if F, some a mix of both.
-    */
-    LotusLib::FileEntry entry = pkg.getFile("/Lotus/Characters/Tenno/Excalibur/Excalibur_skel.fbx");
-}
-```
-
-## Iterating over files
-
-Each interface has a linear iterator, making iteration very easy. 
-
-Here's an example that counts every file in the archives:
-```cpp
-#include "LotusLib.h"
-
-using namespace LotusLib;
-
-int main()
-{
-    LotusLib::PackagesReader dir("C:\\Steam\\steamapps\\common\\Warframe\\Cache.Windows");
-    for (auto& x : dir)
-    {
-        LotusLib::PackageReader easyReader(x);
-        for (auto& file : easyReader)
-        {
-            LotusLib::FileEntry entry = easyReader.getFile(file);
-        }
-    }
-}
-```
-
-## Great! What can I do with these files?
-
-That's up to you! Within the cache files are 3D models, Textures, Audio files, Maps, AI scripts, Shaders, Animations, and much more. While you may see common file extensions like .fbx, .png, and .wav, they are certianly not stored in that format. Likely they are stored on the original servers in this format, but once packaged into the cache files, they are converted to something else. __Most__ files are stored in a custom format, so no existing program (like Blender) can read the data. You will need to write a converter to a standard format. This is not an easy task, and falls under the general term of "Reverse Engineering". Crack open your hex editor and have fun!
-
-The folks on Xentax have already done some of this work. Personally I have written an extractor for 3D Models (some errors) and Textures (fully functional). I have not released this code, but plan on releasing in another open-source project. If you would like to assist, or would simply like the file definitions for these, please contact me on Discord or Email. I also have partial definitions for Animations and Maps.
-
-Other than Reverse Engineering, you can simply collect metadata on the current cache. You can take snapshots, look at historical versions of Warframe and see how the data has changed. Warframe has gone undergone many revisions, so plenty to analyze there!
-
-# Design of Warframe, and design of LotusLib
-
-So you're not left wondering "Why the hell was it designed like this"
-
-## Cache files
-
-Looking at the Warframe cache folder, we see a bunch of .toc and .cache files. Toc files only contain a tree-heirarchy of files/folders. They contain file sizes and offsets of the binary data in the matching cache file. These files should always be paired together, so they are abstracted into the _CachePair_ class. Since there are multiple ways to interface with these files, _CachePair_ is a base class. For reading data in the cache file, use _CachePairReader_ and if you only have the toc file, use _CachePairMeta_. _CachePairMeta_ is slightly misleading because it doesn't require cache files.
-
-_CachePair_s are the lowest interface the user should interact with, but to make accessing easier, containers are built on top of the _CachePair_ for easy, logical access. _Package_ represent the triple pairs of H, F, and B. Within a package, the triples share a name. _PackageCollection_ is a collection of _Package_s, indexed by their names.
-
-Let's take an example file name. This is straight from the Cache.Windows folder:
+Understanding the cache files will assist in understanding how to utilize this library. If you open the `Cache.Windows` directory, you'll see a bunch of files looking like this.
 
 ```
 H.Texture.toc
 - ------- ---
 |    |     |
-|    |     |-Table of Contents file. There will always be a matching .cache file.
+|    |     |- toc/cache are both represented by PackageSplit.
 |    |
-|    |-Package name. There is no defined limit of these.
+|    |- The package name. Source file is `Package`.
 |
-|-PackageTrioType. Always an H, usually a matching B and F, but both not required.
+|- PackageSplit. The only 3 types are H(eader) B(ody) and F(ooter). Source file is `PackageSplit`.
 ```
 
-## Common Header
+The collection of these packages (the `Cache.Windows` directory) is represented as the `PackageCollection` source file. So likely your first line of code will be creating an instance of `PackageCollection`.
 
-Most files in the H PackagePair will start with a CommonHeader struct. Within this struct is an enumeration that defines the content of the files definition in H, F, and B. 
+### Virtual Files
 
-## Decompression
+Each Package contains virtual files that can be extracted, but they are split among the PackageSplits. For example, the virtual file `/Lotus/Characters/Tenno/Excalbiur/ExcaliburBody_skel.fbx` can be found inside the `Misc` Package and has data stored in the H/B/F splits. Other files like textures have data stored in the `Texture` package, also spread across the H/B/F splits.
 
-Warframe uses 2 types of decompression: LZ and Oodle. Before their [Ensmallening update](https://forums.warframe.com/topic/1223735-the-great-ensmallening/), LZ was used as the main compression method. There is a custom LZ decompressor implementation (taken from a Xentax user). Post-ensmallening, everything (including non-textures), started using Oodle compression. Well, mostly. Files are not compressed in one block, the files can have multiple compressed blocks, and each of those blocks may use either compression method. 99% of the time it's oodle, but there is the rare occurrance of LZ compression.
+Every virtual file has an entry in the H split. Inside the H split is an important structure - the CommonHeader. Every file will contain this structure, and the most important field is `type`. This is an enumeration that dictates the format of the remaining header data and the data stored inside the B/F splits (3D model/Texture/Shader/etc). (Note: Some files like DropTables are encrypted, and thus do not have a CommonHeader). The Reverse engineering of these file formats is what [Warframe-Exporter](https://github.com/Puxtril/Warframe-Exporter) does.
 
-Many extractors supporting Oodle still use the dynamic Oodle library to link against (oodlecore_9.dll). I find dynamic libraries a pain in the ass, especially for end-users if they need to source the file. Thus, the developer should be responsible for sourcing the static library.
+### Packages.bin
+
+This is a special virtual file stored inside the `Misc` Package, specifically the H split. It's a complex Zstd-compressed structure that contains heirarchecal JSON-like data. Every virtual file stored inside packages has a corresponding entry inside `Packages.bin`, but not the reverse - `Packages.bin` contains many meta-files.
+
+To read this data, read `/Packages.bin` from the `Misc` package and pass to the `PackagesBin` constructor.
+
+## WARFRAME_PE?
+
+Warframe changed compression methods from LZ to Oodle, dubbed "The Great Ensmallening", which took place late 2020 - early 2021. The change in compression methods changes the behavior of decompression, and I decided to represent this as a separate game altogether - "Warframe Pre-Ensmallening".
+
+## The PackageCategory Enumeration
+
+Over time, Warframe specifically has updated their package names - ex. `TextureDx9` -> `Texture`. Additionally, I've noticed overlap with format enumerations (stored inside the CommonHeader) between packages. It seems these enumerations are unique only within their own package category.
+
+## Examples
+
+<details>
+
+<summary>Read all files in all packages</summary>
+
+```cpp
+#include "LotusLib/PackageCollection.h"
+
+int main()
+{
+    LotusLib::Game game = LotusLib::guessGame(cachePath);
+    LotusLib::PackageCollection pkgCollection(cachePath, game);
+
+    for (LotusLib::Package& pkg : pkgCollection)
+    {
+        // Iterate over virtual files inside the H Split
+        for (const LotusLib::FileNode& fileNode : pkg)
+        {
+            // Quickly get the CommonHeader
+            LotusLib::CommonHeader cHeader = pkg.readCommonHeader(fileNode);
+
+            // An even quicker method to read the format
+            uint32_t cHeaderFormat = pkg.readCommonHeaderFormat(fileNode);
+
+            // Get the full file entry - CommonHeader, and H/B/F split
+            LotusLib::FileEntry fullEntry = pkg.getFileEntry(fileNode);
+
+            // Get the absolute path to the file
+            std::string absPath = getFullPath(fileNode);
+        }
+    }
+}
+```
+
+</details>
+
+
+<details>
+
+<summary>Load Packages.bin</summary>
+
+```cpp
+#include "LotusLib/PackageCollection.h"
+#include "LotusLib/PackagesBin.h"
+
+int main()
+{
+    LotusLib::Game game = LotusLib::guessGame(cachePath);
+    LotusLib::PackageCollection pkgCollection(cachePath, game);
+    
+    LotusLib::Package miscPkg = pkgCollection.getPackage("Misc");
+    std::vector<uint8_t> pkgsBinData = miscPkg.getFile(LotusLib::PkgSplitType::HEADER, "/Packages.bin");
+    BinaryReader::BinaryReaderBuffered pkgsBinReader(std::move(pkgsBinData));
+
+    LotusLib::PackagesBin pkgsBin;
+    pkgsBin.initilize(pkgsBinReader);
+    for (const auto& item : pkgsBin)
+    {
+        std::cout << "Entry path: " << item.first << std::endl;
+        nlohmann::json params = pkgsBin.getParametersJson(item.first);
+    }
+}
+```
+
+</deatils>

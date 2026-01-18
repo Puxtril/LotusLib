@@ -1,9 +1,6 @@
 #pragma once
 
-#include <filesystem>
-
 #include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 namespace LotusLib
@@ -17,9 +14,7 @@ namespace LotusLib
 		void operator=(Logger&);
 
 	public:
-		// This should only be called once
-		static void setLogProperties(spdlog::level::level_enum consoleLogLevel);
-		static void setLogProperties(const std::filesystem::path& logPath, spdlog::level::level_enum logPathLevel, spdlog::level::level_enum consoleLogLevel);
+		static void setLogProperties(spdlog::level::level_enum level);
 
 		static void error(const std::string& msg);
 		static void warn(const std::string& msg);

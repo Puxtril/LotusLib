@@ -7,7 +7,7 @@ namespace LotusLib
         UNKNOWN     = 0,
         SOULFRAME   = 1 << 0,
         WARFRAME    = 1 << 1,
-        WARFRAME_PE = 1 << 2, // Pre-Ensmallening
+        WARFRAME_PE = 1 << 2,
         STARTREK    = 1 << 3,
         DARKNESSII  = 1 << 4,
         DARKSECTOR  = 1 << 5,
@@ -36,4 +36,10 @@ namespace LotusLib
     {
         return static_cast<PackageCategory>(static_cast<int>(a) | static_cast<int>(b));
     }
+
+    enum class PkgSplitType : int {
+		HEADER = 0,
+		BODY   = 1,
+		FOOTER = 2,
+	};
 };

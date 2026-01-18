@@ -1,78 +1,68 @@
-#include "PackagesBin.h"
+#include "LotusLib/PackagesBin.h"
 
 using namespace LotusLib;
 
-PackagesBin::PackagesBin()
-    : m_isInitilized(false), m_errorReading(false)
+Impl::PackagesBinState::PackagesBinState()
+    : isInitilized(false), errorReading(false)
 {
 }
 
-PackagesBin::~PackagesBin()
+Impl::PackagesBinState::~PackagesBinState()
 {
-    if (m_isInitilized && !m_errorReading)
+    if (isInitilized && !errorReading)
     {
-        ZSTD_freeDCtx(m_zstdContext);
-        ZSTD_freeDDict(m_zstdDict);
+        ZSTD_freeDCtx(zstdContext);
+        ZSTD_freeDDict(zstdDict);
     }
 }
 
 bool
 PackagesBin::isInitilized()
 {
-    return m_isInitilized;
+    return m_state->isInitilized;
 }
 
 bool
 PackagesBin::isInitSuccess()
 {
-    return !m_errorReading;
+    return !m_state->errorReading;
 }
 
 void
 PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
 {
-    if (m_isInitilized)
+    if (isInitilized())
         return;
 
-    m_zstdContext = ZSTD_createDCtx();
-    ZSTD_DCtx_setParameter(m_zstdContext, ZSTD_d_experimentalParam1, 1);
+    std::lock_guard<std::mutex> guard(m_state->mutex);
+
+    m_state->zstdContext = ZSTD_createDCtx();
+    ZSTD_DCtx_setParameter(m_state->zstdContext, ZSTD_d_experimentalParam1, 1);
 
     try
     {
-        std::vector<PackagesBin::RawPackagesEntity> rawEntities = readFile(reader);
+        std::vector<Impl::RawPackagesEntity> rawEntities = readFile(reader);
         buildEntityMap(rawEntities);
     }
     catch (LimitException& ex)
     {
         logError("Packages.bin read error: " + std::string(ex.what()));
-        m_errorReading = true;
+        m_state->errorReading = true;
     }
     catch (LotusException& ex)
     {
         logError("Packages.bin read error: " + std::string(ex.what()));
-        m_errorReading = true;
+        m_state->errorReading = true;
     }
 
-    m_isInitilized = true;
-}
-
-bool
-PackagesBin::hasParameters(const LotusLib::LotusPath& filePath)
-{
-    return hasParameters(filePath.string());
+    m_state->isInitilized = true;
 }
 
 bool
 PackagesBin::hasParameters(const std::string& filePath)
 {
-    PackagesEntity& entity = m_entityMap[filePath];
+    Impl::PackagesEntity& entity = m_state->entityMap[filePath];
     return entity.attributeData.size() > 0;
-}
-
-std::string
-PackagesBin::getParameters(const LotusLib::LotusPath& filePath)
-{
-    return getParameters(filePath.string());
 }
 
 std::string
@@ -80,7 +70,7 @@ PackagesBin::getParameters(const std::string& filePath)
 {
     try
     {
-        PackagesEntity& entity = m_entityMap.at(filePath);
+        Impl::PackagesEntity& entity = m_state->entityMap.at(filePath);
         return readAttributes(entity);
     }
     catch (std::out_of_range&)
@@ -90,19 +80,13 @@ PackagesBin::getParameters(const std::string& filePath)
 }
 
 nlohmann::json
-PackagesBin::getParametersJson(const LotusLib::LotusPath& filePath)
-{
-    return getParametersJson(filePath.string());
-}
-
-nlohmann::json
 PackagesBin::getParametersJson(const std::string& filePath)
 {
     try
     {
-        PackagesEntity& entity = m_entityMap.at(filePath);
+        Impl::PackagesEntity& entity = m_state->entityMap.at(filePath);
         std::string attrs = readAttributes(entity);
-        return LotusNotationParser::parse(attrs.c_str(), attrs.size());
+        return EENotationParser::parse(attrs.c_str(), attrs.size());
     }
     catch (std::out_of_range&)
     {
@@ -113,13 +97,7 @@ PackagesBin::getParametersJson(const std::string& filePath)
 int
 PackagesBin::getVersion()
 {
-    return m_version;
-}
-
-const std::string&
-PackagesBin::getParent(const LotusLib::LotusPath& filePath)
-{
-    return getParent(filePath.string());
+    return m_state->version;
 }
 
 const std::string&
@@ -127,7 +105,7 @@ PackagesBin::getParent(const std::string& filePath)
 {
     try
     {
-        PackagesEntity& entity = m_entityMap.at(filePath);
+        Impl::PackagesEntity& entity = m_state->entityMap.at(filePath);
         return entity.parent;
     }
     catch (std::out_of_range&)
@@ -137,38 +115,38 @@ PackagesBin::getParent(const std::string& filePath)
     }
 }
 
-std::map<std::string, PackagesBin::PackagesEntity>::const_iterator
+std::map<std::string, Impl::PackagesEntity>::const_iterator
 PackagesBin::begin() const
 {
-    return m_entityMap.begin();
+    return m_state->entityMap.begin();
 }
 
-std::map<std::string, PackagesBin::PackagesEntity>::const_iterator
+std::map<std::string, Impl::PackagesEntity>::const_iterator
 PackagesBin::end() const
 {
-    return m_entityMap.end();
+    return m_state->entityMap.end();
 }
 
-std::vector<PackagesBin::RawPackagesEntity>
+std::vector<Impl::RawPackagesEntity>
 PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
 {
     reader.seek(16, std::ios::beg);
     reader.readUInt32(20, 20, "Packages.bin header size");
-    m_version = reader.readUInt32(40, 100, "Packages.bin Version");
+    m_state->version = reader.readUInt32(40, 100, "Packages.bin Version");
     reader.readUInt32(1, 1, "Packages.bin flags");
 
-    if (m_version < 45)
+    if (m_state->version < 45)
         return readFile1(reader);
     else
         return readFile2(reader);
 }
 
-std::vector<PackagesBin::RawPackagesEntity>
+std::vector<Impl::RawPackagesEntity>
 PackagesBin::readFile1(BinaryReader::BinaryReaderBuffered& reader)
 {
     reader.seek(16, std::ios::beg);
     reader.readUInt32(20, 20, "Packages.bin header size");
-    m_version = reader.readUInt32(30, 100, "Packages.bin Version");
+    m_state->version = reader.readUInt32(30, 100, "Packages.bin Version");
     reader.readUInt32(1, 1, "Packages.bin flags");
 
     // ???
@@ -204,14 +182,14 @@ PackagesBin::readFile1(BinaryReader::BinaryReaderBuffered& reader)
     comZBuffer.seek(dictSize, std::ios::cur);
 
     uint32_t entityCount = reader.readUInt32();
-    std::vector<PackagesBin::RawPackagesEntity> entities(entityCount);
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
 
     unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
     size_t flagBufferCurrentBit = 0;
 
     for (uint32_t i = 0; i < entityCount; i++)
     {
-        PackagesBin::RawPackagesEntity& curEntity = entities[i];
+        Impl::RawPackagesEntity& curEntity = entities[i];
 
         uint32_t pkgNameLen = reader.readUInt32();
         curEntity.pkg = reader.readAsciiString(pkgNameLen);
@@ -261,7 +239,7 @@ PackagesBin::readFile1(BinaryReader::BinaryReaderBuffered& reader)
     return entities;
 }
 
-std::vector<PackagesBin::RawPackagesEntity>
+std::vector<Impl::RawPackagesEntity>
 PackagesBin::readFile2(BinaryReader::BinaryReaderBuffered& reader)
 {
     findValueOffsetInRange(reader, 45, 60, 500, "ReferenceCount");
@@ -292,7 +270,7 @@ PackagesBin::readFile2(BinaryReader::BinaryReaderBuffered& reader)
     comZBuffer.seek(dictSize, std::ios::cur);
 
     uint32_t entityCount = reader.readUInt32();
-    std::vector<PackagesBin::RawPackagesEntity> entities(entityCount);
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
 
     unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
     size_t flagBufferCurrentBit = 0;
@@ -301,7 +279,7 @@ PackagesBin::readFile2(BinaryReader::BinaryReaderBuffered& reader)
 
     for (uint32_t i = 0; i < entityCount; i++)
     {
-        PackagesBin::RawPackagesEntity& curEntity = entities[i];
+        Impl::RawPackagesEntity& curEntity = entities[i];
 
         uint32_t pkgNameLen = reader.readUInt32(1, 200, "PkgNameLen");
         curEntity.pkg = reader.readAsciiString(pkgNameLen);
@@ -352,14 +330,14 @@ PackagesBin::readFile2(BinaryReader::BinaryReaderBuffered& reader)
 }
 
 void
-PackagesBin::buildEntityMap(std::vector<RawPackagesEntity>& rawEntities)
+PackagesBin::buildEntityMap(std::vector<Impl::RawPackagesEntity>& rawEntities)
 {
     for (size_t i = 0; i < rawEntities.size(); i++)
     {
-        RawPackagesEntity& curRawEntity = rawEntities[i];
+        Impl::RawPackagesEntity& curRawEntity = rawEntities[i];
 
         std::string fullEntityPath = curRawEntity.pkg + curRawEntity.filename;
-        PackagesEntity& curEntity = m_entityMap[fullEntityPath];
+        Impl::PackagesEntity& curEntity = m_state->entityMap[fullEntityPath];
 
         curEntity.isCompressed = curRawEntity.isCompressed;
         curEntity.decompressedLen = curRawEntity.decompressedLen;
@@ -375,16 +353,16 @@ PackagesBin::buildEntityMap(std::vector<RawPackagesEntity>& rawEntities)
 ZSTD_DDict*
 PackagesBin::createZstdDictionary(const void* dictBuffer, size_t dictSize)
 {
-    m_zstdDict = ZSTD_createDDict(dictBuffer, dictSize);
+    m_state->zstdDict = ZSTD_createDDict(dictBuffer, dictSize);
 
-    if (m_zstdDict == nullptr)
+    if (m_state->zstdDict == nullptr)
         throw LotusException("ZSTD create dictionary failed");
 
-    return m_zstdDict;
+    return m_state->zstdDict;
 }
 
 std::string
-PackagesBin::readAttributes(const PackagesEntity& entity)
+PackagesBin::readAttributes(const Impl::PackagesEntity& entity)
 {
     if (!entity.isCompressed)
     {
@@ -394,13 +372,15 @@ PackagesBin::readAttributes(const PackagesEntity& entity)
     {
         std::vector<uint8_t> decompressedData(entity.decompressedLen);
 
+        std::lock_guard<std::mutex> guard(m_state->mutex);
+
         ZSTD_decompress_usingDDict(
-            m_zstdContext,
+            m_state->zstdContext,
             decompressedData.data(),
             entity.decompressedLen,
             entity.attributeData.data(),
             entity.attributeData.size(),
-            m_zstdDict
+            m_state->zstdDict
         );
 
         return std::string((char*)decompressedData.data(), entity.decompressedLen);

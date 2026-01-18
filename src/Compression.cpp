@@ -1,174 +1,172 @@
-#include "Compression.h"
+#include "LotusLib/Compression.h"
 
-using namespace LotusLib;
-
-uint8_t Compression::m_compressedBuffer[0x40000];
+using namespace LotusLib::Impl;
 
 std::vector<uint8_t>
-Compression::decompressWarframePost(const FileEntries::FileNode* entry, std::ifstream& cacheReader)
+Compression::decompressWarframePost(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
 {
-	std::vector<uint8_t> decompressedData(entry->getLen());
-	decompressWarframePost(entry, cacheReader, decompressedData.data());
+	std::vector<uint8_t> decompressedData(entry.len);
+	decompressWarframePost(scratch, entry, cacheReader, decompressedData.data());
 	return decompressedData;
 }
 
 void
-Compression::decompressWarframePost(const FileEntries::FileNode* entry, std::ifstream& cacheReader, uint8_t* outData)
+Compression::decompressWarframePost(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData)
 {
+	if (entry.compLen > static_cast<int32_t>(scratch->buf.size()))
+		scratch->buf.resize(entry.compLen);
+
 	int32_t decompPos = 0;
-	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
+	int32_t compPos = 0;
+	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+	cacheReader.read((char*)scratch->buf.data(), entry.compLen);
 	
-	while (decompPos < entry->getLen())
+	while (decompPos < entry.len)
 	{
-		std::tuple<uint32_t, uint32_t> blockLens = getWarframeBlockLens(cacheReader);
+		std::tuple<uint32_t, uint32_t> blockLens = getWarframeBlockLens(&scratch->buf[compPos]);
+		compPos += 8;
 
 		if (std::get<0>(blockLens) == 0 && std::get<1>(blockLens) == 0)
-			blockLens = { entry->getCompLen(), entry->getLen() };
-
-		if (decompPos + (int32_t)std::get<1>(blockLens) > entry->getLen())
 		{
-			logError("Decompressed past the file length");
+			compPos -= 8;
+			blockLens = { entry.compLen, entry.len };
+		}
+
+		if (decompPos + (int32_t)std::get<1>(blockLens) > entry.len)
+		{
 			throw DecompressionException("Decompressed past the file length");
 		}
 
 		if (std::get<0>(blockLens) > std::min((size_t)getFileLen(cacheReader), (size_t)0x40000))
 		{
-			logError("Tried to read beyond limits, probably not a compressed file");
 			throw DecompressionException("Tried to read beyond limits, probably not a compressed file");
 		}
 
-		bool isOodle = isWarframeOodleBlock(cacheReader);
-		cacheReader.read((char*)m_compressedBuffer, std::get<0>(blockLens));
-
-		if (isOodle)
-			Compression::decompressOodle(m_compressedBuffer, std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
+		if (scratch->buf[compPos] == 0x8C)
+			Compression::decompressOodle(&scratch->buf[compPos], std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
 		else
-			Compression::decompressLz(m_compressedBuffer, std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
+			Compression::decompressLz(&scratch->buf[compPos], std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
 
+		compPos += std::get<0>(blockLens);
 		decompPos += std::get<1>(blockLens);
 	}
 }
 
 std::vector<uint8_t>
-Compression::decompressWarframePre(const FileEntries::FileNode* entry, std::ifstream& cacheReader)
+Compression::decompressWarframePre(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
 {
-	std::vector<uint8_t> data(entry->getLen());
-	decompressWarframePre(entry, cacheReader, data.data());
+	std::vector<uint8_t> data(entry.len);
+	decompressWarframePre(scratch, entry, cacheReader, data.data());
 	return data;
 }
 
 void
-Compression::decompressWarframePre(const FileEntries::FileNode* entry, std::ifstream& cacheReader, uint8_t* outData)
+Compression::decompressWarframePre(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData)
 {
-	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
+	if (entry.compLen > static_cast<int32_t>(scratch->buf.size()))
+		scratch->buf.resize(entry.compLen);
 
-	size_t decompressedBytes = 0;
-	while (decompressedBytes < entry->getLen())
+	int32_t decompPos = 0;
+	int32_t compPos = 0;
+	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+	cacheReader.read((char*)scratch->buf.data(), entry.compLen);
+
+	while (decompPos < entry.len)
 	{
-		static unsigned char lenBuffer[4];
-		cacheReader.read((char*)lenBuffer, 4);
-		int chunkCompressedLen = (lenBuffer[0] << 8) | lenBuffer[1];
-		int chunkLen = (lenBuffer[2] << 8) | lenBuffer[3];
+		std::tuple<uint32_t, uint32_t> blockLens = getEEBlockLensLz(&scratch->buf[compPos]);
+		compPos += 4;
 
-		cacheReader.read((char*)m_compressedBuffer, chunkCompressedLen);
-		Compression::decompressLz(m_compressedBuffer, chunkCompressedLen, outData + decompressedBytes, chunkLen);
-		decompressedBytes += chunkLen;
+		Compression::decompressLz(&scratch->buf[compPos], std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
+
+		compPos += std::get<0>(blockLens);
+		decompPos += std::get<1>(blockLens);
 	}
 }
 
 std::vector<uint8_t>
-Compression::decompressEE(const FileEntries::FileNode* entry, std::ifstream& cacheReader)
+Compression::decompressEE(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
 {
-	std::vector<uint8_t> decompressedData(entry->getLen());
-	decompressEE(entry, cacheReader, decompressedData.data());
+	std::vector<uint8_t> decompressedData(entry.len);
+	decompressEE(scratch, entry, cacheReader, decompressedData.data());
 	return decompressedData;
 }
 
 void
-Compression::decompressEE(const FileEntries::FileNode* entry, std::ifstream& cacheReader, uint8_t* outData)
+Compression::decompressEE(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData)
 {
+	if (entry.compLen > static_cast<int32_t>(scratch->buf.size()))
+		scratch->buf.resize(entry.compLen);
+
 	int32_t decompPos = 0;
-	cacheReader.seekg(entry->getOffset(), std::ios_base::beg);
+	int32_t compPos = 0;
+	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+	cacheReader.read((char*)scratch->buf.data(), entry.compLen);
 	
-	while (decompPos < entry->getLen())
+	while (decompPos < entry.len)
 	{
-		bool isOodleBlock = isEEOodleBlock(cacheReader);
+		bool isOodleBlock = scratch->buf[compPos] > 0x7F;
 
 		// Get block lengths
 		std::tuple<uint32_t, uint32_t> blockLens;
 		if (isOodleBlock)
-			blockLens = getEEBlockLensOodle(cacheReader);
+		{
+			blockLens = getEEBlockLensOodle(&scratch->buf[compPos]);
+			compPos += 8;
+		}
 		else
-			blockLens = getEEBlockLensLz(cacheReader);
+		{
+			blockLens = getEEBlockLensLz(&scratch->buf[compPos]);
+			compPos += 4;
+		}
 		
 		// Sanity checks
 		if (std::get<0>(blockLens) == 0 && std::get<1>(blockLens) == 0)
-			blockLens = { entry->getCompLen(), entry->getLen() };
+			blockLens = { entry.compLen, entry.len };
 
-		if (decompPos + (int32_t)std::get<1>(blockLens) > entry->getLen())
+		if (decompPos + (int32_t)std::get<1>(blockLens) > entry.len)
 		{
-			logError("Decompressed past the file length");
 			throw DecompressionException("Decompressed past the file length");
 		}
 
 		if (std::get<0>(blockLens) > std::min((size_t)getFileLen(cacheReader), (size_t)0x40000))
 		{
-			logError("Tried to read beyond limits, probably not a compressed file");
 			throw DecompressionException("Tried to read beyond limits, probably not a compressed file");
 		}
 
 		// Decompress
-		cacheReader.read((char*)m_compressedBuffer, std::get<0>(blockLens));
-
 		if (isOodleBlock)
-			Compression::decompressOodle(m_compressedBuffer, std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
+			Compression::decompressOodle(&scratch->buf[compPos], std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
 		else
-			Compression::decompressLz(m_compressedBuffer, std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
+			Compression::decompressLz(&scratch->buf[compPos], std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
 
+		compPos += std::get<0>(blockLens);
 		decompPos += std::get<1>(blockLens);
 	}
 }
 
-bool
-Compression::isWarframeOodleBlock(std::ifstream& cacheReader)
-{
-	unsigned char checkMagic;
-	cacheReader.read(reinterpret_cast<char*>(&checkMagic), 1);
-	cacheReader.seekg(-1, std::ios_base::cur);
-	if (checkMagic == 0x8C)
-	{
-		return true;
-	}
-	return false;
-}
-
-bool
-Compression::isEEOodleBlock(std::ifstream& cacheReader)
-{
-	unsigned char checkFirstNum;
-	cacheReader.read(reinterpret_cast<char*>(&checkFirstNum), 1);
-	cacheReader.seekg(-1, std::ios_base::cur);
-
-	if (checkFirstNum > 0x7F)
-		return true;
-	return false;
-}
-
 std::tuple<uint32_t, uint32_t>
-Compression::getWarframeBlockLens(std::ifstream& cacheReader)
+Compression::getWarframeBlockLens(uint8_t* data)
 {
-	static unsigned char blockInfo[8];
-	cacheReader.read(reinterpret_cast<char*>(&blockInfo), 8);
-
-	if (blockInfo[0] != 0x80 || (blockInfo[7] & 0x0F) != 0x1)
+	if (data[0] != 0x80 || (data[7] & 0x0F) != 0x1)
 	{
-		cacheReader.seekg(-8, std::ios_base::cur);
 		return { 0, 0 };
 	}
 
 	// Read 2 `uint32_t`s as big endian
-	uint32_t num1 = (blockInfo[0] << 24) | (blockInfo[1] << 16) | (blockInfo[2] << 8) | blockInfo[3];
-	uint32_t num2 = (blockInfo[4] << 24) | (blockInfo[5] << 16) | (blockInfo[6] << 8) | blockInfo[7];
+	uint32_t num1 = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+	uint32_t num2 = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
+	uint32_t blockComLen = (num1 >> 2) & 0xFFFFFF;
+	uint32_t blockDecomLen = (num2 >> 5) & 0xFFFFFF;
+
+	return { blockComLen, blockDecomLen };
+}
+
+std::tuple<uint32_t, uint32_t>
+Compression::getEEBlockLensOodle(uint8_t* data)
+{
+	// Read 2 `uint32_t`s as big endian
+	uint32_t num1 = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+	uint32_t num2 = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
 	uint32_t blockComLen = (num1 >> 2) & 0xFFFFFF;
 	uint32_t blockDecomLen = (num2 >> 5) & 0xFFFFFF;
 
@@ -176,31 +174,13 @@ Compression::getWarframeBlockLens(std::ifstream& cacheReader)
 }
 
 std::tuple<uint16_t, uint16_t>
-Compression::getEEBlockLensLz(std::ifstream& cacheReader)
+Compression::getEEBlockLensLz(uint8_t* data)
 {
-	static unsigned char blockInfo[4];
-	cacheReader.read(reinterpret_cast<char*>(&blockInfo), 4);
-
 	// Read 2 `uint16_t`s as big endian
-	uint16_t num1 = (blockInfo[0] << 8) | blockInfo[1];
-	uint16_t num2 = (blockInfo[2] << 8) | blockInfo[3];
+	uint16_t num1 = (data[0] << 8) | data[1];
+	uint16_t num2 = (data[2] << 8) | data[3];
 
 	return { num1, num2 };
-}
-
-std::tuple<uint32_t, uint32_t>
-Compression::getEEBlockLensOodle(std::ifstream& cacheReader)
-{
-	static unsigned char blockInfo[8];
-	cacheReader.read(reinterpret_cast<char*>(&blockInfo), 8);
-
-	// Read 2 `uint32_t`s as big endian
-	uint32_t num1 = (blockInfo[0] << 24) | (blockInfo[1] << 16) | (blockInfo[2] << 8) | blockInfo[3];
-	uint32_t num2 = (blockInfo[4] << 24) | (blockInfo[5] << 16) | (blockInfo[6] << 8) | blockInfo[7];
-	uint32_t blockComLen = (num1 >> 2) & 0xFFFFFF;
-	uint32_t blockDecomLen = (num2 >> 5) & 0xFFFFFF;
-
-	return { blockComLen, blockDecomLen };
 }
 
 std::streampos
