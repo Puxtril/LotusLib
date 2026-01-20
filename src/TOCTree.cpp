@@ -129,7 +129,7 @@ TOCTree::getFileNode(const std::string& internalPath) const
 	if (internalPath[0] == '/')
 		curEnd = curStart = 1;
 
-	while (true)
+	while (dirPos != nullptr)
 	{
 		curEnd = internalPath.find('/', curStart);
 		if (curEnd == std::string::npos)
@@ -162,7 +162,7 @@ TOCTree::getDirNode(const std::string& internalPath) const
 	if (internalPath[0] == '/')
 		curEnd = curStart = 1;
 
-	while (true)
+	while (dirPos != nullptr)
 	{
 		curEnd = internalPath.find('/', curStart);
 		nextDirPos = findChildDir(dirPos, internalPath, curStart, curEnd - curStart);
