@@ -128,10 +128,9 @@ int main()
 
     LotusLib::Package miscPkg = pkgCollection.getPackage("Misc");
     std::vector<uint8_t> pkgsBinData = miscPkg.getFile(LotusLib::PkgSplitType::HEADER, "/Packages.bin");
-    BinaryReader::BinaryReaderBuffered pkgsBinReader(std::move(pkgsBinData));
 
     LotusLib::PackagesBin pkgsBin;
-    pkgsBin.initilize(pkgsBinReader);
+    pkgsBin.initilize(pkgsBinData);
     for (const auto& item : pkgsBin)
     {
         std::cout << "Entry path: " << item.first << std::endl;

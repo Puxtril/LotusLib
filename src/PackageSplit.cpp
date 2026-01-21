@@ -207,7 +207,7 @@ PackageSplit::readCommonHeader(const FileNode& entry)
 
 	decompress(entry, m_commonheaderScratch->buf.data());
 
-	auto reader = BinaryReader::BinaryReaderSlice(m_commonheaderScratch->buf.data(), entry.len);
+	auto reader = BinaryReader::BufferedSlice(m_commonheaderScratch->buf.data(), entry.len);
 	return commonHeaderRead(reader, m_game);
 }
 
@@ -226,7 +226,7 @@ PackageSplit::readCommonHeaderFormat(const FileNode& entry)
 
 	decompress(entry, m_commonheaderScratch->buf.data());
 
-	auto reader = BinaryReader::BinaryReaderSlice(m_commonheaderScratch->buf.data(), entry.len);
+	auto reader = BinaryReader::BufferedSlice(m_commonheaderScratch->buf.data(), entry.len);
 	return commonHeaderReadFormat(reader, m_game);
 }
 

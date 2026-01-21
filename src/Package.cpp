@@ -88,20 +88,20 @@ Package::getFileEntry(const FileNode& entry)
     FileEntry ret;
 
     std::vector<uint8_t> headerData = getFile(PkgSplitType::HEADER, entry);
-    ret.header = BinaryReader::BinaryReaderBuffered(std::move(headerData));
+    ret.header = BinaryReader::Buffered(std::move(headerData));
     ret.commonHeader = commonHeaderRead(ret.header, m_game);
 
     try
     {
         std::vector<uint8_t> bodyData = getFile(PkgSplitType::BODY, getFileNode(PkgSplitType::BODY, entry));
-        ret.body = BinaryReader::BinaryReaderBuffered(std::move(bodyData));
+        ret.body = BinaryReader::Buffered(std::move(bodyData));
     }
     catch (InternalEntryNotFound&) { }
 
     try
     {
         std::vector<uint8_t> footerData = getFile(PkgSplitType::FOOTER, getFileNode(PkgSplitType::FOOTER, entry));
-        ret.footer = BinaryReader::BinaryReaderBuffered(std::move(footerData));
+        ret.footer = BinaryReader::Buffered(std::move(footerData));
     }
     catch (InternalEntryNotFound&) { }
 

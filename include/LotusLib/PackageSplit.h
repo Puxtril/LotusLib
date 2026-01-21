@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BinaryReaderSlice.h"
+#include "BinaryReader/BufferedSlice.h"
 #include "LotusLib/CommonHeader.h"
 #include "LotusLib/Compression.h"
 #include "LotusLib/Enums.h"

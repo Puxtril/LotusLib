@@ -16,6 +16,11 @@ Impl::PackagesBinState::~PackagesBinState()
     }
 }
 
+PackagesBin::PackagesBin()
+    : m_state(std::make_shared<Impl::PackagesBinState>())
+{
+}
+
 bool
 PackagesBin::isInitilized()
 {
@@ -29,13 +34,14 @@ PackagesBin::isInitSuccess()
 }
 
 void
-PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
+PackagesBin::initilize(const std::vector<uint8_t>& data)
 {
     if (isInitilized())
         return;
 
     std::lock_guard<std::mutex> guard(m_state->mutex);
 
+    BinaryReader::BufferedSlice reader(data.data(), data.size());
     m_state->zstdContext = ZSTD_createDCtx();
     ZSTD_DCtx_setParameter(m_state->zstdContext, ZSTD_d_experimentalParam1, 1);
 
@@ -44,7 +50,7 @@ PackagesBin::initilize(BinaryReader::BinaryReaderBuffered& reader)
         std::vector<Impl::RawPackagesEntity> rawEntities = readFile(reader);
         buildEntityMap(rawEntities);
     }
-    catch (LimitException& ex)
+    catch (BinaryReader::LimitException& ex)
     {
         logError("Packages.bin read error: " + std::string(ex.what()));
         m_state->errorReading = true;
@@ -128,7 +134,7 @@ PackagesBin::end() const
 }
 
 std::vector<Impl::RawPackagesEntity>
-PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
+PackagesBin::readFile(BinaryReader::BufferedSlice& reader)
 {
     reader.seek(16, std::ios::beg);
     reader.readUInt32(20, 20, "Packages.bin header size");
@@ -142,7 +148,7 @@ PackagesBin::readFile(BinaryReader::BinaryReaderBuffered& reader)
 }
 
 std::vector<Impl::RawPackagesEntity>
-PackagesBin::readFile1(BinaryReader::BinaryReaderBuffered& reader)
+PackagesBin::readFile1(BinaryReader::BufferedSlice& reader)
 {
     reader.seek(16, std::ios::beg);
     reader.readUInt32(20, 20, "Packages.bin header size");
@@ -167,13 +173,13 @@ PackagesBin::readFile1(BinaryReader::BinaryReaderBuffered& reader)
     reader.readUInt32(0, 0, "Packages.bin Package count");
 
     uint32_t comFlagsBufLen = reader.readUInt32();
-    BinaryReader::BinaryReaderSlice comFlagsBuf = reader.slice(comFlagsBufLen);
+    BinaryReader::BufferedSlice comFlagsBuf = reader.getSlice(comFlagsBufLen);
 
     uint32_t comSizeBufferLen = reader.readUInt32();
-    BinaryReader::BinaryReaderSlice comSizeBuffer = reader.slice(comSizeBufferLen);
+    BinaryReader::BufferedSlice comSizeBuffer = reader.getSlice(comSizeBufferLen);
 
     uint32_t comZBufferLen = reader.readUInt32();
-    BinaryReader::BinaryReaderSlice comZBuffer = reader.slice(comZBufferLen);
+    BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
 
     uint32_t dictSize = comSizeBuffer.readUInt32();
     
@@ -216,7 +222,7 @@ PackagesBin::readFile1(BinaryReader::BinaryReaderBuffered& reader)
         if (hasText > 0)
         {
             uint64_t size = comSizeBuffer.readULEB(32);
-            BinaryReader::BinaryReaderSlice frameData = comZBuffer.slice(size);
+            BinaryReader::BufferedSlice frameData = comZBuffer.getSlice(size);
 
             curEntity.isCompressed = (flagBufferCurrentByte >> flagBufferCurrentBit++ & 1) > 0;
             if (flagBufferCurrentBit > 7)
@@ -240,7 +246,7 @@ PackagesBin::readFile1(BinaryReader::BinaryReaderBuffered& reader)
 }
 
 std::vector<Impl::RawPackagesEntity>
-PackagesBin::readFile2(BinaryReader::BinaryReaderBuffered& reader)
+PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
 {
     findValueOffsetInRange(reader, 45, 60, 500, "ReferenceCount");
     uint32_t referenceCount = reader.readUInt32(0, 1000, "Packages.bin Reference count");
@@ -252,15 +258,15 @@ PackagesBin::readFile2(BinaryReader::BinaryReaderBuffered& reader)
 
     findValueOffsetInRange(reader, 75000, 90000, 1000, "ComFlagsBufLen");
     uint32_t comFlagsBufLen = reader.readUInt32();
-    BinaryReader::BinaryReaderSlice comFlagsBuf = reader.slice(comFlagsBufLen);
+    BinaryReader::BufferedSlice comFlagsBuf = reader.getSlice(comFlagsBufLen);
 
     findValueOffsetInRange(reader, 210000, 240000, 1000, "ComSizeBufferLen");
     uint32_t comSizeBufferLen = reader.readUInt32();
-    BinaryReader::BinaryReaderSlice comSizeBuffer = reader.slice(comSizeBufferLen);
+    BinaryReader::BufferedSlice comSizeBuffer = reader.getSlice(comSizeBufferLen);
 
     findValueOffsetInRange(reader, 18000000, 21000000, 1000, "ComZBufferLen");
     uint32_t comZBufferLen = reader.readUInt32();
-    BinaryReader::BinaryReaderSlice comZBuffer = reader.slice(comZBufferLen);
+    BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
 
     // Begin reading Zstd data
     uint32_t dictSize = comSizeBuffer.readUInt32();
@@ -306,7 +312,7 @@ PackagesBin::readFile2(BinaryReader::BinaryReaderBuffered& reader)
         if (hasText > 0)
         {
             uint64_t size = comSizeBuffer.readULEB(32);
-            BinaryReader::BinaryReaderSlice frameData = comZBuffer.slice(size);
+            BinaryReader::BufferedSlice frameData = comZBuffer.getSlice(size);
 
             curEntity.isCompressed = (flagBufferCurrentByte >> flagBufferCurrentBit++ & 1) > 0;
             if (flagBufferCurrentBit > 7)
@@ -388,7 +394,7 @@ PackagesBin::readAttributes(const Impl::PackagesEntity& entity)
 }
 
 void
-PackagesBin::findValueOffsetInRange(BinaryReader::BinaryReaderBuffered& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg)
+PackagesBin::findValueOffsetInRange(BinaryReader::BufferedSlice& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg)
 {
     size_t start = reader.tell();
     maxBytesSearch = std::min(reader.getLength() - start, maxBytesSearch);

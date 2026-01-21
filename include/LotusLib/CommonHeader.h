@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BinaryReader.h"
+#include "BinaryReader/BinaryReader.h"
 #include "LotusLib/Enums.h"
 #include "LotusLib/Exceptions.h"
 #include "LotusLib/Utils.h"

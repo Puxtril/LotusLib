@@ -1,7 +1,6 @@
 #pragma once
 
-#include "BinaryReaderBuffered.h"
-#include "BinaryReaderSlice.h"
+#include "BinaryReader/BufferedSlice.h"
 #include "LotusLib/EENotationParser.h"
 #include "LotusLib/Exceptions.h"
 #include "LotusLib/Logger.h"
@@ -56,9 +55,11 @@ namespace LotusLib
         std::shared_ptr<Impl::PackagesBinState> m_state;
 
     public:
+        PackagesBin();
+
         bool isInitilized();
         bool isInitSuccess();
-        void initilize(BinaryReader::BinaryReaderBuffered& reader);
+        void initilize(const std::vector<uint8_t>& data);
         bool hasParameters(const std::string& filePath);
         int getVersion();
         std::string getParameters(const std::string& filePath);
@@ -68,11 +69,11 @@ namespace LotusLib
         std::map<std::string, Impl::PackagesEntity>::const_iterator end() const;
 
     private:
-        std::vector<Impl::RawPackagesEntity> readFile(BinaryReader::BinaryReaderBuffered& reader);
+        std::vector<Impl::RawPackagesEntity> readFile(BinaryReader::BufferedSlice& reader);
         // Versions: ?? - 44
-        std::vector<Impl::RawPackagesEntity> readFile1(BinaryReader::BinaryReaderBuffered& reader);
+        std::vector<Impl::RawPackagesEntity> readFile1(BinaryReader::BufferedSlice& reader);
         // Versions: 45+
-        std::vector<Impl::RawPackagesEntity> readFile2(BinaryReader::BinaryReaderBuffered& reader);
+        std::vector<Impl::RawPackagesEntity> readFile2(BinaryReader::BufferedSlice& reader);
 
         void buildEntityMap(std::vector<Impl::RawPackagesEntity>& rawEntities);
 
@@ -81,6 +82,6 @@ namespace LotusLib
 
         std::string readAttributes(const Impl::PackagesEntity& entity);
 
-        void findValueOffsetInRange(BinaryReader::BinaryReaderBuffered& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg);
+        void findValueOffsetInRange(BinaryReader::BufferedSlice& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg);
     };
 };

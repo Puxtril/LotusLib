@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BinaryReaderBuffered.h"
+#include "BinaryReader/Buffered.h"
 #include "LotusLib/CommonHeader.h"
 #include "LotusLib/Enums.h"
 #include "LotusLib/PackageSplit.h"
@@ -17,9 +17,9 @@ namespace LotusLib
 	struct FileEntry
 	{
 		CommonHeader commonHeader;
-		BinaryReader::BinaryReaderBuffered header;
-		BinaryReader::BinaryReaderBuffered body;
-		BinaryReader::BinaryReaderBuffered footer;
+		BinaryReader::Buffered header;
+		BinaryReader::Buffered body;
+		BinaryReader::Buffered footer;
 	};
 
 	class Package
