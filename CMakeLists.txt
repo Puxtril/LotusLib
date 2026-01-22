@@ -87,14 +87,3 @@ target_link_libraries(LotusLib lzf)
 # spdlog - Logging 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/spdlog")
 target_link_libraries(LotusLib spdlog)
-
-add_executable(LotusLibTest "src/test.cpp")
-
-if(WIN32)
-	find_library(OODLE_CORE NAMES oo2core_win64 PATHS ${CMAKE_CURRENT_SOURCE_DIR}/bin/Win64)	
-elseif(UNIX AND CMAKE_BUILD_TYPE STREQUAL "Release")
-	find_library(OODLE_CORE NAMES oo2corelinux64 PATHS ${CMAKE_CURRENT_SOURCE_DIR}/bin/Linux)
-elseif(UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
-	find_library(OODLE_CORE NAMES oo2corelinux64_debug PATHS ${CMAKE_CURRENT_SOURCE_DIR}/bin/Linux)
-endif()
-target_link_libraries(LotusLibTest LotusLib spdlog libzstd_static lzf ${OODLE_CORE}) #lz4_static
