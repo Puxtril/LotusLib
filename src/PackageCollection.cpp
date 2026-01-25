@@ -32,6 +32,14 @@ PackageCollection::end() const
     return m_pkgs.end();
 }
 
+bool
+PackageCollection::hasPackage(const std::string& pkgName) const
+{
+    if (m_pkgMap.count(pkgName) == 0)
+        return false;
+    return true;
+}
+
 Package
 PackageCollection::getPackage(const std::string& pkgName) const
 {

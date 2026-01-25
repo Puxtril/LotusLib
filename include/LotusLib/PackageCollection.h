@@ -24,6 +24,7 @@ namespace LotusLib
 		std::vector<Package>::const_iterator begin() const;
 		std::vector<Package>::const_iterator end() const;
 
+		bool hasPackage(const std::string& pkgName) const;
 		Package getPackage(const std::string& pkgName) const;
 
 		const std::filesystem::path& getPath() const;
