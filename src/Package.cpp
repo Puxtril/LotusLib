@@ -77,13 +77,13 @@ Package::getPkgCategory() const
 }
 
 FileEntry
-Package::getFileEntry(const std::string& internalPath)
+Package::getFileEntry(const std::string& internalPath) const
 {
     return getFileEntry(m_pkgs[(int)PkgSplitType::HEADER]->getFileNode(internalPath));
 }
 
 FileEntry
-Package::getFileEntry(const FileNode& entry)
+Package::getFileEntry(const FileNode& entry) const
 {
     FileEntry ret;
 

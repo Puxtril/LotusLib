@@ -48,8 +48,8 @@ namespace LotusLib
 		PackageCategory getPkgCategory() const;
 
 		// FileNode MUST be from HEADER PkgSplit
-		FileEntry getFileEntry(const std::string& internalPath);
-		FileEntry getFileEntry(const FileNode& entry);
+		FileEntry getFileEntry(const std::string& internalPath) const;
+		FileEntry getFileEntry(const FileNode& entry) const;
 
 		bool fileExists(PkgSplitType split, const std::string& internalPath) const;
 		bool dirExists(PkgSplitType split, const std::string& internalPath) const;
