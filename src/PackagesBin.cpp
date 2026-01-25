@@ -21,18 +21,6 @@ PackagesBin::PackagesBin()
 {
 }
 
-bool
-PackagesBin::isInitilized()
-{
-    return m_state->isInitilized;
-}
-
-bool
-PackagesBin::isInitSuccess()
-{
-    return !m_state->errorReading;
-}
-
 void
 PackagesBin::initilize(const std::vector<uint8_t>& data)
 {
@@ -65,14 +53,26 @@ PackagesBin::initilize(const std::vector<uint8_t>& data)
 }
 
 bool
-PackagesBin::hasParameters(const std::string& filePath)
+PackagesBin::isInitilized() const
+{
+    return m_state->isInitilized;
+}
+
+bool
+PackagesBin::isInitSuccess() const
+{
+    return !m_state->errorReading;
+}
+
+bool
+PackagesBin::hasParameters(const std::string& filePath) const
 {
     Impl::PackagesEntity& entity = m_state->entityMap[filePath];
     return entity.attributeData.size() > 0;
 }
 
 std::string
-PackagesBin::getParameters(const std::string& filePath)
+PackagesBin::getParameters(const std::string& filePath) const
 {
     try
     {
@@ -86,7 +86,7 @@ PackagesBin::getParameters(const std::string& filePath)
 }
 
 nlohmann::json
-PackagesBin::getParametersJson(const std::string& filePath)
+PackagesBin::getParametersJson(const std::string& filePath) const
 {
     try
     {
@@ -101,13 +101,13 @@ PackagesBin::getParametersJson(const std::string& filePath)
 }
 
 int
-PackagesBin::getVersion()
+PackagesBin::getVersion() const
 {
     return m_state->version;
 }
 
 const std::string&
-PackagesBin::getParent(const std::string& filePath)
+PackagesBin::getParent(const std::string& filePath) const
 {
     try
     {
@@ -368,7 +368,7 @@ PackagesBin::createZstdDictionary(const void* dictBuffer, size_t dictSize)
 }
 
 std::string
-PackagesBin::readAttributes(const Impl::PackagesEntity& entity)
+PackagesBin::readAttributes(const Impl::PackagesEntity& entity) const
 {
     if (!entity.isCompressed)
     {
@@ -394,7 +394,7 @@ PackagesBin::readAttributes(const Impl::PackagesEntity& entity)
 }
 
 void
-PackagesBin::findValueOffsetInRange(BinaryReader::BufferedSlice& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg)
+PackagesBin::findValueOffsetInRange(BinaryReader::BufferedSlice& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg) const
 {
     size_t start = reader.tell();
     maxBytesSearch = std::min(reader.getLength() - start, maxBytesSearch);

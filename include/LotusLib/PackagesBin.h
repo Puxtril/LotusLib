@@ -57,14 +57,15 @@ namespace LotusLib
     public:
         PackagesBin();
 
-        bool isInitilized();
-        bool isInitSuccess();
         void initilize(const std::vector<uint8_t>& data);
-        bool hasParameters(const std::string& filePath);
-        int getVersion();
-        std::string getParameters(const std::string& filePath);
-        nlohmann::json getParametersJson(const std::string& filePath);
-        const std::string& getParent(const std::string& filePath);
+
+        bool isInitilized() const;
+        bool isInitSuccess() const;
+        bool hasParameters(const std::string& filePath) const;
+        int getVersion() const;
+        std::string getParameters(const std::string& filePath) const;
+        nlohmann::json getParametersJson(const std::string& filePath) const;
+        const std::string& getParent(const std::string& filePath) const;
         std::map<std::string, Impl::PackagesEntity>::const_iterator begin() const;
         std::map<std::string, Impl::PackagesEntity>::const_iterator end() const;
 
@@ -80,8 +81,8 @@ namespace LotusLib
         // Sets m_zstdDict and returns
         ZSTD_DDict* createZstdDictionary(const void* dictBuffer, size_t dictSize);
 
-        std::string readAttributes(const Impl::PackagesEntity& entity);
+        std::string readAttributes(const Impl::PackagesEntity& entity) const;
 
-        void findValueOffsetInRange(BinaryReader::BufferedSlice& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg);
+        void findValueOffsetInRange(BinaryReader::BufferedSlice& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg) const;
     };
 };
