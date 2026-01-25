@@ -193,7 +193,7 @@ PackageSplit::getFile(const FileNode& entry) const
 }
 
 CommonHeader
-PackageSplit::readCommonHeader(const FileNode& entry)
+PackageSplit::readCommonHeader(const FileNode& entry) const
 {
 	if (m_pkgSplit != PkgSplitType::HEADER)
 		throw LotusException("Can only read CommonHeader inside H");
@@ -212,7 +212,7 @@ PackageSplit::readCommonHeader(const FileNode& entry)
 }
 
 uint32_t
-PackageSplit::readCommonHeaderFormat(const FileNode& entry)
+PackageSplit::readCommonHeaderFormat(const FileNode& entry) const
 {
 	if (m_pkgSplit != PkgSplitType::HEADER)
 		throw LotusException("Can only read CommonHeader inside H");

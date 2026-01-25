@@ -269,13 +269,13 @@ Package::getFileUncompressed(PkgSplitType split, const FileNode& entry) const
 }
 
 CommonHeader
-Package::readCommonHeader(const FileNode& entry)
+Package::readCommonHeader(const FileNode& entry) const
 {
 	return m_pkgs[(int)PkgSplitType::HEADER]->readCommonHeader(entry);
 }
 
 uint32_t
-Package::readCommonHeaderFormat(const FileNode& entry)
+Package::readCommonHeaderFormat(const FileNode& entry) const
 {
 	return m_pkgs[(int)PkgSplitType::HEADER]->readCommonHeaderFormat(entry);
 }

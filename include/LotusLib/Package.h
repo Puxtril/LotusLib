@@ -75,8 +75,8 @@ namespace LotusLib
 		std::vector<uint8_t> getFile(PkgSplitType split, const FileNode& fileNode) const;
 
 		// Only accepts FileNode structs from HEADER PkgSplit
-		CommonHeader readCommonHeader(const FileNode& entry);
-		uint32_t readCommonHeaderFormat(const FileNode& entry);
+		CommonHeader readCommonHeader(const FileNode& entry) const;
+		uint32_t readCommonHeaderFormat(const FileNode& entry) const;
 		
 	private:
 		void loadPkgSplits();

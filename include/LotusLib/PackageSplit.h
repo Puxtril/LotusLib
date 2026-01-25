@@ -83,8 +83,8 @@ namespace LotusLib
 		std::vector<uint8_t> getFile(const FileNode& entry) const;
 
 		// Can only be called inside the HEADER PkgSplit
-		CommonHeader readCommonHeader(const FileNode& entry);
-		uint32_t readCommonHeaderFormat(const FileNode& entry);
+		CommonHeader readCommonHeader(const FileNode& entry) const;
+		uint32_t readCommonHeaderFormat(const FileNode& entry) const;
 
 	private:
 		void decompress(const FileNode& entry, uint8_t* outData) const;
