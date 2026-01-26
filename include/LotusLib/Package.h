@@ -17,6 +17,7 @@ namespace LotusLib
 	struct FileEntry
 	{
 		CommonHeader commonHeader;
+		FileNode headerNode;
 		BinaryReader::Buffered header;
 		BinaryReader::Buffered body;
 		BinaryReader::Buffered footer;
