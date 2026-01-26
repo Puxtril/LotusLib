@@ -17,6 +17,8 @@ namespace LotusLib
 
     std::string getFullPath(const FileNode& fileNode);
     std::string getFullPath(const DirNode& dirNode);
+    const DirNode* getChildDir(const DirNode& dirNode, const std::string& dirName);
+    const FileNode* getChildFile(const DirNode& dirNode, const std::string& fileName);
 
     std::string gameToString(Game game);
     std::string packageCategoryToString(PackageCategory pkgCategory);

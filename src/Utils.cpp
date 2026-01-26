@@ -72,6 +72,28 @@ LotusLib::getFullPath(const DirNode& dirNode)
     return pathStr.str();
 }
 
+const DirNode*
+LotusLib::getChildDir(const DirNode& dirNode, const std::string& dirName)
+{
+    for (DirNode* curNode : dirNode.childDirs)
+	{
+		if (dirNode.name.compare(curNode->name) == 0)
+			return curNode;
+	}
+	return nullptr;
+}
+
+const FileNode*
+LotusLib::getChildFile(const DirNode& dirNode, const std::string& fileName)
+{
+    for (FileNode* curNode : dirNode.childFiles)
+	{
+		if (dirNode.name.compare(curNode->name) == 0)
+			return curNode;
+	}
+	return nullptr;
+}
+
 std::string
 LotusLib::gameToString(Game game)
 {
