@@ -1,4 +1,5 @@
 #include "LotusLib/Package.h"
+#include "LotusLib/Enums.h"
 
 using namespace LotusLib;
 
@@ -117,19 +118,35 @@ Package::fileExists(PkgSplitType split, const std::string& internalPath) const
 }
 
 bool
-Package::dirExists(PkgSplitType split, const std::string& internalPath) const
-{
-    if (!m_pkgs[(int)split])
-        throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->dirExists(internalPath);
-}
-
-bool
 Package::fileExists(PkgSplitType split, const FileNode& fileNode) const
 {
     if (!m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
     return m_pkgs[(int)split]->fileExists(fileNode);
+}
+
+bool
+Package::fileExists(const std::string& internalPath) const
+{
+    if (!m_pkgs[(int)PkgSplitType::HEADER])
+        throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(PkgSplitType::HEADER));
+    return m_pkgs[(int)PkgSplitType::HEADER]->fileExists(internalPath);
+}
+
+bool
+Package::fileExists(const FileNode& fileNode) const
+{
+    if (!m_pkgs[(int)PkgSplitType::HEADER])
+        throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(PkgSplitType::HEADER));
+    return m_pkgs[(int)PkgSplitType::HEADER]->fileExists(fileNode);
+}
+
+bool
+Package::dirExists(PkgSplitType split, const std::string& internalPath) const
+{
+    if (!m_pkgs[(int)split])
+        throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
+    return m_pkgs[(int)split]->dirExists(internalPath);
 }
 
 bool
@@ -140,6 +157,21 @@ Package::dirExists(PkgSplitType split, const DirNode& dirNode) const
     return m_pkgs[(int)split]->dirExists(dirNode);
 }
 
+bool
+Package::dirExists(const std::string& internalPath) const
+{
+    if (!m_pkgs[(int)PkgSplitType::HEADER])
+        throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(PkgSplitType::HEADER));
+    return m_pkgs[(int)PkgSplitType::HEADER]->dirExists(internalPath);
+}
+
+bool
+Package::dirExists(const DirNode& dirNode) const
+{
+    if (!m_pkgs[(int)PkgSplitType::HEADER])
+        throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(PkgSplitType::HEADER));
+    return m_pkgs[(int)PkgSplitType::HEADER]->dirExists(dirNode);
+}
 
 const FileNode&
 Package::getFileNode(PkgSplitType split, const FileNode& fileNode) const

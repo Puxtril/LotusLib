@@ -52,9 +52,13 @@ namespace LotusLib
 		FileEntry getFileEntry(const FileNode& entry) const;
 
 		bool fileExists(PkgSplitType split, const std::string& internalPath) const;
-		bool dirExists(PkgSplitType split, const std::string& internalPath) const;
 		bool fileExists(PkgSplitType split, const FileNode& fileNode) const;
+		bool fileExists(const std::string& internalPath) const;
+		bool fileExists(const FileNode& fileNode) const;
+		bool dirExists(PkgSplitType split, const std::string& internalPath) const;
 		bool dirExists(PkgSplitType split, const DirNode& dirNode) const;
+		bool dirExists(const std::string& internalPath) const;
+		bool dirExists(const DirNode& dirNode) const;
 
 		const FileNode& getFileNode(PkgSplitType split, const FileNode& fileNode) const;
 		const DirNode& getDirNode(PkgSplitType split, const DirNode& dirNode) const;
