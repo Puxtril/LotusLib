@@ -77,7 +77,7 @@ LotusLib::getChildDir(const DirNode& dirNode, const std::string& dirName)
 {
     for (DirNode* curNode : dirNode.childDirs)
 	{
-		if (dirNode.name.compare(curNode->name) == 0)
+		if (dirName.compare(curNode->name) == 0)
 			return curNode;
 	}
 	return nullptr;
@@ -88,7 +88,7 @@ LotusLib::getChildFile(const DirNode& dirNode, const std::string& fileName)
 {
     for (FileNode* curNode : dirNode.childFiles)
 	{
-		if (dirNode.name.compare(curNode->name) == 0)
+		if (fileName.compare(curNode->name) == 0)
 			return curNode;
 	}
 	return nullptr;
