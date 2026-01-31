@@ -54,7 +54,7 @@ LotusLib::getFullPath(const DirNode& dirNode)
 {
     std::stack<const DirNode*> pathQueue;
     std::stringstream pathStr;
-    const DirNode* ptr = dirNode.parentNode;
+    const DirNode* ptr = &dirNode;
 
     while (ptr->parentNode != nullptr)
     {
@@ -68,7 +68,6 @@ LotusLib::getFullPath(const DirNode& dirNode)
         pathQueue.pop();
     }
 
-    pathStr << '/' << dirNode.name;
     return pathStr.str();
 }
 
