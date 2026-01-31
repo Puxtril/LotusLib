@@ -194,7 +194,7 @@ TOCTree::getFileNode(const FileNode& fileNode) const
     {
         ptr = findChildDir(ptr, pathStack.top()->name);
         if (ptr == nullptr)
-            throw InternalDirectoryNotFound(ptr->name + " does not contain directory " + pathStack.top()->name);
+            throw InternalDirectoryNotFound("Cannot find directory " + pathStack.top()->name);
         pathStack.pop();
     }
 
@@ -222,7 +222,7 @@ TOCTree::getDirNode(const DirNode& dirNode) const
     {
         ptr = findChildDir(ptr, pathStack.top()->name);
         if (ptr == nullptr)
-            throw InternalDirectoryNotFound(ptr->name + " does not contain directory " + pathStack.top()->name);
+            throw InternalDirectoryNotFound("Cannot find directory " + pathStack.top()->name);
         pathStack.pop();
     }
 
