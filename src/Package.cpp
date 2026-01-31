@@ -90,7 +90,16 @@ Package::getFileEntry(const FileNode& entry) const
     ret.headerNode = entry;
     std::vector<uint8_t> headerData = getFile(PkgSplitType::HEADER, entry);
     ret.header = BinaryReader::Buffered(std::move(headerData));
-    ret.commonHeader = commonHeaderRead(ret.header, m_game);
+
+    try
+    {
+        ret.commonHeader = commonHeaderRead(ret.header, m_game);
+    }
+    catch (CommonHeaderError&)
+    {
+        ret.commonHeader = CommonHeader();
+        ret.header.seek(0, std::ios::beg);
+    }
 
     try
     {
