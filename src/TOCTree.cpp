@@ -189,6 +189,7 @@ TOCTree::getFileNode(const FileNode& fileNode) const
         ptr = ptr->parentNode;
     }
 
+    ptr = m_rootNode;
     while (!pathStack.empty())
     {
         ptr = findChildDir(ptr, pathStack.top()->name);
@@ -216,6 +217,7 @@ TOCTree::getDirNode(const DirNode& dirNode) const
         ptr = ptr->parentNode;
     }
 
+    ptr = m_rootNode;
     while (!pathStack.empty())
     {
         ptr = findChildDir(ptr, pathStack.top()->name);

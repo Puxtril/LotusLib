@@ -78,36 +78,42 @@ PackageSplit::getIter() const
 bool
 PackageSplit::fileExists(const std::string& internalPath) const
 {
+	m_state->tocTree.initialize();
 	return m_state->tocTree.fileExists(internalPath);
 }
 
 bool
 PackageSplit::dirExists(const std::string& internalPath) const
 {
+	m_state->tocTree.initialize();
 	return m_state->tocTree.dirExists(internalPath);
 }
 
 bool
 PackageSplit::fileExists(const FileNode& fileNode) const
 {
+	m_state->tocTree.initialize();
 	return m_state->tocTree.fileExists(fileNode);
 }
 
 bool
 PackageSplit::dirExists(const DirNode& dirNode) const
 {
+	m_state->tocTree.initialize();
 	return m_state->tocTree.dirExists(dirNode);
 }
 
 const FileNode&
 PackageSplit::getFileNode(const FileNode& fileNode) const
 {
+	m_state->tocTree.initialize();
 	return m_state->tocTree.getFileNode(fileNode);
 }
 
 const DirNode&
 PackageSplit::getDirNode(const DirNode& dirNode) const
 {
+	m_state->tocTree.initialize();
 	return m_state->tocTree.getDirNode(dirNode);
 }
 
@@ -121,6 +127,7 @@ PackageSplit::getFileNode(const std::string& internalPath) const
 const DirNode&
 PackageSplit::getDirNode(const std::string& internalPath) const
 {
+	m_state->tocTree.initialize();
 	m_state->tocTree.initialize();
 	return m_state->tocTree.getDirNode(internalPath);
 }

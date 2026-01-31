@@ -1,5 +1,4 @@
 #include "LotusLib/Package.h"
-#include "LotusLib/Enums.h"
 
 using namespace LotusLib;
 
@@ -95,14 +94,14 @@ Package::getFileEntry(const FileNode& entry) const
 
     try
     {
-        std::vector<uint8_t> bodyData = getFile(PkgSplitType::BODY, entry);
+        std::vector<uint8_t> bodyData = getFile(PkgSplitType::BODY, getFileNode(PkgSplitType::BODY, entry));
         ret.body = BinaryReader::Buffered(std::move(bodyData));
     }
     catch (InternalEntryNotFound&) { }
 
     try
     {
-        std::vector<uint8_t> footerData = getFile(PkgSplitType::FOOTER, entry);
+        std::vector<uint8_t> footerData = getFile(PkgSplitType::FOOTER, getFileNode(PkgSplitType::FOOTER, entry));
         ret.footer = BinaryReader::Buffered(std::move(footerData));
     }
     catch (InternalEntryNotFound&) { }
