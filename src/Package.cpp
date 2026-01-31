@@ -107,6 +107,7 @@ Package::getFileEntry(const FileNode& entry) const
         ret.body = BinaryReader::Buffered(std::move(bodyData));
     }
     catch (InternalEntryNotFound&) { }
+    catch (PackageSplitNotFound&) {}
 
     try
     {
@@ -114,6 +115,7 @@ Package::getFileEntry(const FileNode& entry) const
         ret.footer = BinaryReader::Buffered(std::move(footerData));
     }
     catch (InternalEntryNotFound&) { }
+    catch (PackageSplitNotFound&) {}
 
     return ret;
 }
