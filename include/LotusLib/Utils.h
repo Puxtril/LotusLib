@@ -8,6 +8,7 @@
 #include <fstream>
 #include <stack>
 #include <string>
+#include <sstream>
 
 namespace LotusLib
 {
