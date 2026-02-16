@@ -269,13 +269,13 @@ PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
     BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
 
     // Begin reading Zstd data
-    uint32_t dictSize = comSizeBuffer.readUInt32();
+    uint32_t dictSize = comSizeBuffer.readUInt32(80000, 1300000, "ZDictSize");
     
     createZstdDictionary(comZBuffer.getPtr(), dictSize);
 
     comZBuffer.seek(dictSize, std::ios::cur);
 
-    uint32_t entityCount = reader.readUInt32();
+    uint32_t entityCount = reader.readUInt32(400000, 600000, "Entity count");
     std::vector<Impl::RawPackagesEntity> entities(entityCount);
 
     unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
