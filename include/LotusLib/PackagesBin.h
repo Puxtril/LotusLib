@@ -73,8 +73,10 @@ namespace LotusLib
         std::vector<Impl::RawPackagesEntity> readFile(BinaryReader::BufferedSlice& reader);
         // Versions: ?? - 44
         std::vector<Impl::RawPackagesEntity> readFile1(BinaryReader::BufferedSlice& reader);
-        // Versions: 45+
+        // Versions: 45
         std::vector<Impl::RawPackagesEntity> readFile2(BinaryReader::BufferedSlice& reader);
+        // Versions: 46+
+        std::vector<Impl::RawPackagesEntity> readFile3(BinaryReader::BufferedSlice& reader);
 
         void buildEntityMap(std::vector<Impl::RawPackagesEntity>& rawEntities);
 

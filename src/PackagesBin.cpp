@@ -143,8 +143,10 @@ PackagesBin::readFile(BinaryReader::BufferedSlice& reader)
 
     if (m_state->version < 45)
         return readFile1(reader);
-    else
+    else if (m_state->version == 45)
         return readFile2(reader);
+    else
+        return readFile3(reader);
 }
 
 std::vector<Impl::RawPackagesEntity>
@@ -338,6 +340,109 @@ PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
     return entities;
 }
 
+std::vector<Impl::RawPackagesEntity>
+PackagesBin::readFile3(BinaryReader::BufferedSlice& reader)
+{
+    std::array<size_t, 5> valueOffsets;
+    findAllValueOffsets(reader, valueOffsets);
+
+    reader.seek(valueOffsets[0], std::ios::beg);
+    uint32_t referenceCount = reader.readUInt32(0, 1000, "Packages.bin Reference count");
+    for (size_t i = 0; i < referenceCount; i++)
+    {
+        uint32_t refNameLen = reader.readUInt32(0, 2000, "Packages.bin Reference name");
+        reader.seek(refNameLen + 2, std::ios::cur);
+    }
+
+    reader.seek(valueOffsets[1], std::ios::beg);
+    uint32_t comFlagsBufLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comFlagsBuf = reader.getSlice(comFlagsBufLen);
+
+    reader.seek(valueOffsets[2], std::ios::beg);
+    uint32_t comSizeBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comSizeBuffer = reader.getSlice(comSizeBufferLen);
+
+    reader.seek(valueOffsets[3], std::ios::beg);
+    uint32_t comZBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
+
+    // Begin reading Zstd data
+    uint32_t dictSize = comSizeBuffer.readUInt32(80000, 1300000, "ZDictSize");
+    
+    createZstdDictionary(comZBuffer.getPtr(), dictSize);
+
+    comZBuffer.seek(dictSize, std::ios::cur);
+
+    uint32_t entityCount = reader.readUInt32(400000, 600000, "Entity count");
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
+
+    unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
+    size_t flagBufferCurrentBit = 0;
+
+    reader.seek(valueOffsets[4], std::ios::beg);
+
+    uint32_t iEntity = 0;
+    while (iEntity < entityCount)
+    {
+        uint32_t pkgNameLen = reader.readUInt32(1, 200, "PkgNameLen");
+        std::string curPkgName = reader.readAsciiString(pkgNameLen);
+        
+        reader.seek(1, std::ios::cur);
+        uint32_t childrenCount = reader.readUInt32();
+        
+        for (uint32_t x = 0; x < childrenCount; x++)
+        {
+            Impl::RawPackagesEntity& curEntity = entities[iEntity];
+            curEntity.pkg = curPkgName;
+
+            uint32_t fileNameLen = reader.readUInt32(1, 200, "FileNameLen");
+            curEntity.filename = reader.readAsciiString(fileNameLen);
+
+            // short + byte
+            reader.seek(3, std::ios::cur);
+
+            uint32_t parentTypeLen = reader.readUInt32();
+            curEntity.parentType = reader.readAsciiString(parentTypeLen);
+
+            // Entity
+            unsigned char hasText = flagBufferCurrentByte >> flagBufferCurrentBit++ & 1;
+            if (flagBufferCurrentBit > 7)
+            {
+                flagBufferCurrentByte = comFlagsBuf.readUInt8();
+                flagBufferCurrentBit -= 8;
+            }
+
+            std::string textParameters;
+
+            if (hasText > 0)
+            {
+                uint64_t size = comSizeBuffer.readULEB(32);
+                BinaryReader::BufferedSlice frameData = comZBuffer.getSlice(size);
+
+                curEntity.isCompressed = (flagBufferCurrentByte >> flagBufferCurrentBit++ & 1) > 0;
+                if (flagBufferCurrentBit > 7)
+                {
+                    flagBufferCurrentByte = comFlagsBuf.readUInt8();
+                    flagBufferCurrentBit -= 8;
+                }
+
+                if (curEntity.isCompressed)
+                    curEntity.decompressedLen = frameData.readULEB(32);
+                else
+                    curEntity.decompressedLen = size;
+
+                curEntity.attributeData.resize(size);
+                memcpy(curEntity.attributeData.data(), frameData.getPtr() + frameData.tell(), size);
+                frameData.seek(size, std::ios::cur);
+            }
+
+            iEntity++;
+        }
+    }
+
+    return entities;
+}
+
 void
 PackagesBin::buildEntityMap(std::vector<Impl::RawPackagesEntity>& rawEntities)
 {
@@ -407,7 +512,7 @@ PackagesBin::findAllValueOffsets(BinaryReader::BufferedSlice& reader, std::array
         {75000, 90000, "ComFlagsBufLen"},
         {210000, 240000, "ComSizeBufferLen"},
         {18000000, 21000000, "ComZBufferLen"},
-        {14, 16, "PkgNameLen"}
+        {9, 16, "PkgNameLen"}
     };
 
     while (true)
