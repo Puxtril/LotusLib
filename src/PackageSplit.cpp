@@ -128,7 +128,6 @@ const DirNode&
 PackageSplit::getDirNode(const std::string& internalPath) const
 {
 	m_state->tocTree.initialize();
-	m_state->tocTree.initialize();
 	return m_state->tocTree.getDirNode(internalPath);
 }
 
