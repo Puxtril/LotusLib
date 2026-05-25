@@ -7,7 +7,7 @@ LotusLib::commonHeaderFindLen(BinaryReader::BinaryReader& reader, LotusLib::Game
 		reader.seek(16, std::ios::beg);
 
 	uint32_t sourcePathCount = reader.readUInt32();
-	if (sourcePathCount > 1500)
+	if (sourcePathCount > 3000)
 		throw CommonHeaderError("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
 
 	for (uint32_t x = 0; x < sourcePathCount; x++)
@@ -52,7 +52,7 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReader& reader, LotusLib::G
 		reader.seek(16, std::ios::beg);
 
 	uint32_t sourcePathCount = reader.readUInt32();
-	if (sourcePathCount > 1500)
+	if (sourcePathCount > 3000)
 		throw CommonHeaderError("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
 
 	for (uint32_t x = 0; x < sourcePathCount; x++)
@@ -99,7 +99,7 @@ LotusLib::commonHeaderRead(BinaryReader::BinaryReader& reader, CommonHeader& hea
 		reader.readUInt8Array(&header.hash[0], 16);
 
 	uint32_t sourcePathCount = reader.readUInt32();
-	if (sourcePathCount > 1500)
+	if (sourcePathCount > 3000)
 		throw CommonHeaderError("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
 
 	for (uint32_t x = 0; x < sourcePathCount; x++)
