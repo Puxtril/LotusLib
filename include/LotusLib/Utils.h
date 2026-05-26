@@ -16,6 +16,10 @@ namespace LotusLib
     // Intended to be used internally
     PackageCategory findPackageCategory(const std::string& name);
 
+    // Not thread safe
+    // https://en.cppreference.com/cpp/chrono/c/gmtime
+    std::tm* parseDOSTimestamp(const int64_t& time);
+
     std::string getFullPath(const FileNode& fileNode);
     std::string getFullPath(const DirNode& dirNode);
     const DirNode* getChildDir(const DirNode& dirNode, const std::string& dirName);
@@ -34,4 +38,7 @@ namespace LotusLib
 
     // Max 10ms for Warframe/WarframePE
     Game guessGame(const std::string& pkgDir);
+
+    // Good enough to identify various versions
+    std::tuple<Game, std::string> gameIdentifier(const std::string& pkgDir);
 };

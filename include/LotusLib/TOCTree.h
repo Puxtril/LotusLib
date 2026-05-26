@@ -24,7 +24,7 @@ namespace LotusLib
 		std::string name;
 		DirNode* parentDir;
 		int64_t cacheOffset;
-		int64_t timeStamp;
+		int64_t timeStamp; // DOS timestamp
 		int32_t compLen;
 		int32_t len;
 		int tocEntryIndex;

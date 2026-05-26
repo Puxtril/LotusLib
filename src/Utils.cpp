@@ -26,6 +26,14 @@ LotusLib::findPackageCategory(const std::string& name)
     return PackageCategory::UNKNOWN;
 }
 
+std::tm*
+LotusLib::parseDOSTimestamp(const int64_t& time)
+{
+    time_t epochTime = time / 10000000UL - 11644473600UL;
+    std::time_t rawtime = static_cast<std::time_t>(epochTime);
+    return std::gmtime(&rawtime);
+}
+
 std::string
 LotusLib::getFullPath(const FileNode& fileNode)
 {
@@ -288,4 +296,91 @@ LotusLib::guessGame(const std::string& pkgDir)
     }
 
     return game;
+}
+
+std::tuple<Game, std::string>
+LotusLib::gameIdentifier(const std::string& pkgDir)
+{
+    std::filesystem::path pkgPath(pkgDir);
+    
+    // This exists for every game
+    if (!std::filesystem::exists(pkgPath / "H.Misc.cache"))
+        return {Game::UNKNOWN, gameToString(Game::UNKNOWN)};
+
+    if (!std::filesystem::exists(pkgPath / "H.Misc.toc") && std::filesystem::exists(pkgPath / "H.BasePose.cache"))
+        return {Game::DARKSECTOR, gameToString(Game::DARKSECTOR)};
+
+    // Dig into the Toc/Cache files further
+    std::ifstream tocReader(pkgPath / "H.Misc.toc", std::ios_base::in | std::ios_base::binary | std::ios_base::ate);
+    int entryCount = static_cast<int>((tocReader.tellg() - (std::streampos)8) / (std::streampos)sizeof(RawTOCEntry));
+	tocReader.seekg(8, std::ios_base::beg);
+
+    // To guess between WARFRAME and WARFRAME_PE, we need to look at a file's bytes.
+    // Both games contain ExcaliburBody_skel.fbx.
+    int64_t excalOffset = 0;
+
+    // For games with various versions, use the timestamp of Packages.bin/Packages.cs to add context
+    int64_t packagesTimestamp = 0;
+
+    RawTOCEntry entryBuffer;
+    LotusLib::Game game = Game::UNKNOWN;
+    bool has_sf = false, has_lotus = false, has_d2 = false, has_st = false;
+
+    // Search Toc entry names for root directories and excal's file offset
+    for (int i = 0; i < entryCount; i++)
+    {
+        tocReader.read((char*)&entryBuffer, sizeof(RawTOCEntry));
+        
+        if (std::strncmp("SF", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
+            has_sf = true;
+        else if (std::strncmp("Lotus", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
+            has_lotus = true;
+        else if (std::strncmp("D2", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
+            has_d2 = true;
+        else if (std::strncmp("ST", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
+            has_st = true;
+        else if (std::strncmp("ExcaliburBody_skel.fbx", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
+            excalOffset = entryBuffer.cacheOffset;
+
+        if (std::strncmp("Packages.", entryBuffer.name, 9) == 0 && entryBuffer.timeStamp != 0)
+            packagesTimestamp = entryBuffer.timeStamp;
+    }
+
+    std::tm* time = parseDOSTimestamp(packagesTimestamp);
+
+    char buf[50];
+
+    if (has_sf)
+    {
+        game = Game::SOULFRAME;
+        std::strftime(buf, 50, "Soulframe %Y/%m", time);
+    }
+    else if (has_lotus)
+    {
+        std::ifstream cacheReader(pkgPath / "H.Misc.cache", std::ios_base::in | std::ios_base::binary);
+        cacheReader.seekg(excalOffset, std::ios_base::beg);
+        uint8_t readByte;
+        cacheReader.read((char*)&readByte, 1);
+        
+        if (readByte == 0x80)
+        {
+            game = Game::WARFRAME;
+            std::strftime(buf, 50, "Warframe %Y/%m", time);
+        }
+        else
+        {
+            game = Game::WARFRAME_PE;
+            std::strftime(buf, 50, "WarframePE %Y/%m", time);
+        }
+    }
+    else if (has_d2)
+    {
+        return {Game::DARKNESSII, gameToString(Game::DARKNESSII)};
+    }
+    else if (has_st)
+    {
+        return {Game::STARTREK, gameToString(Game::STARTREK)};
+    }
+
+    return {game, std::string(buf)};
 }
