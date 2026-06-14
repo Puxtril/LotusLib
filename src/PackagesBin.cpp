@@ -22,12 +22,13 @@ PackagesBin::PackagesBin()
 }
 
 void
-PackagesBin::initilize(const std::vector<uint8_t>& data)
+PackagesBin::initilize(const std::vector<uint8_t>& data, LotusLib::Game game)
 {
     if (isInitilized())
         return;
 
     std::lock_guard<std::mutex> guard(m_state->mutex);
+    m_state->game = game;
 
     BinaryReader::BufferedSlice reader(data.data(), data.size());
     m_state->zstdContext = ZSTD_createDCtx();
@@ -367,13 +368,16 @@ PackagesBin::readFile3(BinaryReader::BufferedSlice& reader)
     BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
 
     // Begin reading Zstd data
-    uint32_t dictSize = comSizeBuffer.readUInt32(80000, 1300000, "ZDictSize");
+    uint32_t dictSize = comSizeBuffer.readUInt32();
     
     createZstdDictionary(comZBuffer.getPtr(), dictSize);
 
     comZBuffer.seek(dictSize, std::ios::cur);
 
-    uint32_t entityCount = reader.readUInt32(400000, 600000, "Entity count");
+    uint32_t entityCount = reader.readUInt32();
+    // I dunno, probably missing something here.
+    if (m_state->game == LotusLib::Game::SOULFRAME)
+        entityCount--;
     std::vector<Impl::RawPackagesEntity> entities(entityCount);
 
     unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
@@ -507,13 +511,31 @@ PackagesBin::findAllValueOffsets(BinaryReader::BufferedSlice& reader, std::array
     size_t start = reader.tell();
     size_t cursor = start;
 
-    const std::vector<std::tuple<uint32_t, uint32_t, std::string>> searchValueRanges = {
+    // Separate ranges by game.
+    // This will only search the first 5 values recursively.
+    // The next 2 values (index 5 and 6) are used for extra validation,
+    //   but it's just easier to put those values in this variable, because they also vary by game.
+    const std::vector<std::tuple<uint32_t, uint32_t, std::string>> searchValueRangesWarframe = {
         {45, 60, "ReferenceCount"},
         {75000, 90000, "ComFlagsBufLen"},
         {210000, 240000, "ComSizeBufferLen"},
         {18000000, 21000000, "ComZBufferLen"},
-        {9, 16, "PkgNameLen"}
+        {9, 16, "PkgNameLen"},
+        {80000, 1300000, "DictSize"},
+        {400000, 600000, "EntityCount"},
     };
+    const std::vector<std::tuple<uint32_t, uint32_t, std::string>> searchValueRangesSoulframe = {
+        {35, 50, "ReferenceCount"},
+        {10000, 16000, "ComFlagsBufLen"},
+        {28000, 32000, "ComSizeBufferLen"},
+        {3000000, 5000000, "ComZBufferLen"},
+        {9, 16, "PkgNameLen"},
+        {80000, 1300000, "DictSize"},
+        {60000, 100000, "EntityCount"},
+    };
+
+    // Only 2 games contain Packages.bin requiring this
+    const std::vector<std::tuple<uint32_t, uint32_t, std::string>> searchValueRanges = m_state->game == LotusLib::Game::WARFRAME ? searchValueRangesWarframe : searchValueRangesSoulframe;
 
     while (true)
     {
@@ -557,7 +579,7 @@ PackagesBin::findAllValueOffsets(BinaryReader::BufferedSlice& reader, std::array
             case 2:
             {
                 uint32_t dictSize = reader.readUInt32();
-                if (!(dictSize > 80000 && dictSize < 1300000))
+                if (!(dictSize > std::get<0>(searchValueRanges[5]) && dictSize < std::get<1>(searchValueRanges[5])))
                 {
                     cursor += 4;
                     continue;
@@ -570,7 +592,7 @@ PackagesBin::findAllValueOffsets(BinaryReader::BufferedSlice& reader, std::array
                 reader.seek(value, std::ios::cur);
 
                 uint32_t entityCount = reader.readUInt32();
-                if (!(entityCount > 400000 && entityCount < 600000))
+                if (!(entityCount > std::get<0>(searchValueRanges[6]) && entityCount < std::get<1>(searchValueRanges[6])))
                 {
                     cursor += 4;
                     reader.seek(cursor, std::ios::beg);

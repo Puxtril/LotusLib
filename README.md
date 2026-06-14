@@ -130,7 +130,7 @@ int main()
     std::vector<uint8_t> pkgsBinData = miscPkg.getFile(LotusLib::PkgSplitType::HEADER, "/Packages.bin");
 
     LotusLib::PackagesBin pkgsBin;
-    pkgsBin.initilize(pkgsBinData);
+    pkgsBin.initilize(pkgsBinData, game);
     for (const auto& item : pkgsBin)
     {
         std::cout << "Entry path: " << item.first << std::endl;

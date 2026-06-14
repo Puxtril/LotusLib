@@ -4,6 +4,7 @@
 #include "LotusLib/EENotationParser.h"
 #include "LotusLib/Exceptions.h"
 #include "LotusLib/Logger.h"
+#include "LotusLib/Enums.h"
 #include "nlohmann/json.hpp"
 #include "zstd.h"
 
@@ -41,6 +42,7 @@ namespace LotusLib
             bool isInitilized;
             bool errorReading;
             int version;
+            LotusLib::Game game;
             ZSTD_DDict* zstdDict;
             ZSTD_DCtx* zstdContext;
             std::mutex mutex;
@@ -57,7 +59,7 @@ namespace LotusLib
     public:
         PackagesBin();
 
-        void initilize(const std::vector<uint8_t>& data);
+        void initilize(const std::vector<uint8_t>& data, LotusLib::Game game);
 
         bool isInitilized() const;
         bool isInitSuccess() const;
