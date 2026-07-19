@@ -15,7 +15,6 @@ namespace LotusLib::Impl {
 		CompressionScratch(): buf(0x40000) {}
 	};
 
-	//! \brief Decompression algorithms
 	class Compression
 	{
 	public:
@@ -31,10 +30,25 @@ namespace LotusLib::Impl {
 		static std::vector<uint8_t> decompressEE(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 		static void decompressEE(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
 
+		/* struct KeystoneBlock {
+		 * 	  uint8_t unk1;
+		 *    uint8_t unk2;
+		 *    uint16_t decompressedLen; // Big endian
+		 *    uint8_t oodle_magic; // 0x8C
+		 *    uint8_t oodle_format;
+		 *    uint8_t unk3; // This only exists if `oodle_format` != 2
+		 *    uint16_t compressedLen; // Big endian
+		 *    uint8_t compressedData[compressedLen]; // `compressedLen` here is misleading because the Oodle block actually starts at `oodle_magic`
+		 * }
+		*/ 
+		static std::vector<uint8_t> decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
+		static void decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
+
 	private:
 		static std::tuple<uint32_t, uint32_t> getWarframeBlockLens(uint8_t* data);
 		static std::tuple<uint32_t, uint32_t> getEEBlockLensOodle(uint8_t* data);
 		static std::tuple<uint16_t, uint16_t> getEEBlockLensLz(uint8_t* data);
+		static std::tuple<uint32_t, uint32_t> getKeystoneBlockLens(uint8_t* data, const int32_t& compLen);
 
 		static std::streampos getFileLen(std::ifstream& file);
 

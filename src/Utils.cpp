@@ -120,6 +120,8 @@ LotusLib::gameToString(Game game)
             return "Star Trek";
         case Game::DARKSECTOR:
             return "Dark Sector";
+        case Game::KEYSTONE:
+            return "Keystone";
     }
     return "Unknown";
 }
@@ -142,6 +144,8 @@ LotusLib::stringToGame(const std::string& gameStr)
         return Game::STARTREK;
     if (lower == "darksector" || lower == "dark sector")
         return Game::DARKSECTOR;
+    if (lower == "keystone" || lower == "the amazing eternals" || lower == "amazing eternals")
+        return Game::KEYSTONE;
     return Game::UNKNOWN;
 }
 
@@ -250,8 +254,7 @@ LotusLib::guessGame(const std::string& pkgDir)
     int64_t excalOffset = 0;
 
     RawTOCEntry entryBuffer;
-    LotusLib::Game game = Game::UNKNOWN;
-    bool has_sf = false, has_lotus = false, has_d2 = false, has_st = false;
+    bool has_sf = false, has_lotus = false, has_d2 = false, has_st = false, has_ks = false;
 
     // Search Toc entry names for root directories and excal's file offset
     for (int i = 0; i < entryCount; i++)
@@ -266,13 +269,28 @@ LotusLib::guessGame(const std::string& pkgDir)
             has_d2 = true;
         else if (std::strncmp("ST", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
             has_st = true;
+        else if (std::strncmp("Keystone", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
+            has_ks = true;
         else if (std::strncmp("ExcaliburBody_skel.fbx", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
             excalOffset = entryBuffer.cacheOffset;
     }
 
+    LotusLib::Game game = Game::UNKNOWN;
     if (has_sf)
     {
         game = Game::SOULFRAME;
+    }
+    else if (has_ks)
+    {
+        game = Game::KEYSTONE;
+    }
+    else if (has_d2)
+    {
+        game = Game::DARKNESSII;
+    }
+    else if (has_st)
+    {
+        game = Game::STARTREK;
     }
     else if (has_lotus)
     {
@@ -285,14 +303,6 @@ LotusLib::guessGame(const std::string& pkgDir)
             game = Game::WARFRAME;
         else
             game = Game::WARFRAME_PE;
-    }
-    else if (has_d2)
-    {
-        game = Game::DARKNESSII;
-    }
-    else if (has_st)
-    {
-        game = Game::STARTREK;
     }
 
     return game;
@@ -323,8 +333,7 @@ LotusLib::gameIdentifier(const std::string& pkgDir)
     int64_t packagesTimestamp = 0;
 
     RawTOCEntry entryBuffer;
-    LotusLib::Game game = Game::UNKNOWN;
-    bool has_sf = false, has_lotus = false, has_d2 = false, has_st = false;
+    bool has_sf = false, has_lotus = false, has_d2 = false, has_st = false, has_ks = false;
 
     // Search Toc entry names for root directories and excal's file offset
     for (int i = 0; i < entryCount; i++)
@@ -339,6 +348,8 @@ LotusLib::gameIdentifier(const std::string& pkgDir)
             has_d2 = true;
         else if (std::strncmp("ST", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
             has_st = true;
+        else if (std::strncmp("Keystone", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
+            has_ks = true;
         else if (std::strncmp("ExcaliburBody_skel.fbx", entryBuffer.name, sizeof(RawTOCEntry::name)) == 0)
             excalOffset = entryBuffer.cacheOffset;
 
@@ -350,6 +361,19 @@ LotusLib::gameIdentifier(const std::string& pkgDir)
 
     char buf[50];
 
+    LotusLib::Game game = Game::UNKNOWN;
+    if (has_ks)
+    {
+        return {Game::KEYSTONE, gameToString(Game::KEYSTONE)};
+    }
+    else if (has_d2)
+    {
+        return {Game::DARKNESSII, gameToString(Game::DARKNESSII)};
+    }
+    else if (has_st)
+    {
+        return {Game::STARTREK, gameToString(Game::STARTREK)};
+    }
     if (has_sf)
     {
         game = Game::SOULFRAME;
@@ -373,14 +397,5 @@ LotusLib::gameIdentifier(const std::string& pkgDir)
             std::strftime(buf, 50, "WarframePE %Y/%m", time);
         }
     }
-    else if (has_d2)
-    {
-        return {Game::DARKNESSII, gameToString(Game::DARKNESSII)};
-    }
-    else if (has_st)
-    {
-        return {Game::STARTREK, gameToString(Game::STARTREK)};
-    }
-
     return {game, std::string(buf)};
 }

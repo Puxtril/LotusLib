@@ -3,7 +3,7 @@
 int
 LotusLib::commonHeaderFindLen(BinaryReader::BinaryReader& reader, LotusLib::Game game)
 {
-	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+	if (game == LotusLib::Game::KEYSTONE || game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
 		reader.seek(16, std::ios::beg);
 
 	uint32_t sourcePathCount = reader.readUInt32();
@@ -31,6 +31,7 @@ LotusLib::commonHeaderFindLen(BinaryReader::BinaryReader& reader, LotusLib::Game
 		case LotusLib::Game::STARTREK:
 			reader.seek(1, std::ios::cur);
 			break;
+		case LotusLib::Game::KEYSTONE:
 		case LotusLib::Game::WARFRAME:
 		case LotusLib::Game::WARFRAME_PE:
 		case LotusLib::Game::SOULFRAME:
@@ -48,7 +49,7 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReader& reader, LotusLib::G
 {
 	size_t pos = reader.tell();
 
-	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+	if (game == LotusLib::Game::KEYSTONE || game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
 		reader.seek(16, std::ios::beg);
 
 	uint32_t sourcePathCount = reader.readUInt32();
@@ -77,8 +78,9 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReader& reader, LotusLib::G
 		case LotusLib::Game::STARTREK:
 			format = reader.readUInt8();
 			break;
-		case LotusLib::Game::WARFRAME_PE:
+		case LotusLib::Game::KEYSTONE:
 		case LotusLib::Game::WARFRAME:
+		case LotusLib::Game::WARFRAME_PE:
 		case LotusLib::Game::SOULFRAME:
 			format = reader.readUInt32() & 0x0000FFFF;
 			break;
@@ -95,7 +97,7 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReader& reader, LotusLib::G
 int
 LotusLib::commonHeaderRead(BinaryReader::BinaryReader& reader, CommonHeader& header, LotusLib::Game game)
 {
-	if (game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
+	if (game == LotusLib::Game::KEYSTONE || game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
 		reader.readUInt8Array(&header.hash[0], 16);
 
 	uint32_t sourcePathCount = reader.readUInt32();
@@ -123,8 +125,9 @@ LotusLib::commonHeaderRead(BinaryReader::BinaryReader& reader, CommonHeader& hea
 		case LotusLib::Game::STARTREK:
 			header.type = reader.readUInt8();
 			break;
-		case LotusLib::Game::WARFRAME_PE:
+		case LotusLib::Game::KEYSTONE:
 		case LotusLib::Game::WARFRAME:
+		case LotusLib::Game::WARFRAME_PE:
 		case LotusLib::Game::SOULFRAME:
 			header.type = reader.readUInt32() & 0x0000FFFF;
 			break;

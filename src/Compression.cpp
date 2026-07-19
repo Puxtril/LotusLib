@@ -144,6 +144,66 @@ Compression::decompressEE(CompressionScratch* scratch, const FileNode& entry, st
 	}
 }
 
+std::vector<uint8_t>
+Compression::decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
+{
+	std::vector<uint8_t> decompressedData(entry.len);
+	decompressKeystone(scratch, entry, cacheReader, decompressedData.data());
+	return decompressedData;
+}
+
+void
+Compression::decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData)
+{
+	if (entry.compLen > static_cast<int32_t>(scratch->buf.size()))
+		scratch->buf.resize(entry.compLen);
+
+	int32_t decompPos = 0;
+	int32_t compPos = 0;
+	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+	cacheReader.read((char*)scratch->buf.data(), entry.compLen);
+	
+	while (decompPos < entry.len)
+	{
+		// Get block lengths
+		std::tuple<uint32_t, uint32_t> blockLens = getKeystoneBlockLens(&scratch->buf[compPos], entry.compLen);
+		compPos += 4;
+		
+		// Such a STUPID edge case where the compressed length is invalid
+		if (std::get<0>(blockLens) > 16384)
+		{
+			// Last block, we can calculate the compressed length
+			if (decompPos + std::get<1>(blockLens) == entry.len)
+			{
+				blockLens = {entry.compLen - compPos, std::get<1>(blockLens)};
+			}
+			// Not the last block. Compressed size is just 1...
+			else
+			{
+				if (scratch->buf[compPos+5] == 2)
+					blockLens = {5, std::get<1>(blockLens)};
+				else
+					blockLens = {6, std::get<1>(blockLens)};
+			}
+		}
+
+		if (decompPos + (int32_t)std::get<1>(blockLens) > entry.len)
+			throw DecompressionException("Decompressed past the file length");
+
+		if (std::get<0>(blockLens) + compPos > entry.compLen)
+			throw DecompressionException("Tried to read beyond limits");
+
+		// Decompress
+		if (std::get<0>(blockLens) < std::get<1>(blockLens))
+			Compression::decompressOodle(&scratch->buf[compPos], std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
+		else
+		 	std::memcpy(&outData[decompPos], &scratch->buf[compPos], std::get<0>(blockLens));
+
+		compPos += std::get<0>(blockLens);
+		decompPos += std::get<1>(blockLens);
+	}
+}
+
 std::tuple<uint32_t, uint32_t>
 Compression::getWarframeBlockLens(uint8_t* data)
 {
@@ -181,6 +241,33 @@ Compression::getEEBlockLensLz(uint8_t* data)
 	uint16_t num2 = (data[2] << 8) | data[3];
 
 	return { num1, num2 };
+}
+
+std::tuple<uint32_t, uint32_t>
+Compression::getKeystoneBlockLens(uint8_t* data, const int32_t& compLen)
+{
+	uint32_t blockLen = 0;
+	uint32_t blockCompLen = 0;
+	
+	blockLen = (data[2] << 8) | data[3];
+
+	// Uncompressed data
+	if (data[0] == data[2] && data[1] == data[3])
+	{
+		blockCompLen = blockLen;
+	}
+	else if (data[5] == 2)
+	{
+		blockCompLen = (data[6] << 8) | data[7];
+		blockCompLen += 5;
+	}
+	else
+	{
+		blockCompLen = ((data[7] << 8) | data[8]);
+		blockCompLen += 6;
+	}
+
+	return { blockCompLen, blockLen };
 }
 
 std::streampos

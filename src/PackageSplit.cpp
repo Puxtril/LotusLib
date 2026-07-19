@@ -250,6 +250,9 @@ PackageSplit::decompress(const FileNode& entry, uint8_t* outData) const
 
 	switch(m_game)
 	{
+		case Game::KEYSTONE:
+			Impl::Compression::decompressKeystone(m_compressScratch.get(), entry, m_state->cacheReader, outData);
+			break;
 		case Game::DARKNESSII:
 		case Game::STARTREK:
 			Impl::Compression::decompressEE(m_compressScratch.get(), entry, m_state->cacheReader, outData);
