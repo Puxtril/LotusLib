@@ -284,11 +284,11 @@ LotusLib::guessGame(const std::string& pkgDir)
     {
         game = Game::KEYSTONE;
     }
-    else if (has_d2)
+    else if (has_d2 && excalOffset == 0)
     {
         game = Game::DARKNESSII;
     }
-    else if (has_st)
+    else if (has_st && excalOffset == 0)
     {
         game = Game::STARTREK;
     }
@@ -366,11 +366,11 @@ LotusLib::gameIdentifier(const std::string& pkgDir)
     {
         return {Game::KEYSTONE, gameToString(Game::KEYSTONE)};
     }
-    else if (has_d2)
+    else if (has_d2 && excalOffset == 0)
     {
         return {Game::DARKNESSII, gameToString(Game::DARKNESSII)};
     }
-    else if (has_st)
+    else if (has_st && excalOffset == 0)
     {
         return {Game::STARTREK, gameToString(Game::STARTREK)};
     }
