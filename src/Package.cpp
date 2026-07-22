@@ -231,9 +231,9 @@ Package::dirCount() const
     if (m_pkgs[0])
         total += m_pkgs[0]->dirCount();
     if (m_pkgs[1])
-        total += m_pkgs[0]->dirCount();
+        total += m_pkgs[1]->dirCount();
     if (m_pkgs[2])
-        total += m_pkgs[0]->dirCount();
+        total += m_pkgs[2]->dirCount();
     return total;
 }
 
@@ -252,9 +252,9 @@ Package::fileCount() const
     if (m_pkgs[0])
         total += m_pkgs[0]->fileCount();
     if (m_pkgs[1])
-        total += m_pkgs[0]->fileCount();
+        total += m_pkgs[1]->fileCount();
     if (m_pkgs[2])
-        total += m_pkgs[0]->fileCount();
+        total += m_pkgs[2]->fileCount();
     return total;
 }
 
@@ -273,9 +273,9 @@ Package::fileDupeCount() const
     if (m_pkgs[0])
         total += m_pkgs[0]->fileDupeCount();
     if (m_pkgs[1])
-        total += m_pkgs[0]->fileDupeCount();
+        total += m_pkgs[1]->fileDupeCount();
     if (m_pkgs[2])
-        total += m_pkgs[0]->fileDupeCount();
+        total += m_pkgs[2]->fileDupeCount();
     return total;
 }
 
