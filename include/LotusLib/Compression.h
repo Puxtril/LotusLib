@@ -48,7 +48,7 @@ namespace LotusLib::Impl {
 		static std::tuple<uint32_t, uint32_t> getWarframeBlockLens(uint8_t* data);
 		static std::tuple<uint32_t, uint32_t> getEEBlockLensOodle(uint8_t* data);
 		static std::tuple<uint16_t, uint16_t> getEEBlockLensLz(uint8_t* data);
-		static std::tuple<uint32_t, uint32_t> getKeystoneBlockLens(uint8_t* data, const int32_t& compLen);
+		static std::tuple<uint32_t, uint32_t> getKeystoneBlockLens(uint8_t* data);
 
 		static std::streampos getFileLen(std::ifstream& file);
 

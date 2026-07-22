@@ -166,7 +166,7 @@ Compression::decompressKeystone(CompressionScratch* scratch, const FileNode& ent
 	while (decompPos < entry.len)
 	{
 		// Get block lengths
-		std::tuple<uint32_t, uint32_t> blockLens = getKeystoneBlockLens(&scratch->buf[compPos], entry.compLen);
+		std::tuple<uint32_t, uint32_t> blockLens = getKeystoneBlockLens(&scratch->buf[compPos]);
 		compPos += 4;
 		
 		// Such a STUPID edge case where the compressed length is invalid
@@ -244,7 +244,7 @@ Compression::getEEBlockLensLz(uint8_t* data)
 }
 
 std::tuple<uint32_t, uint32_t>
-Compression::getKeystoneBlockLens(uint8_t* data, const int32_t& compLen)
+Compression::getKeystoneBlockLens(uint8_t* data)
 {
 	uint32_t blockLen = 0;
 	uint32_t blockCompLen = 0;
