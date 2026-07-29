@@ -204,6 +204,48 @@ Compression::decompressKeystone(CompressionScratch* scratch, const FileNode& ent
 	}
 }
 
+void
+Compression::decompressDarkSector(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData)
+{
+	if (entry.compLen > static_cast<int32_t>(scratch->buf.size()))
+		scratch->buf.resize(entry.compLen);
+	
+	cacheReader.seekg(entry.cacheOffset + 26, std::ios::beg);
+	uint16_t nameLen;
+	cacheReader.read((char*)&nameLen, 2);
+	uint16_t extraLen;
+	cacheReader.read((char*)&extraLen, 2);
+	cacheReader.seekg(nameLen + extraLen, std::ios::cur);
+
+	int32_t decompPos = 0;
+	int32_t compPos = 0;
+	cacheReader.read((char*)scratch->buf.data(), entry.compLen);
+
+	while (decompPos < entry.len)
+	{
+		// Get block lengths
+		std::tuple<uint32_t, uint32_t> blockLens = getDarkSectorBlockLens(&scratch->buf[compPos]);
+		compPos += 8;
+		
+		// Sanity checks
+		if (std::get<0>(blockLens) == 0 && std::get<1>(blockLens) == 0)
+			blockLens = { entry.compLen, entry.len };
+
+		if (decompPos + (int32_t)std::get<1>(blockLens) > entry.len)
+			throw DecompressionException("Decompressed past the file length");
+
+		if (std::get<0>(blockLens) > std::min((size_t)getFileLen(cacheReader), (size_t)0x40000))
+			throw DecompressionException("Tried to read beyond limits, probably not a compressed file");
+
+		unsigned int decompressedLen = Compression::decompressLz(&scratch->buf[compPos], std::get<0>(blockLens), &outData[decompPos], std::get<1>(blockLens));
+		if (decompressedLen != std::get<1>(blockLens))
+			throw DecompressionException("Did not decompress expected data length: " + std::to_string(decompressedLen) + ", expected " + std::to_string(std::get<1>(blockLens)));
+
+		compPos += std::get<0>(blockLens);
+		decompPos += std::get<1>(blockLens);
+	}
+}
+
 std::tuple<uint32_t, uint32_t>
 Compression::getWarframeBlockLens(uint8_t* data)
 {
@@ -270,6 +312,15 @@ Compression::getKeystoneBlockLens(uint8_t* data)
 	return { blockCompLen, blockLen };
 }
 
+std::tuple<uint32_t, uint32_t>
+Compression::getDarkSectorBlockLens(uint8_t* data)
+{
+	uint32_t blockComLen = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+	uint32_t blockDecomLen = (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
+
+	return { blockComLen, blockDecomLen };
+}
+
 std::streampos
 Compression::getFileLen(std::ifstream& file)
 {
@@ -286,11 +337,16 @@ Compression::decompressOodle(uint8_t* inputData, size_t inputLen, uint8_t* outpu
 	OodleLZ_Decompress(inputData, inputLen, outputData, outputLen, OodleLZ_FuzzSafe_No, OodleLZ_CheckCRC_No, OodleLZ_Verbosity_None, 0, 0, 0, 0, 0, 0, OodleLZ_Decode_ThreadPhaseAll);
 }
 
-void
+unsigned int
 Compression::decompressLz(uint8_t* inputData, uint32_t inputLen, uint8_t* outputData, uint32_t outputLen)
 {
 	if (inputLen == outputLen)
+	{
 		outputData = inputData;
+		return inputLen;
+	}
 	else
-		lzf_decompress((char*)inputData, inputLen, (char*)outputData, outputLen);
+	{
+		return lzf_decompress((char*)inputData, inputLen, (char*)outputData, outputLen);
+	}
 }

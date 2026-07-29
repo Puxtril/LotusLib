@@ -44,15 +44,17 @@ namespace LotusLib::Impl {
 		static std::vector<uint8_t> decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 		static void decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
 
+		static void decompressDarkSector(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
 	private:
 		static std::tuple<uint32_t, uint32_t> getWarframeBlockLens(uint8_t* data);
 		static std::tuple<uint32_t, uint32_t> getEEBlockLensOodle(uint8_t* data);
 		static std::tuple<uint16_t, uint16_t> getEEBlockLensLz(uint8_t* data);
 		static std::tuple<uint32_t, uint32_t> getKeystoneBlockLens(uint8_t* data);
+		static std::tuple<uint32_t, uint32_t> getDarkSectorBlockLens(uint8_t* data);
 
 		static std::streampos getFileLen(std::ifstream& file);
 
 		static void decompressOodle(uint8_t* inputData, size_t inputLen, uint8_t* outputData, size_t outputLen);
-		static void decompressLz(uint8_t* inputData, uint32_t inputLen, uint8_t* outputData, uint32_t outputLen);
+		static unsigned int decompressLz(uint8_t* inputData, uint32_t inputLen, uint8_t* outputData, uint32_t outputLen);
 	};
 }

@@ -153,24 +153,23 @@ PackageSplit::fileDupeCount() const
 }
 
 std::vector<uint8_t>
-PackageSplit::getFileUncompressed(const std::string& internalPath) const
+PackageSplit::getFileCompressed(const std::string& internalPath) const
 {
 	m_state->tocTree.initialize();
 	const FileNode& entry = getFileNode(internalPath);
-	return getFileUncompressed(entry);
+	return getFileCompressed(entry);
 }
 
 std::vector<uint8_t>
-PackageSplit::getFileUncompressed(const FileNode& entry) const
+PackageSplit::getFileCompressed(const FileNode& entry) const
 {
 	if (!m_state->cacheExists)
 		throw LotusException("Cannot get data, cache file missing: " + m_cachePath.string());
 
 	m_state->tocTree.initialize();
 
-	m_state->cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
 	std::vector<uint8_t> data(entry.compLen);
-	m_state->cacheReader.read((char*)data.data(), entry.compLen);
+	readRaw(entry, data.data());
 	return data;
 }
 
@@ -191,7 +190,7 @@ PackageSplit::getFile(const FileNode& entry) const
 	m_state->tocTree.initialize();
 	
 	if (entry.compLen == entry.len)
-		return getFileUncompressed(entry);
+		return getFileCompressed(entry);
 
 	std::vector<uint8_t> decompressedData(entry.len);
 	decompress(entry, decompressedData.data());
@@ -241,8 +240,7 @@ PackageSplit::decompress(const FileNode& entry, uint8_t* outData) const
 {
 	if (entry.compLen == entry.len)
 	{
-		m_state->cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
-		m_state->cacheReader.read((char*)outData, entry.compLen);
+		readRaw(entry, outData);
 		return;
 	}
 
@@ -250,6 +248,9 @@ PackageSplit::decompress(const FileNode& entry, uint8_t* outData) const
 
 	switch(m_game)
 	{
+		case Game::DARKSECTOR:
+			Impl::Compression::decompressDarkSector(m_compressScratch.get(), entry, m_state->cacheReader, outData);
+			break;
 		case Game::KEYSTONE:
 			Impl::Compression::decompressKeystone(m_compressScratch.get(), entry, m_state->cacheReader, outData);
 			break;
@@ -269,22 +270,51 @@ PackageSplit::decompress(const FileNode& entry, uint8_t* outData) const
 	}
 }
 
+void
+PackageSplit::readRaw(const FileNode& entry, uint8_t* outData) const
+{
+	m_state->cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+	if (m_game == Game::DARKSECTOR)
+	{
+		m_state->cacheReader.seekg(26, std::ios::cur);
+		uint16_t nameLen;
+		m_state->cacheReader.read((char*)&nameLen, 2);
+		uint16_t extraLen;
+		m_state->cacheReader.read((char*)&extraLen, 2);
+		m_state->cacheReader.seekg(nameLen + extraLen, std::ios::cur);
+	}
+	m_state->cacheReader.read((char*)outData, entry.compLen);
+}
+
 bool
 PackageSplit::_isTOCValid() const
 {
 	std::ifstream tocReader(m_tocPath, std::ios_base::in | std::ios_base::binary);
 
-	unsigned int magicNumber;
-	unsigned int archiveVersion;
+	if (m_game == Game::DARKSECTOR)
+	{
+		uint16_t magicNumber;
+		tocReader.read(reinterpret_cast<char*>(&magicNumber), 2);
 
-	tocReader.read(reinterpret_cast<char*>(&magicNumber), 4);
-	tocReader.read(reinterpret_cast<char*>(&archiveVersion), 4);
+		if (magicNumber == 19280)
+			return true;
 
-	if (magicNumber != m_magicNumber)
 		return false;
+	}
+	else if (m_game != Game::UNKNOWN)
+	{
+		uint32_t magicNumber;
+		uint32_t archiveVersion;
+		
+		tocReader.read(reinterpret_cast<char*>(&magicNumber), 4);
+		tocReader.read(reinterpret_cast<char*>(&archiveVersion), 4);
+		
+		if (magicNumber != m_magicNumber)
+			return false;
 	
-	if (archiveVersion != m_archiveVersion1 && archiveVersion != m_archiveVersion2)
-		return false;
+		if (archiveVersion != m_archiveVersion1 && archiveVersion != m_archiveVersion2)
+			return false;
 
-	return true;
+		return true;
+	}
 }

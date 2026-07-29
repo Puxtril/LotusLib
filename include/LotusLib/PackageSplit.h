@@ -77,8 +77,8 @@ namespace LotusLib
 		size_t fileDupeCount() const;
 
 		// FileNode MUST be from this PackageSplit
-		std::vector<uint8_t> getFileUncompressed(const std::string& internalPath) const;
-		std::vector<uint8_t> getFileUncompressed(const FileNode& entry) const;
+		std::vector<uint8_t> getFileCompressed(const std::string& internalPath) const;
+		std::vector<uint8_t> getFileCompressed(const FileNode& entry) const;
 		std::vector<uint8_t> getFile(const std::string& internalPath) const;
 		std::vector<uint8_t> getFile(const FileNode& entry) const;
 
@@ -88,6 +88,7 @@ namespace LotusLib
 
 	private:
 		void decompress(const FileNode& entry, uint8_t* outData) const;
+		void readRaw(const FileNode& entry, uint8_t* outData) const;
 		bool _isTOCValid() const;
 	};
 }

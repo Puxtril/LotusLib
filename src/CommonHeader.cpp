@@ -3,6 +3,20 @@
 int
 LotusLib::commonHeaderFindLen(BinaryReader::BinaryReader& reader, LotusLib::Game game)
 {
+	if (game == Game::DARKSECTOR)
+	{
+		reader.seek(7, std::ios::cur);
+
+		uint32_t sourcePathCount = reader.readUInt32();
+		for (uint32_t x = 0; x < sourcePathCount; x++)
+		{
+			uint32_t curLen = reader.readUInt32();			
+			reader.seek(curLen, std::ios::cur);
+		}
+
+		return (int)reader.tell();
+	}
+
 	if (game == LotusLib::Game::KEYSTONE || game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
 		reader.seek(16, std::ios::beg);
 
@@ -47,6 +61,14 @@ LotusLib::commonHeaderFindLen(BinaryReader::BinaryReader& reader, LotusLib::Game
 uint32_t
 LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReader& reader, LotusLib::Game game, bool seek)
 {
+	if (game == Game::DARKSECTOR)
+	{
+		uint32_t format = reader.readUInt32();
+		if (seek)
+			reader.seek(-4, std::ios::cur);
+		return format;
+	}
+
 	size_t pos = reader.tell();
 
 	if (game == LotusLib::Game::KEYSTONE || game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
@@ -97,6 +119,28 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReader& reader, LotusLib::G
 int
 LotusLib::commonHeaderRead(BinaryReader::BinaryReader& reader, CommonHeader& header, LotusLib::Game game)
 {
+	if (game == Game::DARKSECTOR)
+	{
+		header.type = reader.readUInt32();
+
+		reader.seek(3, std::ios::cur);
+
+		uint32_t sourcePathCount = reader.readUInt32();
+		if (sourcePathCount > 3000)
+			throw CommonHeaderError("Source path in Common Header was too large: " + std::to_string(sourcePathCount));
+
+		for (uint32_t x = 0; x < sourcePathCount; x++)
+		{
+			uint32_t curLen = reader.readUInt32();
+			if (curLen > 200)
+				throw CommonHeaderError("Source path length in Common Header was too large: " + std::to_string(curLen));
+
+			header.paths.push_back(reader.readAsciiString(curLen));
+		}
+
+		return reader.tell();
+	}
+
 	if (game == LotusLib::Game::KEYSTONE || game == LotusLib::Game::WARFRAME || game == LotusLib::Game::WARFRAME_PE || game == LotusLib::Game::SOULFRAME)
 		reader.readUInt8Array(&header.hash[0], 16);
 

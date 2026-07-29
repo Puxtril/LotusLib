@@ -16,7 +16,11 @@ TOCTree::initialize()
 {
     if (!m_isInitilized)
     {
-        readToc(m_tocPath);
+        if (m_tocPath.extension() == ".toc")
+            readToc(m_tocPath);
+        else if (m_tocPath.extension() == ".cache")
+            readZip(m_tocPath);
+
         m_isInitilized = true;
     }
 }
@@ -310,7 +314,6 @@ TOCTree::readToc(const std::filesystem::path& tocPath)
             DirNode& curNode = m_dirs[dirCount];
 			curNode.name = std::string(entryBuffer.name);
             curNode.parentNode = &m_dirs[entryBuffer.parentDirIndex];
-            curNode.tocEntryIndex = i;
 
             m_dirs[entryBuffer.parentDirIndex].childDirs.push_back(&m_dirs[dirCount]);
             dirCount++;
@@ -326,7 +329,7 @@ TOCTree::readToc(const std::filesystem::path& tocPath)
                 curNode.timeStamp = entryBuffer.timeStamp;
                 curNode.compLen = entryBuffer.compressedLen;
                 curNode.len = entryBuffer.length;
-                curNode.tocEntryIndex = i;
+                curNode.tocOffset = 8 + (i * TOC_ENTRY_LEN);
                 
                 m_dirs[entryBuffer.parentDirIndex].childFileDupes.push_back(&m_filesDupes[fileDupeCount]);
                 fileDupeCount++;
@@ -341,7 +344,7 @@ TOCTree::readToc(const std::filesystem::path& tocPath)
                 curNode.timeStamp = entryBuffer.timeStamp;
                 curNode.compLen = entryBuffer.compressedLen;
                 curNode.len = entryBuffer.length;
-                curNode.tocEntryIndex = i;
+                curNode.tocOffset = 8 + (i * TOC_ENTRY_LEN);
 
                 m_dirs[entryBuffer.parentDirIndex].childFiles.push_back(&m_files[fileCount]);
                 fileCount++;
@@ -350,8 +353,153 @@ TOCTree::readToc(const std::filesystem::path& tocPath)
 	}
 
     m_dirs[0].parentNode = nullptr;
-    m_dirs[0].tocEntryIndex = 0;
     m_rootNode = &m_dirs[0];
+}
+
+void
+TOCTree::readZip(const std::filesystem::path& cachePath)
+{
+    std::ifstream zipReader(cachePath, std::ios_base::in | std::ios_base::binary);
+
+    // Start of Central Directory Terminator
+    zipReader.seekg(-22, std::ios::end);
+
+    // Check magic number
+    uint16_t magic;
+    zipReader.read((char*)&magic, 2);
+    if (magic != 19280)
+        throw LotusException("Invalid Dark Sector zip: Central Directory end Magic Number");
+
+    // Read contents
+    int16_t entryCount;
+    uint32_t entryOffset;
+    zipReader.seekg(8, std::ios::cur);
+    zipReader.read((char*)&entryCount, 2);
+    zipReader.seekg(4, std::ios::cur);
+    zipReader.read((char*)&entryOffset, 4);
+
+    // Since we don't know how many directories will be created, take a guess.
+    // We must allocate now to avoid re-allocations.
+    m_files.resize(entryCount);
+    m_dirs.resize(std::max((int)entryCount, 100));
+    m_rootNode = &m_dirs[0];
+    size_t dirsInsertPtr = 1;
+    
+    // Read entries + build tree
+    zipReader.seekg(entryOffset, std::ios::beg);
+    for (int32_t iEntry = 0; iEntry < entryCount; iEntry++)
+    {
+        int64_t entryOffset = zipReader.tellg();
+
+        uint16_t magic;
+        zipReader.read((char*)&magic, 2);
+        if (magic != 19280)
+            throw LotusException("Invalid Dark Sector zip: Entry Magic Number at " + std::to_string(zipReader.tellg()));
+
+        uint16_t time;
+        uint16_t date;
+        int32_t compLen;
+        int32_t len;
+        uint16_t nameLen;
+        uint32_t offset;
+
+        zipReader.seekg(8, std::ios::cur);
+        
+        // This is the compression field
+        // 0 = Uncompressed, 64 = Compressed
+        // Rather than store this on TOCFile, compare compLen to len
+        // Equal values is uncompressed, mismatch is compressed (Even if compLen is greater!)
+        zipReader.seekg(2, std::ios::cur);
+
+        zipReader.read((char*)&time, 2);
+        zipReader.read((char*)&date, 2);
+        zipReader.seekg(4, std::ios::cur);
+        zipReader.read((char*)&compLen, 4);
+        zipReader.read((char*)&len, 4);
+        zipReader.read((char*)&nameLen, 2);
+        zipReader.seekg(12, std::ios::cur);
+        zipReader.read((char*)&offset, 4);
+
+        std::vector<char> name(nameLen);
+        zipReader.read(name.data(), nameLen);
+
+        // `name` is an absolute path to the file (no leading slash).
+        // Parse the directories to build a tree.
+        DirNode* nextDirPos;
+        DirNode* dirPos = m_rootNode;
+        size_t curStart = 0, curEnd = 0;
+        while (curEnd < nameLen)
+        {
+            // Find the next forward slash
+            while (curEnd++ < nameLen && name[curEnd] != '/') {}
+
+            // End of path, this is the file
+            if (curEnd >= nameLen)
+            {
+                FileNode& curNode = m_files[iEntry];
+                curNode.name = std::string(name.data() + curStart, nameLen - curStart);
+                curNode.parentDir = dirPos;
+                curNode.cacheOffset = offset;
+                curNode.timeStamp = dosDatetimeToDosFiletime(date, time);
+                curNode.compLen = compLen;
+                curNode.len = len;
+                curNode.tocOffset = entryOffset;
+
+                dirPos->childFiles.push_back(&m_files[iEntry]);
+            }
+            // Still in the path, this is a directory
+            else
+            {
+                // Find if the current directory has already been added to the tree
+                DirNode* foundNode = nullptr;
+                for (DirNode* curNode : dirPos->childDirs)
+                {
+                    if (strncmp(name.data() + curStart, curNode->name.data(), curEnd - curStart) == 0)
+                    {
+                        foundNode = curNode;
+                        break;
+                    }
+                }
+                // Add directory to the tree
+                if (foundNode == nullptr)
+                {
+                    DirNode& curDir = m_dirs[dirsInsertPtr++];
+                    curDir.name = std::string(name.data() + curStart, curEnd - curStart);
+                    curDir.parentNode = dirPos;
+
+                    dirPos->childDirs.push_back(&curDir);
+                    nextDirPos = &curDir;
+                }
+                // Exists
+                else
+                {
+                    nextDirPos = foundNode;
+                }
+            }
+
+            dirPos = nextDirPos;
+            curStart = curEnd + 1;
+        }
+
+    }
+
+    m_dirs.resize(dirsInsertPtr);
+}
+
+int64_t
+TOCTree::dosDatetimeToDosFiletime(const uint16_t& date, const uint16_t& time)
+{
+    struct tm t;
+    t.tm_year = ((date >> 9) & 0x7F) + 1980;
+    t.tm_mon = ((date >> 5) & 0xF);
+    t.tm_mday = date & 0x1F;
+    t.tm_hour = (time >> 11) & 0x1F;
+    t.tm_min = (time >> 5) & 0x3F;
+    t.tm_sec = time & 0x1F;
+
+    time_t epoch = mktime(&t); // Unix Epoch
+
+    return (epoch + 11644473600UL) * 10000000UL; // Windows FILETIME
 }
 
 ////////////////////////////////////////////////////////////////////////////////

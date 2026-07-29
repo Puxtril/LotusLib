@@ -27,7 +27,7 @@ namespace LotusLib
 		int64_t timeStamp; // DOS timestamp
 		int32_t compLen;
 		int32_t len;
-		int tocEntryIndex;
+		int64_t tocOffset;
     };
 
 
@@ -35,7 +35,6 @@ namespace LotusLib
     {
 		std::string name;
 		DirNode* parentNode;
-		int tocEntryIndex;
 		std::vector<DirNode*> childDirs;
 		std::vector<FileNode*> childFiles;
 		std::vector<FileNode*> childFileDupes;
@@ -85,7 +84,15 @@ namespace LotusLib
 		const FileNode* findChildFile(const DirNode* dirNode, const std::string& path, size_t start, size_t len) const;
 		const DirNode* findChildDir(const DirNode* dirNode, const std::string& name) const;
 		const FileNode* findChildFile(const DirNode* dirNode, const std::string& name) const;
+
+		// Separate TOC file (Everything except Dark Sector)
 		void readToc(const std::filesystem::path& tocPath);
+		// Dark Sector ZIP
+		void readZip(const std::filesystem::path& tocPath);
+
+		// DOSDatetime: https://learn.microsoft.com/en-us/windows/win32/api/oleauto/nf-oleauto-dosdatetimetovarianttime#remarks
+		// DosFiletime: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime#remarks
+		int64_t dosDatetimeToDosFiletime(const uint16_t& date, const uint16_t& time);
 	};
 
 	////////////////////////////////////////////////////////////////////////////////

@@ -300,7 +300,7 @@ Package::getFileUncompressed(PkgSplitType split, const std::string& internalPath
 {
     if (!m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getFileUncompressed(internalPath);
+    return m_pkgs[(int)split]->getFileCompressed(internalPath);
 }
 
 std::vector<uint8_t>
@@ -308,7 +308,7 @@ Package::getFileUncompressed(PkgSplitType split, const FileNode& entry) const
 {
     if (!m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getFileUncompressed(entry);
+    return m_pkgs[(int)split]->getFileCompressed(entry);
 }
 
 CommonHeader
@@ -329,10 +329,21 @@ Package::loadPkgSplits()
     for (int i = 0; i < 3; i++)
     {
         auto pair = getSplitPath((PkgSplitType)i);
-        // Only check TOC file existance
-        if (std::filesystem::exists(std::get<0>(pair)))
+
+        // Since DS doesn't have TOC files, use cache for both TOC and Cache on PackageSplit
+        if (m_game == Game::DARKSECTOR)
         {
-            m_pkgs[i].emplace(PackageSplit{std::get<0>(pair), std::get<1>(pair), m_game, (PkgSplitType)i});
+            if (std::filesystem::exists(std::get<1>(pair)))
+            {
+                m_pkgs[i].emplace(PackageSplit{std::get<1>(pair), std::get<1>(pair), m_game, (PkgSplitType)i});
+            }
+        }
+        else if (m_game != Game::UNKNOWN)
+        {
+            if (std::filesystem::exists(std::get<0>(pair)))
+            {
+                m_pkgs[i].emplace(PackageSplit{std::get<0>(pair), std::get<1>(pair), m_game, (PkgSplitType)i});
+            }
         }
     }
 }
