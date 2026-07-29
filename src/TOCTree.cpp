@@ -490,8 +490,8 @@ int64_t
 TOCTree::dosDatetimeToDosFiletime(const uint16_t& date, const uint16_t& time)
 {
     struct tm t;
-    t.tm_year = ((date >> 9) & 0x7F) + 1980;
-    t.tm_mon = ((date >> 5) & 0xF);
+    t.tm_year = ((date >> 9) & 0x7F) + 80;
+    t.tm_mon = ((date >> 5) & 0xF) - 1;
     t.tm_mday = date & 0x1F;
     t.tm_hour = (time >> 11) & 0x1F;
     t.tm_min = (time >> 5) & 0x3F;
