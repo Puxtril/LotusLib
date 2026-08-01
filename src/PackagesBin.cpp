@@ -9,7 +9,7 @@ Impl::PackagesBinState::PackagesBinState()
 
 Impl::PackagesBinState::~PackagesBinState()
 {
-    if (isInitilized && !errorReading)
+    if (isInitilized && !errorReading && usesZstd)
     {
         ZSTD_freeDCtx(zstdContext);
         ZSTD_freeDDict(zstdDict);
@@ -31,8 +31,14 @@ PackagesBin::initilize(const std::vector<uint8_t>& data, LotusLib::Game game)
     m_state->game = game;
 
     BinaryReader::BufferedSlice reader(data.data(), data.size());
-    m_state->zstdContext = ZSTD_createDCtx();
-    ZSTD_DCtx_setParameter(m_state->zstdContext, ZSTD_d_experimentalParam1, 1);
+    m_state->version = readVersion(reader);
+    m_state->usesZstd = m_state->version > 31;
+
+    if (m_state->usesZstd)
+    {
+        m_state->zstdContext = ZSTD_createDCtx();
+        ZSTD_DCtx_setParameter(m_state->zstdContext, ZSTD_d_experimentalParam1, 1);
+    }
 
     try
     {
@@ -137,25 +143,495 @@ PackagesBin::end() const
 std::vector<Impl::RawPackagesEntity>
 PackagesBin::readFile(BinaryReader::BufferedSlice& reader)
 {
-    reader.seek(16, std::ios::beg);
-    reader.readUInt32(20, 20, "Packages.bin header size");
-    m_state->version = reader.readUInt32(40, 100, "Packages.bin Version");
-    reader.readUInt32(1, 1, "Packages.bin flags");
-
-    if (m_state->version < 45)
-        return readFile1(reader);
+    if (m_state->version == 16)
+        return readFile_16(reader);
+    else if (m_state->version == 19)
+        return readFile_19(reader);
+    else if (m_state->version > 23 && m_state->version < 29)
+        return readFile_24_28(reader);
+    else if (m_state->version == 29)
+        return readFile_29(reader);
+    else if (m_state->version > 29 && m_state->version < 32)
+        return readFile_30_31(reader);
+    else if (m_state->version == 34)
+        return readFile_34(reader);
+    else if (m_state->version == 36)
+        return readFile_36(reader);
+    else if (m_state->version < 45 && m_state->version > 37)
+        return readFile_38_44(reader);
     else if (m_state->version == 45)
-        return readFile2(reader);
+        return readFile_45(reader);
+    else if (m_state->version > 45)
+        return readFile_46(reader);
     else
-        return readFile3(reader);
+        throw LotusException("Unknown Packages.bin version " + std::to_string(m_state->version));
 }
 
 std::vector<Impl::RawPackagesEntity>
-PackagesBin::readFile1(BinaryReader::BufferedSlice& reader)
+PackagesBin::readFile_16(BinaryReader::BufferedSlice& reader)
+{
+    reader.seek(0, std::ios::beg);
+    reader.readUInt32(12, 12, "Packages.bin header size");
+    reader.readUInt32();
+    reader.readUInt16(1, 1, "Packages.bin flags");
+
+    // ?????????????????????????
+    reader.readUInt8();
+
+    int refCount = reader.readUInt32();
+    while (refCount--)
+    {
+        uint32_t nameLen = reader.readUInt32();
+        reader.seek(nameLen, std::ios::cur);
+        nameLen = reader.readUInt32();
+        reader.seek(nameLen, std::ios::cur);
+        reader.seek(4, std::ios::cur);
+    }
+
+    // uint32_t dataBufferLen = reader.readUInt32();
+    // BinaryReader::BufferedSlice dataBuffer = reader.getSlice(dataBufferLen);
+
+    uint32_t entityCount = reader.readUInt32();
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
+
+    for (uint32_t i = 0; i < entityCount; i++)
+    {
+        Impl::RawPackagesEntity& curEntity = entities[i];
+
+        uint32_t pkgNameLen = reader.readUInt32();
+        curEntity.pkg = reader.readAsciiString(pkgNameLen);
+
+        uint32_t fileNameLen = reader.readUInt32();
+        curEntity.filename = reader.readAsciiString(fileNameLen);
+
+        reader.seek(12, std::ios::cur);
+
+        uint32_t unkStr = reader.readUInt32();
+        reader.seek(unkStr, std::ios::cur);
+
+        int len = reader.readUInt32();
+        curEntity.attributeData.resize(len);
+        reader.readUInt8Array((uint8_t*)curEntity.attributeData.data(), len);
+
+        curEntity.decompressedLen = len;
+        curEntity.isCompressed = false;
+    }
+
+    return entities;
+}
+
+std::vector<Impl::RawPackagesEntity>
+PackagesBin::readFile_19(BinaryReader::BufferedSlice& reader)
+{
+    reader.seek(0, std::ios::beg);
+    reader.readUInt32(16, 16, "Packages.bin header size");
+    reader.readUInt32();
+    reader.readUInt16(1, 1, "Packages.bin flags");
+
+    // ?????????????????????????
+    reader.readUInt8();
+
+    int refCount = reader.readUInt32();
+    while (refCount--)
+    {
+        uint32_t nameLen = reader.readUInt32();
+        reader.seek(nameLen + 4, std::ios::cur);
+    }
+
+    uint32_t dataBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice dataBuffer = reader.getSlice(dataBufferLen);
+
+    uint32_t entityCount = reader.readUInt32();
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
+
+    for (uint32_t i = 0; i < entityCount; i++)
+    {
+        Impl::RawPackagesEntity& curEntity = entities[i];
+
+        uint32_t pkgNameLen = reader.readUInt32();
+        curEntity.pkg = reader.readAsciiString(pkgNameLen);
+
+        uint32_t fileNameLen = reader.readUInt32();
+        curEntity.filename = reader.readAsciiString(fileNameLen);
+
+        // short + short + byte
+        reader.seek(5, std::ios::cur);
+
+        uint32_t unkStr = reader.readUInt32();
+        reader.seek(unkStr, std::ios::cur);
+
+        reader.readUInt32(0, 0, "Unk 2");
+
+        // Null-terminated string
+        int len = 0;
+        while (dataBuffer.getPtr()[dataBuffer.tell() + len++] != 0) {}
+        curEntity.attributeData.resize(len);
+        dataBuffer.readUInt8Array((uint8_t*)curEntity.attributeData.data(), len);
+
+        curEntity.decompressedLen = len;
+        curEntity.isCompressed = false;
+    }
+
+    return entities;
+}
+
+std::vector<Impl::RawPackagesEntity>
+PackagesBin::readFile_24_28(BinaryReader::BufferedSlice& reader)
 {
     reader.seek(16, std::ios::beg);
     reader.readUInt32(20, 20, "Packages.bin header size");
-    m_state->version = reader.readUInt32(30, 100, "Packages.bin Version");
+    reader.readUInt32();
+    reader.readUInt32(1, 1, "Packages.bin flags");
+
+    // ?????????????????????????
+    reader.readUInt8();
+
+    int refCount = reader.readUInt32();
+    while (refCount--)
+    {
+        uint32_t nameLen = reader.readUInt32();
+        reader.seek(nameLen + 4, std::ios::cur);
+    }
+
+    uint32_t dataBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice dataBuffer = reader.getSlice(dataBufferLen);
+
+    uint32_t entityCount = reader.readUInt32();
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
+
+    for (uint32_t i = 0; i < entityCount; i++)
+    {
+        // if (i > 194583) { std::cout << "index: " << i << std::endl; } 
+        Impl::RawPackagesEntity& curEntity = entities[i];
+
+        uint32_t pkgNameLen = reader.readUInt32();
+        curEntity.pkg = reader.readAsciiString(pkgNameLen);
+        // if (i > 194583) { std::cout << "pkgNameLen: " << pkgNameLen << std::endl; } 
+
+        uint32_t fileNameLen = reader.readUInt32();
+        curEntity.filename = reader.readAsciiString(fileNameLen);
+        // if (i > 194583) { std::cout << "fileNameLen: " << fileNameLen << std::endl; } 
+
+        // short + short + byte
+        reader.seek(5, std::ios::cur);
+
+        uint32_t unkStr = reader.readUInt32();
+        reader.seek(unkStr, std::ios::cur);
+        // if (i > 194583) { std::cout << "unkStr: " << unkStr << std::endl; } 
+
+        reader.readUInt32(0, 0, "Unk 2");
+
+        // Null-terminated string
+        int len = 0;
+        while (dataBuffer.getPtr()[dataBuffer.tell() + len++] != 0) {}
+        curEntity.attributeData.resize(len);
+        dataBuffer.readUInt8Array((uint8_t*)curEntity.attributeData.data(), len);
+        // if (i > 194583) { std::cout << "len: " << len << std::endl; } 
+
+        curEntity.decompressedLen = len;
+        curEntity.isCompressed = false;
+    }
+
+    return entities;
+}
+
+std::vector<Impl::RawPackagesEntity>
+PackagesBin::readFile_29(BinaryReader::BufferedSlice& reader)
+{
+    reader.seek(16, std::ios::beg);
+    reader.readUInt32(20, 20, "Packages.bin header size");
+    reader.readUInt32();
+    reader.readUInt32(1, 1, "Packages.bin flags");
+
+    // ?????????????????????????
+    reader.readUInt8();
+
+    int refCount = reader.readUInt32();
+    while (refCount--)
+    {
+        uint32_t nameLen = reader.readUInt32();
+        reader.seek(nameLen + 1, std::ios::cur);
+    }
+
+    uint32_t dataBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice dataBuffer = reader.getSlice(dataBufferLen);
+
+    uint32_t entityCount = reader.readUInt32();
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
+
+    for (uint32_t i = 0; i < entityCount; i++)
+    {
+        Impl::RawPackagesEntity& curEntity = entities[i];
+
+        uint32_t pkgNameLen = reader.readUInt32();
+        curEntity.pkg = reader.readAsciiString(pkgNameLen);
+
+        uint32_t fileNameLen = reader.readUInt32();
+        curEntity.filename = reader.readAsciiString(fileNameLen);
+
+        // short + short + byte
+        reader.seek(5, std::ios::cur);
+
+        uint32_t unkStr = reader.readUInt32();
+        reader.seek(unkStr, std::ios::cur);
+
+        reader.readUInt32(0, 0, "Unk 2");
+
+        // Null-terminated string
+        int len = 0;
+        while (dataBuffer.getPtr()[dataBuffer.tell() + len++] != 0) {}
+        curEntity.attributeData.resize(len);
+        dataBuffer.readUInt8Array((uint8_t*)curEntity.attributeData.data(), len);
+
+        curEntity.decompressedLen = len;
+        curEntity.isCompressed = false;
+    }
+
+    return entities;
+}
+
+std::vector<Impl::RawPackagesEntity>
+PackagesBin::readFile_30_31(BinaryReader::BufferedSlice& reader)
+{
+    reader.seek(16, std::ios::beg);
+    reader.readUInt32(20, 20, "Packages.bin header size");
+    reader.readUInt32();
+    reader.readUInt32(1, 1, "Packages.bin flags");
+
+    int refCount = reader.readUInt32();
+    while (refCount--)
+    {
+        uint32_t nameLen = reader.readUInt32();
+        reader.seek(nameLen + 1, std::ios::cur);
+    }
+
+    uint32_t dataBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice dataBuffer = reader.getSlice(dataBufferLen);
+
+    uint32_t entityCount = reader.readUInt32();
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
+
+    for (uint32_t i = 0; i < entityCount; i++)
+    {
+        Impl::RawPackagesEntity& curEntity = entities[i];
+
+        uint32_t pkgNameLen = reader.readUInt32();
+        curEntity.pkg = reader.readAsciiString(pkgNameLen);
+
+        uint32_t fileNameLen = reader.readUInt32();
+        curEntity.filename = reader.readAsciiString(fileNameLen);
+
+        // short + short + byte
+        reader.seek(5, std::ios::cur);
+
+        uint32_t unkStr = reader.readUInt32();
+        reader.seek(unkStr, std::ios::cur);
+
+        reader.readUInt32(0, 0, "Unk 2");
+
+        // Null-terminated string
+        int len = 0;
+        while (dataBuffer.getPtr()[dataBuffer.tell() + len++] != 0) {}
+        curEntity.attributeData.resize(len);
+        dataBuffer.readUInt8Array((uint8_t*)curEntity.attributeData.data(), len);
+
+        curEntity.decompressedLen = len;
+        curEntity.isCompressed = false;
+    }
+
+    return entities;
+}
+
+std::vector<Impl::RawPackagesEntity>
+PackagesBin::readFile_34(BinaryReader::BufferedSlice& reader)
+{
+    reader.seek(16, std::ios::beg);
+    reader.readUInt32(20, 20, "Packages.bin header size");
+    reader.readUInt32();
+    reader.readUInt32(1, 1, "Packages.bin flags");
+
+    reader.readUInt32(0, 0, "Unknown 0");
+
+    uint32_t comFlagsBufLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comFlagsBuf = reader.getSlice(comFlagsBufLen);
+
+    uint32_t comSizeBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comSizeBuffer = reader.getSlice(comSizeBufferLen);
+
+    uint32_t comZBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
+
+    uint32_t dictSize = comSizeBuffer.readUInt32();
+    
+    createZstdDictionary(comZBuffer.getPtr(), dictSize);
+
+    comZBuffer.seek(dictSize, std::ios::cur);
+
+    uint32_t entityCount = reader.readUInt32();
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
+
+    unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
+    size_t flagBufferCurrentBit = 0;
+
+    for (uint32_t i = 0; i < entityCount; i++)
+    {
+        Impl::RawPackagesEntity& curEntity = entities[i];
+
+        uint32_t pkgNameLen = reader.readUInt32();
+        curEntity.pkg = reader.readAsciiString(pkgNameLen);
+
+        uint32_t fileNameLen = reader.readUInt32();
+        curEntity.filename = reader.readAsciiString(fileNameLen);
+
+        // short + short + byte
+        reader.seek(5, std::ios::cur);
+
+        uint32_t parentTypeLen = reader.readUInt32();
+        curEntity.parentType = reader.readAsciiString(parentTypeLen);
+
+        // ???
+        reader.readUInt32(0, 0, "UNK u32 " + std::to_string(reader.tell()));
+
+        // Entity
+        unsigned char hasText = flagBufferCurrentByte >> flagBufferCurrentBit++ & 1;
+        if (flagBufferCurrentBit > 7)
+        {
+            flagBufferCurrentByte = comFlagsBuf.readUInt8();
+            flagBufferCurrentBit -= 8;
+        }
+
+        std::string textParameters;
+
+        if (hasText > 0)
+        {
+            uint64_t size = comSizeBuffer.readULEB(32);
+            BinaryReader::BufferedSlice frameData = comZBuffer.getSlice(size);
+
+            curEntity.isCompressed = (flagBufferCurrentByte >> flagBufferCurrentBit++ & 1) > 0;
+            if (flagBufferCurrentBit > 7)
+            {
+                flagBufferCurrentByte = comFlagsBuf.readUInt8();
+                flagBufferCurrentBit -= 8;
+            }
+
+            if (curEntity.isCompressed)
+                curEntity.decompressedLen = frameData.readULEB(32);
+            else
+                curEntity.decompressedLen = size;
+
+            curEntity.attributeData.resize(size);
+            memcpy(curEntity.attributeData.data(), frameData.getPtr() + frameData.tell(), size);
+            frameData.seek(size, std::ios::cur);
+        }
+    }
+
+    return entities;
+}
+
+std::vector<Impl::RawPackagesEntity>
+PackagesBin::readFile_36(BinaryReader::BufferedSlice& reader)
+{
+    reader.seek(16, std::ios::beg);
+    reader.readUInt32(20, 20, "Packages.bin header size");
+    reader.readUInt32();
+    reader.readUInt32(1, 1, "Packages.bin flags");
+
+    std::vector<std::string> references;
+    uint32_t referenceCount = reader.readUInt32(0, 1000, "Packages.bin Reference count");
+    references.resize(referenceCount);
+
+    for (size_t i = 0; i < referenceCount; i++)
+    {
+        uint32_t refNameLen = reader.readUInt32(0, 2000, "Packages.bin Reference name");
+        references[i] = reader.readAsciiString(refNameLen);
+        // Unknown
+        reader.seek(2, std::ios::cur);
+    }
+
+    reader.readUInt32(0, 0, "Packages.bin Package count");
+
+    uint32_t comFlagsBufLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comFlagsBuf = reader.getSlice(comFlagsBufLen);
+
+    uint32_t comSizeBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comSizeBuffer = reader.getSlice(comSizeBufferLen);
+
+    uint32_t comZBufferLen = reader.readUInt32();
+    BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
+
+    uint32_t dictSize = comSizeBuffer.readUInt32();
+    
+    createZstdDictionary(comZBuffer.getPtr(), dictSize);
+
+    comZBuffer.seek(dictSize, std::ios::cur);
+
+    uint32_t entityCount = reader.readUInt32();
+    std::vector<Impl::RawPackagesEntity> entities(entityCount);
+
+    unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
+    size_t flagBufferCurrentBit = 0;
+
+    for (uint32_t i = 0; i < entityCount; i++)
+    {
+        Impl::RawPackagesEntity& curEntity = entities[i];
+
+        uint32_t pkgNameLen = reader.readUInt32();
+        curEntity.pkg = reader.readAsciiString(pkgNameLen);
+
+        uint32_t fileNameLen = reader.readUInt32();
+        curEntity.filename = reader.readAsciiString(fileNameLen);
+
+        // short + byte
+        reader.seek(3, std::ios::cur);
+
+        uint32_t parentTypeLen = reader.readUInt32();
+        curEntity.parentType = reader.readAsciiString(parentTypeLen);
+
+        // ???
+        reader.readUInt32(0, 0, "UNK u32 " + std::to_string(reader.tell()));
+
+        // Entity
+        unsigned char hasText = flagBufferCurrentByte >> flagBufferCurrentBit++ & 1;
+        if (flagBufferCurrentBit > 7)
+        {
+            flagBufferCurrentByte = comFlagsBuf.readUInt8();
+            flagBufferCurrentBit -= 8;
+        }
+
+        std::string textParameters;
+
+        if (hasText > 0)
+        {
+            uint64_t size = comSizeBuffer.readULEB(32);
+            BinaryReader::BufferedSlice frameData = comZBuffer.getSlice(size);
+
+            curEntity.isCompressed = (flagBufferCurrentByte >> flagBufferCurrentBit++ & 1) > 0;
+            if (flagBufferCurrentBit > 7)
+            {
+                flagBufferCurrentByte = comFlagsBuf.readUInt8();
+                flagBufferCurrentBit -= 8;
+            }
+
+            if (curEntity.isCompressed)
+                curEntity.decompressedLen = frameData.readULEB(32);
+            else
+                curEntity.decompressedLen = size;
+
+            curEntity.attributeData.resize(size);
+            memcpy(curEntity.attributeData.data(), frameData.getPtr() + frameData.tell(), size);
+            frameData.seek(size, std::ios::cur);
+        }
+    }
+
+    return entities;
+}
+
+std::vector<Impl::RawPackagesEntity>
+PackagesBin::readFile_38_44(BinaryReader::BufferedSlice& reader)
+{
+    reader.seek(16, std::ios::beg);
+    reader.readUInt32(20, 20, "Packages.bin header size");
+    reader.readUInt32();
     reader.readUInt32(1, 1, "Packages.bin flags");
 
     // ???
@@ -249,7 +725,7 @@ PackagesBin::readFile1(BinaryReader::BufferedSlice& reader)
 }
 
 std::vector<Impl::RawPackagesEntity>
-PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
+PackagesBin::readFile_45(BinaryReader::BufferedSlice& reader)
 {
     std::array<size_t, 5> valueOffsets;
     findAllValueOffsets(reader, valueOffsets);
@@ -342,7 +818,7 @@ PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
 }
 
 std::vector<Impl::RawPackagesEntity>
-PackagesBin::readFile3(BinaryReader::BufferedSlice& reader)
+PackagesBin::readFile_46(BinaryReader::BufferedSlice& reader)
 {
     std::array<size_t, 5> valueOffsets;
     findAllValueOffsets(reader, valueOffsets);
@@ -445,6 +921,27 @@ PackagesBin::readFile3(BinaryReader::BufferedSlice& reader)
     }
 
     return entities;
+}
+
+int
+PackagesBin::readVersion(BinaryReader::BufferedSlice& reader)
+{
+    switch (m_state->game)
+    {
+        case Game::SOULFRAME:
+        case Game::WARFRAME:
+        case Game::WARFRAME_PE:
+        case Game::KEYSTONE:
+            reader.seek(20, std::ios::beg);
+            return reader.readUInt32();
+        case Game::DARKNESSII:
+        case Game::STARTREK:
+        case Game::DARKSECTOR:
+            reader.seek(4, std::ios::beg);
+            return reader.readUInt32();
+        case Game::UNKNOWN:
+            throw LotusLib::LotusException("Unknown game, cannot read packages.bin");
+    }
 }
 
 void

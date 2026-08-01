@@ -41,6 +41,7 @@ namespace LotusLib
             std::map<std::string, PackagesEntity> entityMap;
             bool isInitilized;
             bool errorReading;
+            bool usesZstd;
             int version;
             LotusLib::Game game;
             ZSTD_DDict* zstdDict;
@@ -52,6 +53,14 @@ namespace LotusLib
         };
     };
 
+    // Despite being named after its filename Packages.bin
+    // Games before Warframe (Star Trek, Darkness II, Dark Sector) call this file Packages.cs
+    //
+    // THESE ARE KNOWN TO HAVE JSON DECODE ERRORS:
+    // -------------------------------------------
+    // /Lotus/Types/Enemies/Corpus/Spaceman/AiRifleSimaris
+    // /Lotus/Sounds/Dialog/ForestEvent/Transmissions/HekProtect
+    // /Lotus/Sounds/Dialog/ForestEvent/Transmissions/ObjectiveSpottedExt
     class PackagesBin
     {
         std::shared_ptr<Impl::PackagesBinState> m_state;
@@ -73,13 +82,23 @@ namespace LotusLib
 
     private:
         std::vector<Impl::RawPackagesEntity> readFile(BinaryReader::BufferedSlice& reader);
-        // Versions: ?? - 44
-        std::vector<Impl::RawPackagesEntity> readFile1(BinaryReader::BufferedSlice& reader);
-        // Versions: 45
-        std::vector<Impl::RawPackagesEntity> readFile2(BinaryReader::BufferedSlice& reader);
-        // Versions: 46+
-        std::vector<Impl::RawPackagesEntity> readFile3(BinaryReader::BufferedSlice& reader);
 
+        // Dark Sector
+        std::vector<Impl::RawPackagesEntity> readFile_16(BinaryReader::BufferedSlice& reader);
+        // Star Trek + Darkness II
+        std::vector<Impl::RawPackagesEntity> readFile_19(BinaryReader::BufferedSlice& reader);
+        // Warframe and beyond
+        std::vector<Impl::RawPackagesEntity> readFile_24_28(BinaryReader::BufferedSlice& reader);
+        std::vector<Impl::RawPackagesEntity> readFile_29(BinaryReader::BufferedSlice& reader);
+        std::vector<Impl::RawPackagesEntity> readFile_30_31(BinaryReader::BufferedSlice& reader);
+        // Starts using ZSTD
+        std::vector<Impl::RawPackagesEntity> readFile_34(BinaryReader::BufferedSlice& reader);
+        std::vector<Impl::RawPackagesEntity> readFile_36(BinaryReader::BufferedSlice& reader);
+        std::vector<Impl::RawPackagesEntity> readFile_38_44(BinaryReader::BufferedSlice& reader);
+        std::vector<Impl::RawPackagesEntity> readFile_45(BinaryReader::BufferedSlice& reader);
+        std::vector<Impl::RawPackagesEntity> readFile_46(BinaryReader::BufferedSlice& reader);
+
+        int readVersion(BinaryReader::BufferedSlice& reader);
         void buildEntityMap(std::vector<Impl::RawPackagesEntity>& rawEntities);
 
         // Sets m_zstdDict and returns
