@@ -23,6 +23,12 @@ LotusLib::findPackageCategory(const std::string& name)
         return PackageCategory::TEXTURE;
     if (name.rfind("VideoTexture", 0) == 0)
         return PackageCategory::VIDEO_TEXTURE;
+    if (name.rfind("Emblem", 0) == 0)
+        return PackageCategory::EMBLEM;
+    if (name.rfind("BasePose", 0) == 0)
+        return PackageCategory::BASEPOSE;
+    if (name.rfind("Script", 0) == 0)
+        return PackageCategory::SCRIPT;
     return PackageCategory::UNKNOWN;
 }
 
@@ -174,7 +180,15 @@ LotusLib::packageCategoryToString(PackageCategory pkgCategory)
             return "Texture";
         case PackageCategory::VIDEO_TEXTURE:
             return "VideoTexture";
-    }
+        case PackageCategory::EMBLEM:
+            return "Emblem";
+        case PackageCategory::BASEPOSE:
+            return "BasePose";
+        case PackageCategory::SCRIPT:
+            return "Script";
+        case PackageCategory::SCENE:
+            return "Scene";
+        }
     return "Unknown";
 }
 
@@ -199,6 +213,14 @@ LotusLib::stringToPackageCategory(const std::string& pkgCategoryStr)
         return PackageCategory::TEXTURE;
     if (pkgCategoryStr == "videotexture" || pkgCategoryStr == "video-texture" || pkgCategoryStr == "video_texture")
         return PackageCategory::VIDEO_TEXTURE;
+    if (pkgCategoryStr == "emblem")
+        return PackageCategory::EMBLEM;
+    if (pkgCategoryStr == "basepose" || pkgCategoryStr == "base-pose" || pkgCategoryStr == "base_pose")
+        return PackageCategory::BASEPOSE;
+    if (pkgCategoryStr == "script")
+        return PackageCategory::SCRIPT;
+    if (pkgCategoryStr == "scene")
+        return PackageCategory::SCENE;
     return PackageCategory::UNKNOWN;
 }
 

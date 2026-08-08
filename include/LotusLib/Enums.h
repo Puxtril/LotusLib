@@ -31,6 +31,10 @@ namespace LotusLib
         SHADER              = 1 << 6,
         TEXTURE             = 1 << 7,
         VIDEO_TEXTURE       = 1 << 8,
+        EMBLEM              = 1 << 9,
+        BASEPOSE            = 1 << 10,
+        SCRIPT              = 1 << 11,
+        SCENE               = 1 << 12,
     };
 
     inline PackageCategory operator|(PackageCategory a, PackageCategory b)
