@@ -11,6 +11,12 @@ Package::Package(std::filesystem::path pkgDir, std::string pkgName, Game game)
         logWarn("Unable to match category for " + getName());
 }
 
+void
+Package::readFileTypes()
+{
+    loadFileTypes();
+}
+
 bool
 Package::hasSplit(PkgSplitType pkgSplit) const
 {
@@ -83,8 +89,18 @@ Package::getFileEntry(const std::string& internalPath) const
 }
 
 FileEntry
+Package::getFileEntry(const std::string& internalPath)
+{
+    loadFileTypes();
+    return const_cast<const Package*>(this)->getFileEntry(m_pkgs[(int)PkgSplitType::HEADER]->getFileNode(internalPath));
+}
+
+FileEntry
 Package::getFileEntry(const FileNode& entry) const
 {
+    if (!m_loadedFileTypes)
+        throw LotusException("Call Package.readFileTypes before getting FileType!");
+    
     FileEntry ret;
 
     ret.headerNode = entry;
@@ -94,6 +110,7 @@ Package::getFileEntry(const FileNode& entry) const
     try
     {
         ret.commonHeader = commonHeaderRead(ret.header, m_game);
+        ret.fileType = getFileType(ret.commonHeader.type);
     }
     catch (CommonHeaderError&)
     {
@@ -118,6 +135,13 @@ Package::getFileEntry(const FileNode& entry) const
     catch (PackageSplitNotFound&) {}
 
     return ret;
+}
+
+FileEntry
+Package::getFileEntry(const FileNode& entry)
+{
+    loadFileTypes();
+    return const_cast<const Package*>(this)->getFileEntry(entry);
 }
 
 bool
@@ -327,6 +351,22 @@ FileType
 Package::getFileType(const int& enumValue)
 {
     loadFileTypes();
+    try
+    {
+        return m_fileTypeMap.at(enumValue);
+    }
+    catch (std::out_of_range&)
+    {
+        return FileType::UNKNOWN;
+    }
+}
+
+FileType
+Package::getFileType(const int& enumValue) const
+{
+    if (!m_loadedFileTypes)
+        throw LotusException("Call Package.readFileTypes before getting FileType!");
+    
     try
     {
         return m_fileTypeMap.at(enumValue);

@@ -18,6 +18,7 @@ namespace LotusLib
 	struct FileEntry
 	{
 		CommonHeader commonHeader;
+		FileType fileType;
 		FileNode headerNode;
 		BinaryReader::Buffered header;
 		BinaryReader::Buffered body;
@@ -36,6 +37,7 @@ namespace LotusLib
 
 	public:
 		Package(std::filesystem::path pkgDir, std::string pkgName, Game game);
+		void readFileTypes();
 		
 		bool hasSplit(PkgSplitType split) const;
 		PackageSplit getSplit(PkgSplitType pkgSplit) const;
@@ -53,7 +55,9 @@ namespace LotusLib
 
 		// FileNode MUST be from HEADER PkgSplit
 		FileEntry getFileEntry(const std::string& internalPath) const;
+		FileEntry getFileEntry(const std::string& internalPath);
 		FileEntry getFileEntry(const FileNode& entry) const;
+		FileEntry getFileEntry(const FileNode& entry);
 
 		bool fileExists(PkgSplitType split, const std::string& internalPath) const;
 		bool fileExists(PkgSplitType split, const FileNode& fileNode) const;
@@ -87,6 +91,7 @@ namespace LotusLib
 		uint32_t readCommonHeaderFormat(const FileNode& entry) const;
 
 		FileType getFileType(const int& enumValue);
+		FileType getFileType(const int& enumValue) const;
 		
 	private:
 		void loadPkgSplits();
