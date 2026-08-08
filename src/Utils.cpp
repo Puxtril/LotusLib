@@ -254,6 +254,110 @@ LotusLib::pkgSplitTypeToChar(PkgSplitType split)
     return '\0';
 }
 
+std::string
+LotusLib::fileTypeToString(const FileType fileType)
+{
+    switch(fileType)
+    {
+        case FileType::UNKNOWN:
+            return "Unknown";
+        case FileType::AUDIO:
+            return "Audio";
+        case FileType::ICON:
+            return "Icon";
+        case FileType::LANDSCAPE:
+            return "Landscape";
+        case FileType::LEVEL:
+            return "Level";
+        case FileType::LEVEL_STATIC:
+            return "LevelStatic";
+        case FileType::MATERIAL:
+            return "Material";
+        case FileType::MATERIAL_HLM:
+            return "MaterialHLM";
+        case FileType::MODEL_STATIC:
+            return "ModelStatic";
+        case FileType::MODEL_LEVEL1:
+            return "ModelLevel1";
+        case FileType::MODEL_LEVEL2:
+            return "ModelLevel2";
+        case FileType::MODEL_TERRAIN:
+            return "ModelTerrain";
+        case FileType::MODEL_RIGGED:
+            return "ModelRigged";
+        case FileType::MODEL_PACKED:
+            return "ModelPacked";
+        case FileType::MODEL_SM:
+            return "ModelSM";
+        case FileType::MODEL_DCM_HLOD:
+            return "ModelDCMHLOD";
+        case FileType::SHADER:
+            return "Shader";
+        case FileType::TEXTURE_1:
+            return "Texture1";
+        case FileType::TEXTURE_2:
+            return "Texture2";
+        case FileType::TEXTURE_3:
+            return "Texture3";
+        case FileType::TEXTURE_ROUGHNESS:
+            return "TextureRoughness";
+        case FileType::TEXTURE_LIGHTMAP_1:
+            return "TextureLightmap1";
+        case FileType::TEXTURE_SKYBOX:
+            return "TextureSkybox";
+        case FileType::TEXTURE_POSTPROCESS:
+            return "TexturePostprocess";
+        case FileType::TEXTURE_CUBEMAP_1:
+            return "TextureCubemap1";
+        case FileType::TEXTURE_CUBEMAP_2:
+            return "TextureCubemap2";
+        case FileType::TEXTURE_CUBEMAP_PARTIAL:
+            return "TextureCubemapPartial";
+        case FileType::TEXTURE_NORMALMAP:
+            return "TextureNormalmap";
+        case FileType::TEXTURE_PACKMAP:
+            return "TexturePackmap";
+        case FileType::TEXTURE_LANDSCAPE:
+            return "TextureLandscape";
+        case FileType::TEXTURE_DETAILSPACK:
+            return "TextureDetailspack";
+        case FileType::TEXTURE_FVL:
+            return "TextureFVL";
+        case FileType::TEXTURE_VRGB:
+            return "TextureVRGB";
+        case FileType::TEXTURE_ARRAY:
+            return "TextureArray";
+        case FileType::LIGHTMAP_1:
+            return "Lightmap1";
+        case FileType::LIGHTMAP_2:
+            return "Lightmap2";
+        case FileType::LIGHTMAP_3:
+            return "Lightmap3";
+        case FileType::LIGHTMAP_CUBEMAP_PARTIAL:
+            return "LightmapCubemapPartial";
+        case FileType::LIGHTMAP_FVL:
+            return "LightmapFVL";
+        case FileType::LIGHTMAP_VRGB:
+            return "LightmapVRGB";
+        case FileType::LEVEL_T:
+            return "LevelT";
+        case FileType::VERTEXCOLOR:
+            return "VertexColor";
+        case FileType::LIGHTMAP_CUBEMAP_SM:
+            return "LightmapCubemapSM";
+        case FileType::LIGHTMAP_HDR:
+            return "LightmapHDR";
+        case FileType::ANIMATION:
+            return "Animation";
+        case FileType::AUDIO_OLD:
+            return "AudioOld";
+        case FileType::BINK2:
+            return "BinkVideo2";
+        case FileType::SWF:
+            return "AdobeFlash";
+        }
+}
+
 Game
 LotusLib::guessGame(const std::string& pkgDir)
 {

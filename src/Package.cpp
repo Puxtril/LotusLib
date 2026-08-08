@@ -3,7 +3,7 @@
 using namespace LotusLib;
 
 Package::Package(std::filesystem::path pkgDir, std::string pkgName, Game game)
-    : m_directory(pkgDir), m_name(pkgName), m_game(game), m_pkgs()
+    : m_directory(pkgDir), m_name(pkgName), m_game(game), m_pkgs(), m_loadedFileTypes(false)
 {
     loadPkgSplits();
     m_category = findPackageCategory(getName());
@@ -323,6 +323,20 @@ Package::readCommonHeaderFormat(const FileNode& entry) const
 	return m_pkgs[(int)PkgSplitType::HEADER]->readCommonHeaderFormat(entry);
 }
 
+FileType
+Package::getFileType(const int& enumValue)
+{
+    loadFileTypes();
+    try
+    {
+        return m_fileTypeMap.at(enumValue);
+    }
+    catch (std::out_of_range&)
+    {
+        return FileType::UNKNOWN;
+    }
+}
+
 void
 Package::loadPkgSplits()
 {
@@ -372,4 +386,36 @@ Package::getSplitPath(PkgSplitType pkgSplit)
     cachePath /= splitChar + m_name + ".cache";
 
     return { tocPath, cachePath };
+}
+
+void
+Package::loadFileTypes()
+{
+    if (m_loadedFileTypes)
+        return;
+
+    const std::vector<std::tuple<FileType, PackageCategory, std::string>> fileCandles = FILE_CANDLES.at(m_game);
+    for (const auto& fileTypeEntry : fileCandles)
+    {
+        const FileType& fileType = std::get<0>(fileTypeEntry);
+        const PackageCategory& category = std::get<1>(fileTypeEntry);
+        const std::string& filePath = std::get<2>(fileTypeEntry);
+
+        if (category != m_category)
+            continue;
+
+        try
+        {
+            const FileNode& fileEntry = getFileNode(PkgSplitType::HEADER, filePath);
+            const int currentTypeEnum = readCommonHeaderFormat(fileEntry);
+            m_fileTypeMap[currentTypeEnum] = fileType;
+            Logger::debug("Setting " + fileTypeToString(fileType) + " to " + std::to_string(currentTypeEnum));
+        }
+        catch (LotusException&)
+        {
+            Logger::debug("Unable to read candle " + filePath);
+        }
+    }
+    
+    m_loadedFileTypes = true;
 }

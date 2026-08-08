@@ -3,6 +3,7 @@
 #include "BinaryReader/Buffered.h"
 #include "LotusLib/CommonHeader.h"
 #include "LotusLib/Enums.h"
+#include "LotusLib/FileTypes.h"
 #include "LotusLib/PackageSplit.h"
 #include "LotusLib/Logger.h"
 #include "LotusLib/Utils.h"
@@ -30,6 +31,8 @@ namespace LotusLib
 		Game m_game;
 		PackageCategory m_category;
 		std::array<std::optional<PackageSplit>, 3> m_pkgs;
+		bool m_loadedFileTypes;
+		std::map<int, FileType> m_fileTypeMap;
 
 	public:
 		Package(std::filesystem::path pkgDir, std::string pkgName, Game game);
@@ -82,9 +85,12 @@ namespace LotusLib
 		// Only accepts FileNode structs from HEADER PkgSplit
 		CommonHeader readCommonHeader(const FileNode& entry) const;
 		uint32_t readCommonHeaderFormat(const FileNode& entry) const;
+
+		FileType getFileType(const int& enumValue);
 		
 	private:
 		void loadPkgSplits();
 		std::tuple<std::filesystem::path, std::filesystem::path> getSplitPath(PkgSplitType pkgSplit);
+		void loadFileTypes();
 	};
 }

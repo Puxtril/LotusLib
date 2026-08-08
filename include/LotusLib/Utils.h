@@ -3,6 +3,7 @@
 #include "LotusLib/Enums.h"
 #include "LotusLib/TOCEntry.h"
 #include "LotusLib/TOCTree.h"
+#include "LotusLib/FileTypes.h"
 
 #include <algorithm>
 #include <fstream>
@@ -29,6 +30,7 @@ namespace LotusLib
     std::string packageCategoryToString(PackageCategory pkgCategory);
     std::string pkgSplitTypeToString(PkgSplitType split);
     char pkgSplitTypeToChar(PkgSplitType split);
+    std::string fileTypeToString(const FileType fileType);
 
     // Will be matched with lower-case names
     // Passed-in string must already be lower-case
