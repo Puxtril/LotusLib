@@ -103,6 +103,8 @@ Package::getFileEntry(const FileNode& entry) const
     
     FileEntry ret;
 
+    ret.game = m_game;
+    ret.pkgCategory = m_category;
     ret.headerNode = entry;
     std::vector<uint8_t> headerData = getFile(PkgSplitType::HEADER, entry);
     ret.header = BinaryReader::Buffered(std::move(headerData));

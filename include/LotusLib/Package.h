@@ -17,6 +17,8 @@ namespace LotusLib
 {
 	struct FileEntry
 	{
+		Game game;
+		PackageCategory pkgCategory;
 		CommonHeader commonHeader;
 		FileType fileType;
 		FileNode headerNode;
