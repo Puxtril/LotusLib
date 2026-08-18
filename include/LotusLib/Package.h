@@ -27,15 +27,25 @@ namespace LotusLib
 		BinaryReader::Buffered footer;
 	};
 
+	namespace Impl
+	{
+		struct PackageState
+		{
+			std::array<std::optional<PackageSplit>, 3> m_pkgs;
+			bool m_loadedFileTypes;
+			std::unordered_map<int, FileType> m_fileTypeMap;
+
+			PackageState();
+		};
+	};
+
 	class Package
 	{
 		std::filesystem::path m_directory;
 		std::string m_name;
 		Game m_game;
 		PackageCategory m_category;
-		std::array<std::optional<PackageSplit>, 3> m_pkgs;
-		bool m_loadedFileTypes;
-		std::map<int, FileType> m_fileTypeMap;
+		std::shared_ptr<Impl::PackageState> m_state;
 
 	public:
 		Package(std::filesystem::path pkgDir, std::string pkgName, Game game);

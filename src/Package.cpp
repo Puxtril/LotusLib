@@ -2,8 +2,12 @@
 
 using namespace LotusLib;
 
+Impl::PackageState::PackageState()
+    : m_pkgs(), m_loadedFileTypes(false)
+{}
+
 Package::Package(std::filesystem::path pkgDir, std::string pkgName, Game game)
-    : m_directory(pkgDir), m_name(pkgName), m_game(game), m_pkgs(), m_loadedFileTypes(false)
+    : m_directory(pkgDir), m_name(pkgName), m_game(game), m_state(std::make_shared<Impl::PackageState>())
 {
     loadPkgSplits();
     m_category = findPackageCategory(getName());
@@ -20,7 +24,7 @@ Package::readFileTypes()
 bool
 Package::hasSplit(PkgSplitType pkgSplit) const
 {
-    if (!m_pkgs[(int)pkgSplit])
+    if (!m_state->m_pkgs[(int)pkgSplit])
         return false;
     return true;
 }
@@ -28,7 +32,7 @@ Package::hasSplit(PkgSplitType pkgSplit) const
 PackageSplit
 Package::getSplit(PkgSplitType pkgSplit) const
 {
-    std::optional<PackageSplit> split = m_pkgs[(int)pkgSplit];
+    std::optional<PackageSplit> split = m_state->m_pkgs[(int)pkgSplit];
     if (!split)
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(pkgSplit));
     return split.value();
@@ -37,25 +41,25 @@ Package::getSplit(PkgSplitType pkgSplit) const
 std::vector<FileNode>::const_iterator
 Package::begin() const
 {
-	return m_pkgs[(int)PkgSplitType::HEADER]->begin();
+	return m_state->m_pkgs[(int)PkgSplitType::HEADER]->begin();
 }
 
 std::vector<FileNode>::const_iterator
 Package::end() const
 {
-	return m_pkgs[(int)PkgSplitType::HEADER]->end();
+	return m_state->m_pkgs[(int)PkgSplitType::HEADER]->end();
 }
 
 TOCTreeIterator
 Package::getIter(const std::string& path) const
 {
-	return m_pkgs[(int)PkgSplitType::HEADER]->getIter(path);
+	return m_state->m_pkgs[(int)PkgSplitType::HEADER]->getIter(path);
 }
 
 TOCTreeIterator
 Package::getIter() const
 {
-	return m_pkgs[(int)PkgSplitType::HEADER]->getIter();
+	return m_state->m_pkgs[(int)PkgSplitType::HEADER]->getIter();
 }
 
 const std::filesystem::path&
@@ -85,20 +89,20 @@ Package::getPkgCategory() const
 FileEntry
 Package::getFileEntry(const std::string& internalPath) const
 {
-    return getFileEntry(m_pkgs[(int)PkgSplitType::HEADER]->getFileNode(internalPath));
+    return getFileEntry(m_state->m_pkgs[(int)PkgSplitType::HEADER]->getFileNode(internalPath));
 }
 
 FileEntry
 Package::getFileEntry(const std::string& internalPath)
 {
     loadFileTypes();
-    return const_cast<const Package*>(this)->getFileEntry(m_pkgs[(int)PkgSplitType::HEADER]->getFileNode(internalPath));
+    return const_cast<const Package*>(this)->getFileEntry(m_state->m_pkgs[(int)PkgSplitType::HEADER]->getFileNode(internalPath));
 }
 
 FileEntry
 Package::getFileEntry(const FileNode& entry) const
 {
-    if (!m_loadedFileTypes)
+    if (!m_state->m_loadedFileTypes)
         throw LotusException("Call Package.readFileTypes before getting FileType!");
     
     FileEntry ret;
@@ -149,213 +153,214 @@ Package::getFileEntry(const FileNode& entry)
 bool
 Package::fileExists(PkgSplitType split, const std::string& internalPath) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         return false;
-    return m_pkgs[(int)split]->fileExists(internalPath);
+    return m_state->m_pkgs[(int)split]->fileExists(internalPath);
 }
 
 bool
 Package::fileExists(PkgSplitType split, const FileNode& fileNode) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         return false;
-    return m_pkgs[(int)split]->fileExists(fileNode);
+    return m_state->m_pkgs[(int)split]->fileExists(fileNode);
 }
 
 bool
 Package::fileExists(const std::string& internalPath) const
 {
-    if (!m_pkgs[(int)PkgSplitType::HEADER])
+    if (!m_state->m_pkgs[(int)PkgSplitType::HEADER])
         return false;
-    return m_pkgs[(int)PkgSplitType::HEADER]->fileExists(internalPath);
+    return m_state->m_pkgs[(int)PkgSplitType::HEADER]->fileExists(internalPath);
 }
 
 bool
 Package::fileExists(const FileNode& fileNode) const
 {
-    if (!m_pkgs[(int)PkgSplitType::HEADER])
+    if (!m_state->m_pkgs[(int)PkgSplitType::HEADER])
         return false;
-    return m_pkgs[(int)PkgSplitType::HEADER]->fileExists(fileNode);
+    return m_state->m_pkgs[(int)PkgSplitType::HEADER]->fileExists(fileNode);
 }
 
 bool
 Package::dirExists(PkgSplitType split, const std::string& internalPath) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         return false;
-    return m_pkgs[(int)split]->dirExists(internalPath);
+    return m_state->m_pkgs[(int)split]->dirExists(internalPath);
 }
 
 bool
 Package::dirExists(PkgSplitType split, const DirNode& dirNode) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         return false;
-    return m_pkgs[(int)split]->dirExists(dirNode);
+    return m_state->m_pkgs[(int)split]->dirExists(dirNode);
 }
 
 bool
 Package::dirExists(const std::string& internalPath) const
 {
-    if (!m_pkgs[(int)PkgSplitType::HEADER])
+    if (!m_state->m_pkgs[(int)PkgSplitType::HEADER])
         return false;
-    return m_pkgs[(int)PkgSplitType::HEADER]->dirExists(internalPath);
+    return m_state->m_pkgs[(int)PkgSplitType::HEADER]->dirExists(internalPath);
 }
 
 bool
 Package::dirExists(const DirNode& dirNode) const
 {
-    if (!m_pkgs[(int)PkgSplitType::HEADER])
+    if (!m_state->m_pkgs[(int)PkgSplitType::HEADER])
         return false;
-    return m_pkgs[(int)PkgSplitType::HEADER]->dirExists(dirNode);
+    return m_state->m_pkgs[(int)PkgSplitType::HEADER]->dirExists(dirNode);
 }
 
 const FileNode&
 Package::getFileNode(PkgSplitType split, const FileNode& fileNode) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getFileNode(fileNode);
+    return m_state->m_pkgs[(int)split]->getFileNode(fileNode);
 }
 
 const DirNode&
 Package::getDirNode(PkgSplitType split, const DirNode& dirNode) const
 {
-    if (!m_pkgs[(int)split])
+    if (m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getDirNode(dirNode);
+    return m_state->m_pkgs[(int)split]->getDirNode(dirNode);
 }
 
 const FileNode&
 Package::getFileNode(PkgSplitType split, const std::string& internalPath) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getFileNode(internalPath);
+    return m_state->m_pkgs[(int)split]->getFileNode(internalPath);
 }
 
 const DirNode&
 Package::getDirNode(PkgSplitType split, const std::string& internalPath) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getDirNode(internalPath); 
+    return m_state->m_pkgs[(int)split]->getDirNode(internalPath); 
 }
 
 size_t
 Package::dirCount(PkgSplitType split) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->dirCount(); 
+    return m_state->m_pkgs[(int)split]->dirCount(); 
 }
 
 size_t
 Package::dirCount() const
 {
     size_t total = 0;
-    if (m_pkgs[0])
-        total += m_pkgs[0]->dirCount();
-    if (m_pkgs[1])
-        total += m_pkgs[1]->dirCount();
-    if (m_pkgs[2])
-        total += m_pkgs[2]->dirCount();
+    if (m_state->m_pkgs[0])
+        total += m_state->m_pkgs[0]->dirCount();
+    if (m_state->m_pkgs[1])
+        total += m_state->m_pkgs[1]->dirCount();
+    if (m_state->m_pkgs[2])
+        total += m_state->m_pkgs[2]->dirCount();
     return total;
 }
 
 size_t
 Package::fileCount(PkgSplitType split) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->fileCount();
+    return m_state->m_pkgs[(int)split]->fileCount();
 }
 
 size_t
 Package::fileCount() const
 {
     size_t total = 0;
-    if (m_pkgs[0])
-        total += m_pkgs[0]->fileCount();
-    if (m_pkgs[1])
-        total += m_pkgs[1]->fileCount();
-    if (m_pkgs[2])
-        total += m_pkgs[2]->fileCount();
+    if (m_state->m_pkgs[0])
+        total += m_state->m_pkgs[0]->fileCount();
+    if (m_state->m_pkgs[1])
+        total += m_state->m_pkgs[1]->fileCount();
+    if (m_state->m_pkgs[2])
+        total += m_state->m_pkgs[2]->fileCount();
     return total;
 }
 
 size_t
 Package::fileDupeCount(PkgSplitType split) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->fileDupeCount();
+    return m_state->m_pkgs[(int)split]->fileDupeCount();
 }
 
 size_t
 Package::fileDupeCount() const
 {
     size_t total = 0;
-    if (m_pkgs[0])
-        total += m_pkgs[0]->fileDupeCount();
-    if (m_pkgs[1])
-        total += m_pkgs[1]->fileDupeCount();
-    if (m_pkgs[2])
-        total += m_pkgs[2]->fileDupeCount();
+    if (m_state->m_pkgs[0])
+        total += m_state->m_pkgs[0]->fileDupeCount();
+    if (m_state->m_pkgs[1])
+        total += m_state->m_pkgs[1]->fileDupeCount();
+    if (m_state->m_pkgs[2])
+        total += m_state->m_pkgs[2]->fileDupeCount();
     return total;
 }
 
 std::vector<uint8_t>
 Package::getFile(PkgSplitType split, const std::string& internalPath) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getFile(internalPath);
+    return m_state->m_pkgs[(int)split]->getFile(internalPath);
 }
 
 std::vector<uint8_t>
 Package::getFile(PkgSplitType split, const FileNode& entry) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getFile(entry);
+    return m_state->m_pkgs[(int)split]->getFile(entry);
 }
 
 std::vector<uint8_t>
 Package::getFileUncompressed(PkgSplitType split, const std::string& internalPath) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getFileCompressed(internalPath);
+    return m_state->m_pkgs[(int)split]->getFileCompressed(internalPath);
 }
 
 std::vector<uint8_t>
 Package::getFileUncompressed(PkgSplitType split, const FileNode& entry) const
 {
-    if (!m_pkgs[(int)split])
+    if (!m_state->m_pkgs[(int)split])
         throw PackageSplitNotFound(m_name, pkgSplitTypeToChar(split));
-    return m_pkgs[(int)split]->getFileCompressed(entry);
+    return m_state->m_pkgs[(int)split]->getFileCompressed(entry);
 }
 
 CommonHeader
 Package::readCommonHeader(const FileNode& entry) const
 {
-	return m_pkgs[(int)PkgSplitType::HEADER]->readCommonHeader(entry);
+	return m_state->m_pkgs[(int)PkgSplitType::HEADER]->readCommonHeader(entry);
 }
 
 uint32_t
 Package::readCommonHeaderFormat(const FileNode& entry) const
 {
-	return m_pkgs[(int)PkgSplitType::HEADER]->readCommonHeaderFormat(entry);
+	return m_state->m_pkgs[(int)PkgSplitType::HEADER]->readCommonHeaderFormat(entry);
 }
 
 FileType
 Package::getFileType(const int& enumValue)
 {
     loadFileTypes();
+
     try
     {
-        return m_fileTypeMap.at(enumValue);
+        return m_state->m_fileTypeMap.at(enumValue);
     }
     catch (std::out_of_range&)
     {
@@ -366,12 +371,12 @@ Package::getFileType(const int& enumValue)
 FileType
 Package::getFileType(const int& enumValue) const
 {
-    if (!m_loadedFileTypes)
+    if (!m_state->m_loadedFileTypes)
         throw LotusException("Call Package.readFileTypes before getting FileType!");
     
     try
     {
-        return m_fileTypeMap.at(enumValue);
+        return m_state->m_fileTypeMap.at(enumValue);
     }
     catch (std::out_of_range&)
     {
@@ -391,14 +396,14 @@ Package::loadPkgSplits()
         {
             if (std::filesystem::exists(std::get<1>(pair)))
             {
-                m_pkgs[i].emplace(PackageSplit{std::get<1>(pair), std::get<1>(pair), m_game, (PkgSplitType)i});
+                m_state->m_pkgs[i].emplace(PackageSplit{std::get<1>(pair), std::get<1>(pair), m_game, (PkgSplitType)i});
             }
         }
         else if (m_game != Game::UNKNOWN)
         {
             if (std::filesystem::exists(std::get<0>(pair)))
             {
-                m_pkgs[i].emplace(PackageSplit{std::get<0>(pair), std::get<1>(pair), m_game, (PkgSplitType)i});
+                m_state->m_pkgs[i].emplace(PackageSplit{std::get<0>(pair), std::get<1>(pair), m_game, (PkgSplitType)i});
             }
         }
     }
@@ -433,7 +438,7 @@ Package::getSplitPath(PkgSplitType pkgSplit)
 void
 Package::loadFileTypes()
 {
-    if (m_loadedFileTypes)
+    if (m_state->m_loadedFileTypes)
         return;
 
     const std::vector<std::tuple<FileType, PackageCategory, std::string>> fileCandles = FILE_CANDLES.at(m_game);
@@ -450,7 +455,7 @@ Package::loadFileTypes()
         {
             const FileNode& fileEntry = getFileNode(PkgSplitType::HEADER, filePath);
             const int currentTypeEnum = readCommonHeaderFormat(fileEntry);
-            m_fileTypeMap[currentTypeEnum] = fileType;
+            m_state->m_fileTypeMap[currentTypeEnum] = fileType;
             Logger::debug("Setting " + fileTypeToString(fileType) + " to " + std::to_string(currentTypeEnum));
         }
         catch (LotusException&)
@@ -459,5 +464,5 @@ Package::loadFileTypes()
         }
     }
     
-    m_loadedFileTypes = true;
+    m_state->m_loadedFileTypes = true;
 }

@@ -32,6 +32,14 @@ PackageCollection::end() const
     return m_pkgs.end();
 }
 
+void
+PackageCollection::loadFileTypes()
+{
+    loadPackages();
+    for (Package& pkg : m_pkgs)
+        pkg.readFileTypes();
+}
+
 bool
 PackageCollection::hasPackage(const std::string& pkgName) const
 {
