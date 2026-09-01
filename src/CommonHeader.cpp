@@ -43,8 +43,6 @@ LotusLib::commonHeaderFindLen(BinaryReader::BinaryReader& reader, LotusLib::Game
 	{
 		case LotusLib::Game::DARKNESSII:
 		case LotusLib::Game::STARTREK:
-			reader.seek(1, std::ios::cur);
-			break;
 		case LotusLib::Game::KEYSTONE:
 		case LotusLib::Game::WARFRAME:
 		case LotusLib::Game::WARFRAME_PE:
@@ -98,8 +96,6 @@ LotusLib::commonHeaderReadFormat(BinaryReader::BinaryReader& reader, LotusLib::G
 	{
 		case LotusLib::Game::DARKNESSII:
 		case LotusLib::Game::STARTREK:
-			format = reader.readUInt8();
-			break;
 		case LotusLib::Game::KEYSTONE:
 		case LotusLib::Game::WARFRAME:
 		case LotusLib::Game::WARFRAME_PE:
@@ -167,8 +163,6 @@ LotusLib::commonHeaderRead(BinaryReader::BinaryReader& reader, CommonHeader& hea
 	{
 		case LotusLib::Game::DARKNESSII:
 		case LotusLib::Game::STARTREK:
-			header.type = reader.readUInt8();
-			break;
 		case LotusLib::Game::KEYSTONE:
 		case LotusLib::Game::WARFRAME:
 		case LotusLib::Game::WARFRAME_PE:
