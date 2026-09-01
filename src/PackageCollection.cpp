@@ -175,6 +175,26 @@ PackageCollection::getFile(const std::string& pkgName, PkgSplitType split, const
     return m_pkgs[m_pkgMap.at(pkgName)].getFile(split, internalPath); 
 }
 
+std::vector<uint8_t>
+PackageCollection::getFilePackages() const
+{
+    switch(m_game)
+    {
+        case LotusLib::Game::DARKSECTOR:
+            return getFile("Misc", PkgSplitType::HEADER, "/Packages.cs.1");
+        case LotusLib::Game::DARKNESSII:
+        case LotusLib::Game::STARTREK:
+            return getFile("Misc", PkgSplitType::HEADER, "/Packages.cs");
+        case LotusLib::Game::KEYSTONE:
+        case LotusLib::Game::WARFRAME:
+        case LotusLib::Game::WARFRAME_PE:
+        case LotusLib::Game::SOULFRAME:
+            return getFile("Misc", PkgSplitType::HEADER, "/Packages.bin");
+        default:
+            throw LotusException("Cannot read Packages.bin from " + gameToString(m_game));
+    }
+}
+
 void
 PackageCollection::loadPackages()
 {

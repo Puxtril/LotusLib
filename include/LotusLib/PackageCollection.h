@@ -48,6 +48,10 @@ namespace LotusLib
 		std::vector<uint8_t> getFileUncompressed(const std::string& pkgName, PkgSplitType split, const std::string& internalPath) const;
 		std::vector<uint8_t> getFile(const std::string& pkgName, PkgSplitType split, const std::string& internalPath) const;
 
+		// Get the special files Packages
+		// AKA Packages.bin, Packages.cs
+		std::vector<uint8_t> getFilePackages() const;
+
 	protected:
 		void loadPackages();
 		void loadPackage(std::string pkgName);
