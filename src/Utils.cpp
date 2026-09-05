@@ -265,6 +265,8 @@ LotusLib::fileTypeToString(const FileType fileType)
             return "Animation";
         case FileType::ANIMATION_FSM:
             return "AnimationFSM";
+        case FileType::ANIMATION_TREE:
+            return "AnimationTree";
         case FileType::AUDIO_OLD:
             return "AudioOld";
         case FileType::AUDIO:
@@ -305,6 +307,8 @@ LotusLib::fileTypeToString(const FileType fileType)
             return "Shader";
         case FileType::SWF:
             return "AdobeFlash";
+        case FileType::PHYSICS:
+            return "Physics";
         case FileType::TEXTURE_1:
             return "Texture1";
         case FileType::TEXTURE_2:
