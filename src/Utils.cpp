@@ -261,8 +261,18 @@ LotusLib::fileTypeToString(const FileType fileType)
     {
         case FileType::UNKNOWN:
             return "Unknown";
+        case FileType::ANIMATION:
+            return "Animation";
+        case FileType::ANIMATION_FSM:
+            return "AnimationFSM";
+        case FileType::AUDIO_OLD:
+            return "AudioOld";
         case FileType::AUDIO:
             return "Audio";
+        case FileType::BINK2:
+            return "BinkVideo2";
+        case FileType::CINEMATIC:
+            return "Cinematic";
         case FileType::ICON:
             return "Icon";
         case FileType::LANDSCAPE:
@@ -293,6 +303,8 @@ LotusLib::fileTypeToString(const FileType fileType)
             return "ModelDCMHLOD";
         case FileType::SHADER:
             return "Shader";
+        case FileType::SWF:
+            return "AdobeFlash";
         case FileType::TEXTURE_1:
             return "Texture1";
         case FileType::TEXTURE_2:
@@ -347,14 +359,6 @@ LotusLib::fileTypeToString(const FileType fileType)
             return "LightmapCubemapSM";
         case FileType::LIGHTMAP_HDR:
             return "LightmapHDR";
-        case FileType::ANIMATION:
-            return "Animation";
-        case FileType::AUDIO_OLD:
-            return "AudioOld";
-        case FileType::BINK2:
-            return "BinkVideo2";
-        case FileType::SWF:
-            return "AdobeFlash";
         }
 }
 
