@@ -119,13 +119,13 @@ LotusLib::gameToString(Game game)
         case Game::WARFRAME:
             return "Warframe";
         case Game::WARFRAME_PE:
-            return "Warframe (Pre-Ensmallening)";
+            return "WarframePE";
         case Game::DARKNESSII:
-            return "Darkness II";
+            return "DarknessII";
         case Game::STARTREK:
-            return "Star Trek";
+            return "StarTrek";
         case Game::DARKSECTOR:
-            return "Dark Sector";
+            return "DarkSector";
         case Game::KEYSTONE:
             return "Keystone";
     }
