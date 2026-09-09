@@ -10,7 +10,7 @@
 
 namespace LotusLib
 {
-    enum class FileType
+    enum class FileType: int
     {
         UNKNOWN,
         ANIMATION,
