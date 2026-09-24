@@ -518,8 +518,8 @@ PackagesBin::findAllValueOffsets(BinaryReader::BufferedSlice& reader, std::array
     const std::vector<std::tuple<uint32_t, uint32_t, std::string>> searchValueRangesWarframe = {
         {45, 60, "ReferenceCount"},
         {75000, 90000, "ComFlagsBufLen"},
-        {210000, 240000, "ComSizeBufferLen"},
-        {18000000, 21000000, "ComZBufferLen"},
+        {210000, 260000, "ComSizeBufferLen"},
+        {18000000, 23000000, "ComZBufferLen"},
         {9, 16, "PkgNameLen"},
         {80000, 1300000, "DictSize"},
         {400000, 600000, "EntityCount"},
