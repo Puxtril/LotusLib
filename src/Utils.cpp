@@ -323,12 +323,14 @@ LotusLib::fileTypeToString(const FileType fileType)
             return "TextureSkybox";
         case FileType::TEXTURE_POSTPROCESS:
             return "TexturePostprocess";
-        case FileType::TEXTURE_CUBEMAP_1:
-            return "TextureCubemap1";
-        case FileType::TEXTURE_CUBEMAP_2:
-            return "TextureCubemap2";
-        case FileType::TEXTURE_CUBEMAP_PARTIAL:
-            return "TextureCubemapPartial";
+        case FileType::TEXTURE_CUBEMAP:
+            return "TextureCubemap";
+        case FileType::TEXTURE_NOISE:
+            return "TextureNoise";
+        case FileType::TEXTURE_CUBEMAP_PARTIAL_1:
+            return "TextureCubemapPartial1";
+        case FileType::TEXTURE_CUBEMAP_PARTIAL_2:
+            return "TextureCubemapPartial2";
         case FileType::TEXTURE_NORMALMAP:
             return "TextureNormalmap";
         case FileType::TEXTURE_PACKMAP:

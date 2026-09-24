@@ -45,9 +45,10 @@ namespace LotusLib
         TEXTURE_LIGHTMAP_1,
         TEXTURE_SKYBOX,
         TEXTURE_POSTPROCESS,
-        TEXTURE_CUBEMAP_1,
-        TEXTURE_CUBEMAP_2,
-        TEXTURE_CUBEMAP_PARTIAL,
+        TEXTURE_CUBEMAP,
+        TEXTURE_NOISE,
+        TEXTURE_CUBEMAP_PARTIAL_1,
+        TEXTURE_CUBEMAP_PARTIAL_2,
         TEXTURE_NORMALMAP,
         TEXTURE_PACKMAP,
         TEXTURE_LANDSCAPE,
@@ -70,7 +71,7 @@ namespace LotusLib
     // Ex. For WARFRAME, MODEL_RIGGED, PackageCategory::MISC, "/Lotus/Characters/Tenno/Excalibur/Excalibur_skel.fbx"
     //   Reading the file Excalibur_skel.fbx in the MISC package category returns the file enumeration 282.
     //   We can now assume that in this cache, every file format found in a package of category MISC of value 282 is MODEL_RIGGED.
-    // All of these paths must ALWAYS EXIST in EVERY VERSION of the specified game. If a file gets removed in the future, assume the file type no longer exists.
+    // Higher indicies = higher priority. Some candles overlap, so order is chosen to prefer certian formats.
     // Why is this called a candle?
     //   By assuming these files always exist and are consistent with their file type, we can use them to determine other file types.
     //   https://en.wikipedia.org/wiki/Cosmic_distance_ladder#Standard_candles
@@ -108,7 +109,7 @@ namespace LotusLib
                 {FileType::TEXTURE_1, PackageCategory::TEXTURE, "/D2/Materials/Decals/Blood003_d.png"},
                 {FileType::TEXTURE_SKYBOX, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_y.png"},
                 {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_v.png"},
-                {FileType::TEXTURE_CUBEMAP_1, PackageCategory::TEXTURE, "/D2/Materials/CubeMaps/CC_cube0.png"},
+                {FileType::TEXTURE_CUBEMAP, PackageCategory::TEXTURE, "/D2/Materials/CubeMaps/CC_cube0.png"},
                 {FileType::TEXTURE_NORMALMAP, PackageCategory::TEXTURE, "/D2/Weapons/Upgrades/ACOG_n.png"},
             }
         },
@@ -131,7 +132,7 @@ namespace LotusLib
                 {FileType::TEXTURE_1, PackageCategory::TEXTURE, "/ST/Weapons/Gorn/Mine/GornMine_d.png"},
                 {FileType::TEXTURE_SKYBOX, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_y.png"},
                 {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_v.png"},
-                {FileType::TEXTURE_CUBEMAP_1, PackageCategory::TEXTURE, "/ST/Materials/Cubemaps/Dark_cube0.png"},
+                {FileType::TEXTURE_CUBEMAP, PackageCategory::TEXTURE, "/ST/Materials/Cubemaps/Dark_cube0.png"},
                 {FileType::TEXTURE_NORMALMAP, PackageCategory::TEXTURE, "/ST/Characters/Scotty/ScottyHead_n.png"},
             }
         },
@@ -160,8 +161,8 @@ namespace LotusLib
                 {FileType::TEXTURE_ROUGHNESS, PackageCategory::TEXTURE, "/Keystone/Objects/Charms/CharmNauticaPearl_r.png"},
                 {FileType::TEXTURE_SKYBOX, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_y.png"},
                 {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_v.png"},
-                {FileType::TEXTURE_CUBEMAP_1, PackageCategory::TEXTURE, "/EE/Materials/Basic/ShineBlue_cube0.png"},
-                {FileType::TEXTURE_CUBEMAP_PARTIAL, PackageCategory::TEXTURE, "/Keystone/Levels/MainMenu/0_pcube0.png"},
+                {FileType::TEXTURE_CUBEMAP, PackageCategory::TEXTURE, "/EE/Materials/Basic/ShineBlue_cube0.png"},
+                {FileType::TEXTURE_CUBEMAP_PARTIAL_1, PackageCategory::TEXTURE, "/Keystone/Levels/MainMenu/0_pcube0.png"},
                 {FileType::TEXTURE_NORMALMAP, PackageCategory::TEXTURE, "/Keystone/CardSet/Niia/Weapon/DemonBow/DemonBow_n.png"},
                 {FileType::TEXTURE_PACKMAP, PackageCategory::TEXTURE, "/EE/Materials/Defaults/NeutralPackMap"},
                 {FileType::TEXTURE_DETAILSPACK, PackageCategory::TEXTURE, "/Keystone/Objects/Western/Terrain/WestDirtRockyAPack"},
@@ -170,12 +171,12 @@ namespace LotusLib
         {
             Game::WARFRAME_PE,
             {
+                {FileType::CINEMATIC, PackageCategory::MISC, "/Lotus/Animations/Tenno/Melee/Mace/ParryFinisher_cin.fbx"},
                 {FileType::ANIMATION, PackageCategory::MISC, "/Lotus/Animations/Tenno/Melee/Staff/GroundHit_anim.fbx"},
                 {FileType::ANIMATION_FSM, PackageCategory::MISC, "/EE/AnimTreeGeneric/GenericAnimFsms/FsmRoot.animfsm"},
                 {FileType::ANIMATION_TREE, PackageCategory::ANIM_RETARGET, "/Lotus/Types/Enemies/Corpus/BipedRobot/BipedRobotAnimTree.animtree"},
                 {FileType::AUDIO, PackageCategory::MISC, "/Lotus/Sounds/UI/HUD/HudGearSlideIn.wav"},
                 {FileType::BINK2, PackageCategory::VIDEO_TEXTURE, "/Lotus/Interface/AbilityVideos/ExcaliburPower1.bk2"},
-                {FileType::CINEMATIC, PackageCategory::MISC, "/Lotus/Animations/Tenno/Melee/Mace/ParryFinisher_cin.fbx"},
                 {FileType::ICON, PackageCategory::MISC, "/EE/Editor/Darkitect/Icons/Terrain.ico"},
                 {FileType::LANDSCAPE, PackageCategory::MISC, "/Lotus/Levels/CivilianHubs/VenusLandscape/0.lndscp"},
                 {FileType::LEVEL, PackageCategory::ANIM_RETARGET, "/Lotus/Levels/Episodes/Tutorial.level"},
@@ -198,14 +199,16 @@ namespace LotusLib
                 {FileType::TEXTURE_ROUGHNESS, PackageCategory::TEXTURE, "/Lotus/Weapons/Tenno/LongGuns/PrimeSoma/PrimeSoma_r.png"},
                 {FileType::TEXTURE_LIGHTMAP_1, PackageCategory::TEXTURE, "/Lotus/Levels/CivilianHubs/VenusLandscape/Landscape0/T0u0.lchm"}, // Might need different one
                 {FileType::TEXTURE_SKYBOX, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_y.png"},
+                {FileType::TEXTURE_NOISE, PackageCategory::TEXTURE, "/EE/Materials/Util/PerlinNoiseRGBA_vn.tga"},
                 {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_v.png"},
-                {FileType::TEXTURE_CUBEMAP_1, PackageCategory::TEXTURE, "/Lotus/Materials/Cubemaps/OrokinA_cube0.png"},
-                {FileType::TEXTURE_CUBEMAP_2, PackageCategory::TEXTURE, "/EE/Materials/Util/PerlinNoiseRGBA_vn.tga"},
-                {FileType::TEXTURE_CUBEMAP_PARTIAL, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/HDRDefaultCube_pcube0.png"},
+                {FileType::TEXTURE_CUBEMAP, PackageCategory::TEXTURE, "/Lotus/Materials/Cubemaps/OrokinA_cube0.png"},
+                {FileType::TEXTURE_CUBEMAP_PARTIAL_1, PackageCategory::TEXTURE, "/Lotus/Levels/CorpusGasCity/GasIntermediate09/2_pcube0.png"},
+                {FileType::TEXTURE_CUBEMAP_PARTIAL_2, PackageCategory::TEXTURE, "/Lotus/Levels/Transitional/CrpInfested1/1_pcube0.png"},
                 {FileType::TEXTURE_NORMALMAP, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_n.png"},
-                {FileType::TEXTURE_PACKMAP, PackageCategory::TEXTURE, "/EE/Materials/Defaults/NeutralPackMap"},
+                {FileType::TEXTURE_PACKMAP, PackageCategory::TEXTURE, "/Lotus/Objects/Natural/SandAltPackMap"},
                 {FileType::TEXTURE_LANDSCAPE, PackageCategory::TEXTURE, "/Lotus/Objects/Ostron/Natural/Terrain/TerrainPMOSTBeachStone"},
                 {FileType::TEXTURE_DETAILSPACK, PackageCategory::TEXTURE, "/Lotus/Objects/Corpus/Structural/CrpStructuralStampPackMap"},
+                {FileType::TEXTURE_FVL, PackageCategory::TEXTURE, "/Lotus/Levels/Hub/SolarMapRJ/0_fvl.raw"},
             }
         },
         {
@@ -240,9 +243,9 @@ namespace LotusLib
                 {FileType::TEXTURE_ROUGHNESS, PackageCategory::TEXTURE, "/Lotus/Weapons/Tenno/LongGuns/PrimeSoma/PrimeSoma_r.png"},
                 {FileType::TEXTURE_SKYBOX, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_y.png"},
                 {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_v.png"},
-                {FileType::TEXTURE_CUBEMAP_1, PackageCategory::TEXTURE, "/Lotus/Materials/Cubemaps/OrokinA_cube0.png"},
-                {FileType::TEXTURE_CUBEMAP_2, PackageCategory::TEXTURE, "/EE/Materials/Util/PerlinNoiseRGBA_vn.tga"},
-                {FileType::TEXTURE_CUBEMAP_PARTIAL, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/HDRDefaultCube_pcube0.png"},
+                {FileType::TEXTURE_NOISE, PackageCategory::TEXTURE, "/EE/Materials/Util/PerlinNoiseRGBA_vn.tga"},
+                {FileType::TEXTURE_CUBEMAP, PackageCategory::TEXTURE, "/Lotus/Materials/Cubemaps/OrokinA_cube0.png"},
+                {FileType::TEXTURE_CUBEMAP_PARTIAL_1, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/HDRDefaultCube_pcube0.png"},
                 {FileType::TEXTURE_NORMALMAP, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_n.png"},
                 {FileType::TEXTURE_PACKMAP, PackageCategory::TEXTURE, "/EE/Materials/Defaults/NeutralPackMap"},
                 {FileType::TEXTURE_LANDSCAPE, PackageCategory::TEXTURE, "/Lotus/Objects/Ostron/Natural/Terrain/TerrainPMOSTBeachStone"},
@@ -291,7 +294,7 @@ namespace LotusLib
                 {FileType::TEXTURE_ROUGHNESS, PackageCategory::TEXTURE, "/SF/Objects/Dendrit/Props/Materials/HayPiles/HayPileA_r.png"},
                 {FileType::TEXTURE_SKYBOX, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_y.png"},
                 {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_v.png"},
-                {FileType::TEXTURE_CUBEMAP_2, PackageCategory::TEXTURE, "/EE/Materials/Util/PerlinNoisePacked_vn.tga"},
+                {FileType::TEXTURE_NOISE, PackageCategory::TEXTURE, "/EE/Materials/Util/PerlinNoisePacked_vn.tga"},
                 {FileType::TEXTURE_NORMALMAP, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Blank_n.png"},
                 {FileType::TEXTURE_PACKMAP, PackageCategory::TEXTURE, "/EE/Materials/Defaults/NeutralPackMap"},
                 {FileType::TEXTURE_LANDSCAPE, PackageCategory::TEXTURE, "/EE/Materials/Basic/PrevizPlasticLightGrey"},
