@@ -251,10 +251,10 @@ PackagesBin::readFile1(BinaryReader::BufferedSlice& reader)
 std::vector<Impl::RawPackagesEntity>
 PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
 {
-    std::array<size_t, 5> valueOffsets;
-    findAllValueOffsets(reader, valueOffsets);
+    uint32_t junkSeed = reader.readUInt32();
+    JunkSequence junk{junkSeed};
 
-    reader.seek(valueOffsets[0], std::ios::beg);
+    reader.seek(junk.next(0xFF), std::ios::cur);
     uint32_t referenceCount = reader.readUInt32(0, 1000, "Packages.bin Reference count");
     for (size_t i = 0; i < referenceCount; i++)
     {
@@ -262,15 +262,18 @@ PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
         reader.seek(refNameLen + 2, std::ios::cur);
     }
 
-    reader.seek(valueOffsets[1], std::ios::beg);
+    // Package count
+    reader.readUInt32();
+
+    reader.seek(junk.next(0x3FF), std::ios::cur);
     uint32_t comFlagsBufLen = reader.readUInt32();
     BinaryReader::BufferedSlice comFlagsBuf = reader.getSlice(comFlagsBufLen);
 
-    reader.seek(valueOffsets[2], std::ios::beg);
+    reader.seek(junk.next(0x3FF), std::ios::cur);
     uint32_t comSizeBufferLen = reader.readUInt32();
     BinaryReader::BufferedSlice comSizeBuffer = reader.getSlice(comSizeBufferLen);
 
-    reader.seek(valueOffsets[3], std::ios::beg);
+    reader.seek(junk.next(0x3FF), std::ios::cur);
     uint32_t comZBufferLen = reader.readUInt32();
     BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
 
@@ -287,7 +290,7 @@ PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
     unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
     size_t flagBufferCurrentBit = 0;
 
-    reader.seek(valueOffsets[4], std::ios::beg);
+    reader.seek(junk.next(0xF), std::ios::cur);
 
     for (uint32_t i = 0; i < entityCount; i++)
     {
@@ -344,10 +347,10 @@ PackagesBin::readFile2(BinaryReader::BufferedSlice& reader)
 std::vector<Impl::RawPackagesEntity>
 PackagesBin::readFile3(BinaryReader::BufferedSlice& reader)
 {
-    std::array<size_t, 5> valueOffsets;
-    findAllValueOffsets(reader, valueOffsets);
+    uint32_t junkSeed = reader.readUInt32();
+    JunkSequence junk{junkSeed};
 
-    reader.seek(valueOffsets[0], std::ios::beg);
+    reader.seek(junk.next(0xFF), std::ios::cur);
     uint32_t referenceCount = reader.readUInt32(0, 1000, "Packages.bin Reference count");
     for (size_t i = 0; i < referenceCount; i++)
     {
@@ -355,15 +358,18 @@ PackagesBin::readFile3(BinaryReader::BufferedSlice& reader)
         reader.seek(refNameLen + 2, std::ios::cur);
     }
 
-    reader.seek(valueOffsets[1], std::ios::beg);
+    // Package count
+    reader.readUInt32();
+
+    reader.seek(junk.next(0x3FF), std::ios::cur);
     uint32_t comFlagsBufLen = reader.readUInt32();
     BinaryReader::BufferedSlice comFlagsBuf = reader.getSlice(comFlagsBufLen);
 
-    reader.seek(valueOffsets[2], std::ios::beg);
+    reader.seek(junk.next(0x3FF), std::ios::cur);
     uint32_t comSizeBufferLen = reader.readUInt32();
     BinaryReader::BufferedSlice comSizeBuffer = reader.getSlice(comSizeBufferLen);
 
-    reader.seek(valueOffsets[3], std::ios::beg);
+    reader.seek(junk.next(0x3FF), std::ios::cur);
     uint32_t comZBufferLen = reader.readUInt32();
     BinaryReader::BufferedSlice comZBuffer = reader.getSlice(comZBufferLen);
 
@@ -375,15 +381,12 @@ PackagesBin::readFile3(BinaryReader::BufferedSlice& reader)
     comZBuffer.seek(dictSize, std::ios::cur);
 
     uint32_t entityCount = reader.readUInt32();
-    // I dunno, probably missing something here.
-    if (m_state->game == LotusLib::Game::SOULFRAME)
-        entityCount--;
     std::vector<Impl::RawPackagesEntity> entities(entityCount);
 
     unsigned char flagBufferCurrentByte = comFlagsBuf.readUInt8();
     size_t flagBufferCurrentBit = 0;
 
-    reader.seek(valueOffsets[4], std::ios::beg);
+    reader.seek(junk.next(0xF), std::ios::cur);
 
     uint32_t iEntity = 0;
     while (iEntity < entityCount)
@@ -503,144 +506,4 @@ PackagesBin::readAttributes(const Impl::PackagesEntity& entity) const
 
         return std::string((char*)decompressedData.data(), entity.decompressedLen);
     }
-}
-
-void
-PackagesBin::findAllValueOffsets(BinaryReader::BufferedSlice& reader, std::array<size_t, 5>& offsets, int state)
-{
-    size_t start = reader.tell();
-    size_t cursor = start;
-
-    // Separate ranges by game.
-    // This will only search the first 5 values recursively.
-    // The next 2 values (index 5 and 6) are used for extra validation,
-    //   but it's just easier to put those values in this variable, because they also vary by game.
-    const std::vector<std::tuple<uint32_t, uint32_t, std::string>> searchValueRangesWarframe = {
-        {45, 60, "ReferenceCount"},
-        {75000, 90000, "ComFlagsBufLen"},
-        {210000, 260000, "ComSizeBufferLen"},
-        {18000000, 23000000, "ComZBufferLen"},
-        {9, 16, "PkgNameLen"},
-        {80000, 1300000, "DictSize"},
-        {400000, 600000, "EntityCount"},
-    };
-    const std::vector<std::tuple<uint32_t, uint32_t, std::string>> searchValueRangesSoulframe = {
-        {35, 50, "ReferenceCount"},
-        {10000, 16000, "ComFlagsBufLen"},
-        {28000, 32000, "ComSizeBufferLen"},
-        {3000000, 5000000, "ComZBufferLen"},
-        {9, 16, "PkgNameLen"},
-        {80000, 1300000, "DictSize"},
-        {60000, 100000, "EntityCount"},
-    };
-
-    // Only 2 games contain Packages.bin requiring this
-    const std::vector<std::tuple<uint32_t, uint32_t, std::string>> searchValueRanges = m_state->game == LotusLib::Game::WARFRAME ? searchValueRangesWarframe : searchValueRangesSoulframe;
-
-    while (true)
-    {
-        if (cursor - start > 1000)
-            throw LotusException("Could not find value in state");
-        
-        // Search for the value
-        const auto& searchValue = searchValueRanges[state];
-        findValueOffsetInRange(reader, std::get<0>(searchValue), std::get<1>(searchValue), 1000, std::get<2>(searchValue));
-        cursor = reader.tell();
-        uint32_t value = reader.readUInt32();
-        
-        // Process value
-        // Some states skip the slice, some verify data.
-        // We may continue in the loop if we determine this value invalid.
-        switch(state)
-        {
-            case 0:
-            {
-                try
-                {
-                    for (size_t i = 0; i < value; i++)
-                    {
-                        uint32_t refNameLen = reader.readUInt32(0, 1000, "ReferenceNameLen");
-                        reader.seek(refNameLen + 2, std::ios::cur);
-                    }
-                }
-                catch (BinaryReader::LimitException&)
-                {
-                    cursor += 4;
-                    reader.seek(cursor, std::ios::beg);
-                    continue;
-                }
-                break;
-            }
-            case 1:
-            {
-                reader.seek(value, std::ios::cur);
-                break;
-            }
-            case 2:
-            {
-                uint32_t dictSize = reader.readUInt32();
-                if (!(dictSize > std::get<0>(searchValueRanges[5]) && dictSize < std::get<1>(searchValueRanges[5])))
-                {
-                    cursor += 4;
-                    continue;
-                }
-                reader.seek(value - 4, std::ios::cur);
-                break;
-            }
-            case 3:
-            {
-                reader.seek(value, std::ios::cur);
-
-                uint32_t entityCount = reader.readUInt32();
-                if (!(entityCount > std::get<0>(searchValueRanges[6]) && entityCount < std::get<1>(searchValueRanges[6])))
-                {
-                    cursor += 4;
-                    reader.seek(cursor, std::ios::beg);
-                    continue;
-                }
-            }
-        }
-        
-        // Still in the loop, assuming the value is valid
-        // Set offset in array, move to next state
-        offsets[state] = cursor;
-
-        // Found the last value, can return
-        if (state == 4)
-            return;
-
-        try
-        {
-            findAllValueOffsets(reader, offsets, state + 1);
-            return;
-        }
-        // Next state wasn't valid
-        // Advance cursor and try again
-        catch (LotusException&)
-        {
-            cursor += 4;
-            reader.seek(cursor, std::ios::beg);
-            continue;
-        }
-    }
-}
-
-void
-PackagesBin::findValueOffsetInRange(BinaryReader::BufferedSlice& reader, uint32_t lowerBounds, uint32_t upperBound, size_t maxBytesSearch, const std::string& debugMsg) const
-{
-    size_t start = reader.tell();
-    maxBytesSearch = std::min(reader.getLength() - start, maxBytesSearch);
-
-    while (reader.tell() - start < (maxBytesSearch - 4))
-    {
-        uint32_t test = reader.readUInt32();
-        if (test > lowerBounds && test < upperBound)
-        {
-            reader.seek(-4, std::ios::cur);
-            return;
-        }
-        reader.seek(-3, std::ios::cur);
-    }
-
-    throw LotusException("Unable to find value in Packages.bin: " + debugMsg);
 }
