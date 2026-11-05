@@ -52,6 +52,30 @@ Compression::decompressWarframePost(CompressionScratch* scratch, const FileNode&
 	}
 }
 
+std::vector<std::pair<uint32_t, uint32_t>>
+Compression::getWarframePostBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
+{
+	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+
+	std::vector<std::pair<uint32_t, uint32_t>> blocks{};
+	while (cacheReader.tellg() < (entry.cacheOffset + entry.compLen))
+	{
+		cacheReader.read((char*)scratch->buf.data(), 8);
+		std::tuple<uint32_t, uint32_t> blockLens = getWarframeBlockLens(&scratch->buf[0]);
+
+		if (std::get<0>(blockLens) == 0 && std::get<1>(blockLens) == 0)
+		{
+			cacheReader.seekg(-8, std::ios::cur);
+			blockLens = { entry.compLen, entry.len };
+		}
+
+		blocks.push_back({std::get<0>(blockLens) + 8, std::get<1>(blockLens)});
+		cacheReader.seekg(std::get<0>(blockLens), std::ios::cur);
+	}
+
+	return blocks;
+}
+
 std::vector<uint8_t>
 Compression::decompressWarframePre(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
 {
@@ -81,6 +105,24 @@ Compression::decompressWarframePre(CompressionScratch* scratch, const FileNode& 
 		compPos += std::get<0>(blockLens);
 		decompPos += std::get<1>(blockLens);
 	}
+}
+
+std::vector<std::pair<uint32_t, uint32_t>>
+Compression::getWarframePreBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
+{
+	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+
+	std::vector<std::pair<uint32_t, uint32_t>> blocks{};
+	while (cacheReader.tellg() < (entry.cacheOffset + entry.compLen))
+	{
+		cacheReader.read((char*)scratch->buf.data(), 4);
+		std::tuple<uint32_t, uint32_t> blockLens = getEEBlockLensLz(&scratch->buf[0]);
+
+		blocks.push_back({std::get<0>(blockLens) + 4, std::get<1>(blockLens)});
+		cacheReader.seekg(std::get<0>(blockLens), std::ios::cur);
+	}
+
+	return blocks;
 }
 
 std::vector<uint8_t>
@@ -144,6 +186,42 @@ Compression::decompressEE(CompressionScratch* scratch, const FileNode& entry, st
 	}
 }
 
+std::vector<std::pair<uint32_t, uint32_t>>
+Compression::getEEBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
+{
+	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+
+	std::tuple<uint32_t, uint32_t> blockLens;
+	std::vector<std::pair<uint32_t, uint32_t>> blocks{};
+	while (cacheReader.tellg() < (entry.cacheOffset + entry.compLen))
+	{
+		cacheReader.read((char*)scratch->buf.data(), 8);
+
+		int forwardSeek = 0;
+		if (scratch->buf[0] > 0x7F)
+		{
+			forwardSeek = 0;
+			blockLens = getEEBlockLensOodle(&scratch->buf[0]);
+		}
+		else
+		{
+			blockLens = getEEBlockLensLz(&scratch->buf[0]);
+			forwardSeek = -4;
+		}
+
+		if (std::get<0>(blockLens) == 0 && std::get<1>(blockLens) == 0)
+		{
+			forwardSeek = -8;
+			blockLens = { entry.compLen, entry.len };
+		}
+	
+		blocks.push_back({std::get<0>(blockLens) + (8 + forwardSeek), std::get<1>(blockLens)});
+		cacheReader.seekg(std::get<0>(blockLens) + forwardSeek, std::ios::cur);
+	}
+
+	return blocks;
+}
+
 std::vector<uint8_t>
 Compression::decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
 {
@@ -202,6 +280,62 @@ Compression::decompressKeystone(CompressionScratch* scratch, const FileNode& ent
 		compPos += std::get<0>(blockLens);
 		decompPos += std::get<1>(blockLens);
 	}
+}
+
+std::vector<std::pair<uint32_t, uint32_t>>
+Compression::getKeystoneBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader)
+{
+	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
+
+	int32_t decompPos = 0;
+	int32_t compPos = 0;
+	int32_t forwardSeek = 0;
+
+	std::tuple<uint32_t, uint32_t> blockLens;
+	std::vector<std::pair<uint32_t, uint32_t>> blocks{};
+	while (cacheReader.tellg() < (entry.cacheOffset + entry.compLen))
+	{
+		compPos += 4;
+		cacheReader.read((char*)scratch->buf.data(), 10);
+		blockLens = getKeystoneBlockLens(&scratch->buf[0]);
+		
+		// Such a STUPID edge case where the compressed length is invalid
+		if (std::get<0>(blockLens) > 16384)
+		{
+			// Last block, we can calculate the compressed length
+			if (decompPos + std::get<1>(blockLens) == entry.len)
+			{
+				forwardSeek = -6;
+				blockLens = {entry.compLen - compPos, std::get<1>(blockLens)};
+			}
+			// Not the last block. Compressed size is just 1...
+			else
+			{
+				if (scratch->buf[9] == 2)
+				{
+					forwardSeek = -5;
+					blockLens = {5, std::get<1>(blockLens)};
+				}
+				else
+				{
+					forwardSeek = -4;
+					blockLens = {6, std::get<1>(blockLens)};
+				}
+			}
+		}
+		else
+		{
+			forwardSeek = -6;
+		}
+	
+		compPos += std::get<0>(blockLens);
+		decompPos += std::get<1>(blockLens);
+
+		blocks.push_back({std::get<0>(blockLens) + (10 + forwardSeek), std::get<1>(blockLens)});
+		cacheReader.seekg(std::get<0>(blockLens) + forwardSeek, std::ios::cur);
+	}
+
+	return blocks;
 }
 
 void

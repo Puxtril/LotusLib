@@ -81,6 +81,8 @@ namespace LotusLib
 		std::vector<uint8_t> getFileCompressed(const FileNode& entry) const;
 		std::vector<uint8_t> getFile(const std::string& internalPath) const;
 		std::vector<uint8_t> getFile(const FileNode& entry) const;
+		std::vector<std::pair<uint32_t, uint32_t>> getBlockLengths(const std::string& internalPath) const;
+		std::vector<std::pair<uint32_t, uint32_t>> getBlockLengths(const FileNode& entry) const;
 
 		// Can only be called inside the HEADER PkgSplit
 		CommonHeader readCommonHeader(const FileNode& entry) const;

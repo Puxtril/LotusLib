@@ -21,14 +21,17 @@ namespace LotusLib::Impl {
 		// Warframe/Soulframe Post-Ensmallening
 		static std::vector<uint8_t> decompressWarframePost(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 		static void decompressWarframePost(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
+		static std::vector<std::pair<uint32_t, uint32_t>> getWarframePostBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 
 		// Warframe Pre-Ensmallening
 		static std::vector<uint8_t> decompressWarframePre(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 		static void decompressWarframePre(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
+		static std::vector<std::pair<uint32_t, uint32_t>> getWarframePreBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 
 		// Darkness II and Star Trek
 		static std::vector<uint8_t> decompressEE(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 		static void decompressEE(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
+		static std::vector<std::pair<uint32_t, uint32_t>> getEEBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 
 		/* struct KeystoneBlock {
 		 * 	  uint8_t unk1;
@@ -43,6 +46,8 @@ namespace LotusLib::Impl {
 		*/ 
 		static std::vector<uint8_t> decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 		static void decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
+		// This has some outstanding bugs
+		static std::vector<std::pair<uint32_t, uint32_t>> getKeystoneBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 
 		static void decompressDarkSector(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
 	private:

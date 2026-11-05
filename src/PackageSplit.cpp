@@ -197,6 +197,46 @@ PackageSplit::getFile(const FileNode& entry) const
 	return decompressedData;
 }
 
+std::vector<std::pair<uint32_t, uint32_t>>
+PackageSplit::getBlockLengths(const std::string& internalPath) const
+{
+	m_state->tocTree.initialize();
+	const FileNode& entry = getFileNode(internalPath);
+	return getBlockLengths(entry);
+}
+
+std::vector<std::pair<uint32_t, uint32_t>>
+PackageSplit::getBlockLengths(const FileNode& entry) const
+{
+	if (!m_state->cacheExists)
+		throw LotusException("Cannot get block lengths, cache file missing: " + m_cachePath.string());
+
+	if (entry.compLen == entry.len)
+		return { {entry.compLen, entry.len} };
+
+	std::lock_guard<std::mutex> guard(m_state->decompressMutex);
+
+	switch(m_game)
+	{
+		case Game::KEYSTONE:
+			return Impl::Compression::getKeystoneBlockLengths(m_compressScratch.get(), entry, m_state->cacheReader);
+			break;
+		case Game::DARKNESSII:
+		case Game::STARTREK:
+			return Impl::Compression::getEEBlockLengths(m_compressScratch.get(), entry, m_state->cacheReader);
+			break;
+		case Game::WARFRAME_PE:
+			return Impl::Compression::getWarframePreBlockLengths(m_compressScratch.get(), entry, m_state->cacheReader);
+			break;
+		case Game::WARFRAME:
+		case Game::SOULFRAME:
+			return Impl::Compression::getWarframePostBlockLengths(m_compressScratch.get(), entry, m_state->cacheReader);
+			break;
+		default:
+			throw LotusException("Cannot get block lengths " + gameToString(m_game));
+	}
+}
+
 CommonHeader
 PackageSplit::readCommonHeader(const FileNode& entry) const
 {
