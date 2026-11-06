@@ -33,20 +33,9 @@ namespace LotusLib::Impl {
 		static void decompressEE(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
 		static std::vector<std::pair<uint32_t, uint32_t>> getEEBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 
-		/* struct KeystoneBlock {
-		 * 	  uint8_t unk1;
-		 *    uint8_t unk2;
-		 *    uint16_t decompressedLen; // Big endian
-		 *    uint8_t oodle_magic; // 0x8C
-		 *    uint8_t oodle_format;
-		 *    uint8_t unk3; // This only exists if `oodle_format` != 2
-		 *    uint16_t compressedLen; // Big endian
-		 *    uint8_t compressedData[compressedLen]; // `compressedLen` here is misleading because the Oodle block actually starts at `oodle_magic`
-		 * }
-		*/ 
+		// Keystone
 		static std::vector<uint8_t> decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 		static void decompressKeystone(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);
-		// This has some outstanding bugs
 		static std::vector<std::pair<uint32_t, uint32_t>> getKeystoneBlockLengths(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader);
 
 		static void decompressDarkSector(CompressionScratch* scratch, const FileNode& entry, std::ifstream& cacheReader, uint8_t* outData);

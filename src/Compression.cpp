@@ -240,35 +240,20 @@ Compression::decompressKeystone(CompressionScratch* scratch, const FileNode& ent
 	int32_t compPos = 0;
 	cacheReader.seekg(entry.cacheOffset, std::ios_base::beg);
 	cacheReader.read((char*)scratch->buf.data(), entry.compLen);
-	
+
 	while (decompPos < entry.len)
 	{
+		if (compPos + 4 > entry.compLen)
+			throw DecompressionException("Tried to read beyond limits");
+
 		// Get block lengths
 		std::tuple<uint32_t, uint32_t> blockLens = getKeystoneBlockLens(&scratch->buf[compPos]);
 		compPos += 4;
-		
-		// Such a STUPID edge case where the compressed length is invalid
-		if (std::get<0>(blockLens) > 16384)
-		{
-			// Last block, we can calculate the compressed length
-			if (decompPos + std::get<1>(blockLens) == entry.len)
-			{
-				blockLens = {entry.compLen - compPos, std::get<1>(blockLens)};
-			}
-			// Not the last block. Compressed size is just 1...
-			else
-			{
-				if (scratch->buf[compPos+5] == 2)
-					blockLens = {5, std::get<1>(blockLens)};
-				else
-					blockLens = {6, std::get<1>(blockLens)};
-			}
-		}
 
 		if (decompPos + (int32_t)std::get<1>(blockLens) > entry.len)
 			throw DecompressionException("Decompressed past the file length");
 
-		if (std::get<0>(blockLens) + compPos > entry.compLen)
+		if (compPos + (int32_t)std::get<0>(blockLens) > entry.compLen)
 			throw DecompressionException("Tried to read beyond limits");
 
 		// Decompress
@@ -289,50 +274,28 @@ Compression::getKeystoneBlockLengths(CompressionScratch* scratch, const FileNode
 
 	int32_t decompPos = 0;
 	int32_t compPos = 0;
-	int32_t forwardSeek = 0;
 
-	std::tuple<uint32_t, uint32_t> blockLens;
 	std::vector<std::pair<uint32_t, uint32_t>> blocks{};
-	while (cacheReader.tellg() < (entry.cacheOffset + entry.compLen))
+	while (decompPos < entry.len)
 	{
+		if (compPos + 4 > entry.compLen)
+			throw DecompressionException("Tried to read beyond limits");
+
+		cacheReader.read((char*)scratch->buf.data(), 4);
+		std::tuple<uint32_t, uint32_t> blockLens = getKeystoneBlockLens(&scratch->buf[0]);
 		compPos += 4;
-		cacheReader.read((char*)scratch->buf.data(), 10);
-		blockLens = getKeystoneBlockLens(&scratch->buf[0]);
-		
-		// Such a STUPID edge case where the compressed length is invalid
-		if (std::get<0>(blockLens) > 16384)
-		{
-			// Last block, we can calculate the compressed length
-			if (decompPos + std::get<1>(blockLens) == entry.len)
-			{
-				forwardSeek = -6;
-				blockLens = {entry.compLen - compPos, std::get<1>(blockLens)};
-			}
-			// Not the last block. Compressed size is just 1...
-			else
-			{
-				if (scratch->buf[9] == 2)
-				{
-					forwardSeek = -5;
-					blockLens = {5, std::get<1>(blockLens)};
-				}
-				else
-				{
-					forwardSeek = -4;
-					blockLens = {6, std::get<1>(blockLens)};
-				}
-			}
-		}
-		else
-		{
-			forwardSeek = -6;
-		}
-	
+
+		if (decompPos + (int32_t)std::get<1>(blockLens) > entry.len)
+			throw DecompressionException("Decompressed past the file length");
+
+		if (compPos + (int32_t)std::get<0>(blockLens) > entry.compLen)
+			throw DecompressionException("Tried to read beyond limits");
+
+		blocks.push_back({std::get<0>(blockLens) + 4, std::get<1>(blockLens)});
+		cacheReader.seekg(std::get<0>(blockLens), std::ios::cur);
+
 		compPos += std::get<0>(blockLens);
 		decompPos += std::get<1>(blockLens);
-
-		blocks.push_back({std::get<0>(blockLens) + (10 + forwardSeek), std::get<1>(blockLens)});
-		cacheReader.seekg(std::get<0>(blockLens) + forwardSeek, std::ios::cur);
 	}
 
 	return blocks;
@@ -419,29 +382,16 @@ Compression::getEEBlockLensLz(uint8_t* data)
 	return { num1, num2 };
 }
 
+// Keystone block header, 4 bytes:
+//   uint16_t compressedLen;   // Big endian. Bit 15 set = Oodle compressed, clear = stored
+//   uint16_t decompressedLen; // Big endian
+// The Oodle stream (starting with 0x8C) begins right after the header.
+// Stored blocks have compressedLen == decompressedLen.
 std::tuple<uint32_t, uint32_t>
 Compression::getKeystoneBlockLens(uint8_t* data)
 {
-	uint32_t blockLen = 0;
-	uint32_t blockCompLen = 0;
-	
-	blockLen = (data[2] << 8) | data[3];
-
-	// Uncompressed data
-	if (data[0] == data[2] && data[1] == data[3])
-	{
-		blockCompLen = blockLen;
-	}
-	else if (data[5] == 2)
-	{
-		blockCompLen = (data[6] << 8) | data[7];
-		blockCompLen += 5;
-	}
-	else
-	{
-		blockCompLen = ((data[7] << 8) | data[8]);
-		blockCompLen += 6;
-	}
+	uint32_t blockCompLen = ((data[0] << 8) | data[1]) & 0x7FFF;
+	uint32_t blockLen = (data[2] << 8) | data[3];
 
 	return { blockCompLen, blockLen };
 }
