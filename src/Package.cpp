@@ -105,13 +105,14 @@ Package::getFileEntry(const FileNode& entry) const
     if (!m_state->m_loadedFileTypes)
         throw LotusException("Call Package.readFileTypes before getting FileType!");
     
-    FileEntry ret;
-
-    ret.game = m_game;
-    ret.pkgCategory = m_category;
-    ret.headerNode = entry;
     std::vector<uint8_t> headerData = getFile(PkgSplitType::HEADER, entry);
-    ret.header = BinaryReader::Buffered(std::move(headerData));
+    FileEntry ret {
+        .game = m_game,
+        .pkgCategory = m_category,
+        .pkgName = m_name,
+        .headerNode = entry,
+        .header = BinaryReader::Buffered(std::move(headerData))
+    };
 
     try
     {

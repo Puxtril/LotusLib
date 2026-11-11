@@ -19,6 +19,7 @@ namespace LotusLib
 	{
 		Game game;
 		PackageCategory pkgCategory;
+		const std::string& pkgName;
 		CommonHeader commonHeader;
 		FileType fileType;
 		FileNode headerNode;
