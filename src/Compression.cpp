@@ -426,7 +426,7 @@ Compression::decompressLz(uint8_t* inputData, uint32_t inputLen, uint8_t* output
 {
 	if (inputLen == outputLen)
 	{
-		outputData = inputData;
+		memcpy(outputData, inputData, inputLen);
 		return inputLen;
 	}
 	else
