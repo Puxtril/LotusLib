@@ -108,7 +108,7 @@ namespace LotusLib
                 {FileType::SWF, PackageCategory::ANIM_RETARGET, "/EE/Menus/MainMenu.swf"},
                 {FileType::TEXTURE_1, PackageCategory::TEXTURE, "/D2/Materials/Decals/Blood003_d.png"},
                 {FileType::TEXTURE_SKYBOX, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_y.png"},
-                {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_v.png"},
+                {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/PostFX/NeutralColor_v.png"},
                 {FileType::TEXTURE_CUBEMAP, PackageCategory::TEXTURE, "/D2/Materials/CubeMaps/CC_cube0.png"},
                 {FileType::TEXTURE_NORMALMAP, PackageCategory::TEXTURE, "/D2/Weapons/Upgrades/ACOG_n.png"},
             }
@@ -131,7 +131,7 @@ namespace LotusLib
                 {FileType::SWF, PackageCategory::ANIM_RETARGET, "/ST/Interface/RevealMenu.swf"},
                 {FileType::TEXTURE_1, PackageCategory::TEXTURE, "/ST/Weapons/Gorn/Mine/GornMine_d.png"},
                 {FileType::TEXTURE_SKYBOX, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_y.png"},
-                {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/Defaults/Textures/Default_v.png"},
+                {FileType::TEXTURE_POSTPROCESS, PackageCategory::TEXTURE, "/EE/Materials/PostFX/NeutralColor_v.png"},
                 {FileType::TEXTURE_CUBEMAP, PackageCategory::TEXTURE, "/ST/Materials/Cubemaps/Dark_cube0.png"},
                 {FileType::TEXTURE_NORMALMAP, PackageCategory::TEXTURE, "/ST/Characters/Scotty/ScottyHead_n.png"},
             }
