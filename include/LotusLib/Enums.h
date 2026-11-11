@@ -5,13 +5,13 @@ namespace LotusLib
     enum class Game : int
     {
         UNKNOWN     = 0,
-        SOULFRAME   = 1 << 0,
-        WARFRAME    = 1 << 1,
-        WARFRAME_PE = 1 << 2,
+        DARKSECTOR  = 1 << 1,
+        DARKNESSII  = 1 << 2,
         STARTREK    = 1 << 3,
-        DARKNESSII  = 1 << 4,
-        DARKSECTOR  = 1 << 5,
-        KEYSTONE    = 1 << 6,
+        WARFRAME_PE = 1 << 4,
+        KEYSTONE    = 1 << 5,
+        WARFRAME    = 1 << 6,
+        SOULFRAME   = 1 << 7,
     };
 
     inline Game operator|(Game a, Game b)
