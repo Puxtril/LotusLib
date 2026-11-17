@@ -206,8 +206,8 @@ PackagesBin::readFile_16(BinaryReader::BufferedSlice& reader)
 
         reader.seek(12, std::ios::cur);
 
-        uint32_t unkStr = reader.readUInt32();
-        reader.seek(unkStr, std::ios::cur);
+        uint32_t parentTypeLen = reader.readUInt32();
+        curEntity.parentType = reader.readAsciiString(parentTypeLen);
 
         int len = reader.readUInt32();
         curEntity.attributeData.resize(len);
@@ -257,8 +257,8 @@ PackagesBin::readFile_19(BinaryReader::BufferedSlice& reader)
         // short + short + byte
         reader.seek(5, std::ios::cur);
 
-        uint32_t unkStr = reader.readUInt32();
-        reader.seek(unkStr, std::ios::cur);
+        uint32_t parentTypeLen = reader.readUInt32();
+        curEntity.parentType = reader.readAsciiString(parentTypeLen);
 
         reader.readUInt32(0, 0, "Unk 2");
 
@@ -301,23 +301,19 @@ PackagesBin::readFile_24_28(BinaryReader::BufferedSlice& reader)
 
     for (uint32_t i = 0; i < entityCount; i++)
     {
-        // if (i > 194583) { std::cout << "index: " << i << std::endl; } 
         Impl::RawPackagesEntity& curEntity = entities[i];
 
         uint32_t pkgNameLen = reader.readUInt32();
         curEntity.pkg = reader.readAsciiString(pkgNameLen);
-        // if (i > 194583) { std::cout << "pkgNameLen: " << pkgNameLen << std::endl; } 
 
         uint32_t fileNameLen = reader.readUInt32();
         curEntity.filename = reader.readAsciiString(fileNameLen);
-        // if (i > 194583) { std::cout << "fileNameLen: " << fileNameLen << std::endl; } 
 
         // short + short + byte
         reader.seek(5, std::ios::cur);
 
-        uint32_t unkStr = reader.readUInt32();
-        reader.seek(unkStr, std::ios::cur);
-        // if (i > 194583) { std::cout << "unkStr: " << unkStr << std::endl; } 
+        uint32_t parentTypeLen = reader.readUInt32();
+        curEntity.parentType = reader.readAsciiString(parentTypeLen);
 
         reader.readUInt32(0, 0, "Unk 2");
 
@@ -326,7 +322,6 @@ PackagesBin::readFile_24_28(BinaryReader::BufferedSlice& reader)
         while (dataBuffer.getPtr()[dataBuffer.tell() + len++] != 0) {}
         curEntity.attributeData.resize(len);
         dataBuffer.readUInt8Array((uint8_t*)curEntity.attributeData.data(), len);
-        // if (i > 194583) { std::cout << "len: " << len << std::endl; } 
 
         curEntity.decompressedLen = len;
         curEntity.isCompressed = false;
@@ -372,8 +367,8 @@ PackagesBin::readFile_29(BinaryReader::BufferedSlice& reader)
         // short + short + byte
         reader.seek(5, std::ios::cur);
 
-        uint32_t unkStr = reader.readUInt32();
-        reader.seek(unkStr, std::ios::cur);
+        uint32_t parentTypeLen = reader.readUInt32();
+        curEntity.parentType = reader.readAsciiString(parentTypeLen);
 
         reader.readUInt32(0, 0, "Unk 2");
 
@@ -424,8 +419,8 @@ PackagesBin::readFile_30_31(BinaryReader::BufferedSlice& reader)
         // short + short + byte
         reader.seek(5, std::ios::cur);
 
-        uint32_t unkStr = reader.readUInt32();
-        reader.seek(unkStr, std::ios::cur);
+        uint32_t parentTypeLen = reader.readUInt32();
+        curEntity.parentType = reader.readAsciiString(parentTypeLen);
 
         reader.readUInt32(0, 0, "Unk 2");
 
@@ -958,7 +953,9 @@ PackagesBin::buildEntityMap(std::vector<Impl::RawPackagesEntity>& rawEntities)
         curEntity.decompressedLen = curRawEntity.decompressedLen;
         curEntity.attributeData = std::move(curRawEntity.attributeData);
 
-        if (curRawEntity.parentType[0] == '/')
+        if (curRawEntity.parentType.empty())
+            curEntity.parent = "";
+        else if (curRawEntity.parentType[0] == '/')
             curEntity.parent = curRawEntity.parentType;
         else
             curEntity.parent = curRawEntity.pkg + curRawEntity.parentType;
