@@ -321,8 +321,8 @@ LotusLib::fileTypeToString(const FileType fileType)
             return "TextureLightmap1";
         case FileType::TEXTURE_SKYBOX:
             return "TextureSkybox";
-        case FileType::TEXTURE_POSTPROCESS:
-            return "TexturePostprocess";
+        case FileType::TEXTURE_VOLUME:
+            return "TextureVolume";
         case FileType::TEXTURE_CUBEMAP:
             return "TextureCubemap";
         case FileType::TEXTURE_NOISE:
